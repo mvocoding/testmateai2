@@ -1,70 +1,155 @@
-# Getting Started with Create React App
+# TestMate AI - IELTS Preparation Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+TestMate AI is an intelligent, interactive web platform designed to help international students prepare for English proficiency exams, with a focus on IELTS. The platform uses AI and speech recognition to deliver personalized, flexible learning solutions.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **AI-Driven Diagnostic Tests**: Quickly assess current proficiency level and identify areas for improvement
+- **Real-Time Speaking Feedback**: Practice speaking with AI-powered feedback on pronunciation, fluency, and grammar
+- **Simulated Mock Tests**: Full-length, automated mock exams with scoring aligned to IELTS standards
+- **Progress Tracking**: Monitor development with detailed analytics and insights
+- **Modern UI/UX**: Beautiful, responsive design built with React and Tailwind CSS
 
-### `npm start`
+## Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend**: React.js
+- **Styling**: Tailwind CSS
+- **Routing**: React Router DOM
+- **Icons**: Heroicons (SVG)
+- **Fonts**: Inter (Google Fonts)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Getting Started
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js (version 14 or higher)
+- npm or yarn
 
-### `npm run build`
+### Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd testmate
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Install dependencies:
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. Start the development server:
+```bash
+npm start
+```
 
-### `npm run eject`
+4. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Project Structure
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+src/
+├── components/          # Reusable UI components
+├── pages/              # Page components
+│   ├── Home.js         # Landing page
+│   ├── Login.js        # User authentication
+│   └── SpeakingTest.js # AI-powered speaking practice
+├── App.js              # Main app component with routing
+├── index.js            # App entry point
+└── index.css           # Global styles and Tailwind imports
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Pages
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Home Page (`/`)
+- Landing page with feature overview
+- Call-to-action buttons
+- Professional design showcasing TestMate AI capabilities
 
-## Learn More
+### Login Page (`/login`)
+- User authentication form
+- Form validation
+- Demo credentials for testing
+- Responsive design
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Speaking Test Page (`/speaking-test`)
+- AI-powered speaking practice
+- Real-time recording functionality
+- Timer and progress tracking
+- AI feedback simulation
+- Multiple question types
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Demo Credentials
 
-### Code Splitting
+For testing purposes, you can use these demo credentials on the login page:
+- **Email**: demo@testmate.com
+- **Password**: demo123
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Features in Detail
 
-### Analyzing the Bundle Size
+### Speaking Test Functionality
+- **Recording**: Uses browser's MediaRecorder API for audio capture
+- **Timer**: Automatic timing with configurable limits per question
+- **Playback**: Listen to recorded responses
+- **AI Feedback**: Simulated AI analysis with detailed scoring
+- **Progress Tracking**: Visual progress indicators
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Responsive Design
+- Mobile-first approach
+- Optimized for all screen sizes
+- Touch-friendly interface
+- Accessible design patterns
 
-### Making a Progressive Web App
+## Development
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Available Scripts
 
-### Advanced Configuration
+- `npm start` - Runs the app in development mode
+- `npm test` - Launches the test runner
+- `npm run build` - Builds the app for production
+- `npm run eject` - Ejects from Create React App (one-way operation)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Code Style
 
-### Deployment
+- Follow React best practices
+- Use functional components with hooks
+- Implement proper error handling
+- Write clean, readable code with comments
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Future Enhancements
 
-### `npm run build` fails to minify
+- Backend integration with real AI services
+- User authentication and profile management
+- Progress analytics dashboard
+- Additional test types (Reading, Writing, Listening)
+- Peer learning communities
+- Mobile app development
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Team
+
+- Raphael Bernard Bonifacio (A00130994)
+- Nijesh Manandhar (A00143435)
+- Hien Pham (A00141910)
+- Minh Quoc Vo (A00144753)
+
+## Acknowledgments
+
+- ITW601 Information Technology - Work Integrated Learning
+- Ejoe Tso (Instructor)
+- University of South Australia
+
+---
+
+**Note**: This is a frontend prototype. Backend integration and real AI services are planned for future development phases.
