@@ -71,44 +71,21 @@ const StudyPlan = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-100 via-cyan-50 to-blue-100 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-teal-300 to-cyan-300 rounded-full opacity-20 animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-blue-300 to-cyan-300 rounded-full opacity-20 animate-bounce"></div>
-        <div className="absolute bottom-20 left-1/4 w-20 h-20 bg-gradient-to-r from-cyan-200 to-teal-200 rounded-full opacity-20 animate-ping"></div>
-        <div className="absolute bottom-40 right-1/3 w-28 h-28 bg-gradient-to-r from-teal-200 to-blue-200 rounded-full opacity-20 animate-pulse"></div>
-      </div>
-
-      {/* Floating Particles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(16)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-white rounded-full opacity-60 animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${3 + Math.random() * 2}s`
-            }}
-          ></div>
-        ))}
-      </div>
-
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden"> {/* Changed background to neutral */}
+      {/* Removed Animated Background Elements */}
+      {/* Removed Floating Particles */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4 drop-shadow-lg">
+          <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg"> {/* Single accent color */}
             AI Study Plan
           </h1>
           <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
             Get your personalized IELTS study plan powered by AI
           </p>
         </div>
-
         <div className="w-full max-w-4xl mx-auto">
           {!studyPlan ? (
-            <div className="bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 md:p-12">
+            <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12"> {/* Neutral card */}
               <form onSubmit={generateStudyPlan} className="space-y-6">
                 <div className="text-center mb-8">
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">Tell us about your goals</h2>
@@ -205,7 +182,7 @@ const StudyPlan = () => {
                 <button
                   type="submit"
                   disabled={isGenerating}
-                  className={`w-full py-4 px-6 bg-gradient-to-r from-teal-500 to-cyan-400 hover:from-teal-600 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full py-4 px-6 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {isGenerating ? (
                     <div className="flex items-center justify-center gap-2">
@@ -228,22 +205,22 @@ const StudyPlan = () => {
             <div className="space-y-8">
               {/* Plan Summary */}
               {studyPlan.summary && (
-                <div className="bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8">
+                <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8"> {/* Neutral card */}
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Personalized Study Plan</h2>
                   <div className="text-center mb-4">
                     <p className="text-lg text-gray-700">{studyPlan.summary}</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div className="text-center p-4 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl">
+                    <div className="text-center p-4 bg-gray-100 rounded-xl"> {/* Neutral */}
                       <div className="text-2xl font-bold text-teal-600">Current: {studyPlan.currentScore || formData.currentScore || formData.lastTestScore}</div>
                       <div className="text-sm text-gray-600">Band Score</div>
                     </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl">
-                      <div className="text-2xl font-bold text-blue-600">Target: {studyPlan.targetScore || formData.targetScore}</div>
+                    <div className="text-center p-4 bg-gray-100 rounded-xl"> {/* Neutral */}
+                      <div className="text-2xl font-bold text-teal-600">Target: {studyPlan.targetScore || formData.targetScore}</div>
                       <div className="text-sm text-gray-600">Band Score</div>
                     </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
-                      <div className="text-2xl font-bold text-purple-600">{studyPlan.weeks || studyPlan.weeksToStudy} weeks</div>
+                    <div className="text-center p-4 bg-gray-100 rounded-xl"> {/* Neutral */}
+                      <div className="text-2xl font-bold text-teal-600">{studyPlan.weeks || studyPlan.weeksToStudy} weeks</div>
                       <div className="text-sm text-gray-600">Study Time</div>
                     </div>
                   </div>
@@ -257,11 +234,11 @@ const StudyPlan = () => {
 
               {/* Recommendations */}
               {studyPlan.recommendations && (
-                <div className="bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8">
+                <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8"> {/* Neutral card */}
                   <h3 className="text-xl font-bold text-gray-800 mb-6">AI Recommendations</h3>
                   <div className="space-y-4">
                     {studyPlan.recommendations.map((rec, index) => (
-                      <div key={index} className="flex items-start gap-4 p-4 bg-white/50 rounded-xl">
+                      <div key={index} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl"> {/* Neutral */}
                         <div className="text-2xl">{rec.icon || '💡'}</div>
                         <div className="flex-1">
                           <div className="font-semibold text-gray-800 mb-1">{rec.title || rec}</div>
@@ -275,16 +252,13 @@ const StudyPlan = () => {
 
               {/* Weekly Schedule */}
               {studyPlan.weekly_schedule && (
-                <div className="bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8">
+                <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8"> {/* Neutral card */}
                   <h3 className="text-xl font-bold text-gray-800 mb-6">Weekly Study Schedule</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {studyPlan.weekly_schedule.map((week, index) => (
-                      <div key={index} className="bg-white/50 rounded-xl p-4">
+                      <div key={index} className="bg-gray-50 rounded-xl p-4"> {/* Neutral */}
                         <div className="text-lg font-bold text-gray-800 mb-2">Week {week.week}</div>
-                        <div className={`inline-block px-2 py-1 rounded-full text-xs font-bold mb-2 ${week.focus === 'Foundation' ? 'bg-green-100 text-green-800' :
-                            week.focus === 'Practice' ? 'bg-blue-100 text-blue-800' :
-                              'bg-purple-100 text-purple-800'
-                          }`}>
+                        <div className={`inline-block px-2 py-1 rounded-full text-xs font-bold mb-2 bg-gray-200 text-gray-700`}>
                           {week.focus}
                         </div>
                         <ul className="text-sm text-gray-600 space-y-1 mb-2">
@@ -301,14 +275,13 @@ const StudyPlan = () => {
 
               {/* Focus Areas */}
               {studyPlan.focus_areas && (
-                <div className="bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8">
+                <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8"> {/* Neutral card */}
                   <h3 className="text-xl font-bold text-gray-800 mb-6">Focus Areas</h3>
                   <div className="space-y-3">
                     {studyPlan.focus_areas.map((area, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-white/50 rounded-xl">
+                      <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"> {/* Neutral */}
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${area.priority === 'High' ? 'bg-red-500' : 'bg-yellow-500'
-                            }`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${area.priority === 'High' ? 'bg-teal-500' : 'bg-teal-300'}`}>
                             {area.priority ? (area.priority === 'High' ? 'H' : 'M') : '•'}
                           </div>
                           <div>
@@ -324,7 +297,7 @@ const StudyPlan = () => {
 
               <button
                 onClick={() => setStudyPlan(null)}
-                className="w-full py-4 px-6 bg-gradient-to-r from-gray-500 to-gray-400 hover:from-gray-600 hover:to-gray-500 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+                className="w-full py-4 px-6 bg-gray-400 hover:bg-gray-500 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
               >
                 Generate New Plan
               </button>
@@ -332,17 +305,7 @@ const StudyPlan = () => {
           )}
         </div>
       </div>
-
-      {/* Custom CSS for floating animation */}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-      `}</style>
+      {/* Removed custom CSS for floating animation */}
     </div>
   );
 };

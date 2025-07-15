@@ -211,32 +211,12 @@ const Listening = () => {
   const passage = listeningPassages[currentPassage];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-100 via-emerald-50 to-blue-100 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-green-300 to-emerald-300 rounded-full opacity-20 animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-blue-300 to-green-300 rounded-full opacity-20 animate-bounce"></div>
-        <div className="absolute bottom-20 left-1/4 w-20 h-20 bg-gradient-to-r from-emerald-200 to-green-200 rounded-full opacity-20 animate-ping"></div>
-        <div className="absolute bottom-40 right-1/3 w-28 h-28 bg-gradient-to-r from-green-200 to-blue-200 rounded-full opacity-20 animate-pulse"></div>
-      </div>
-      {/* Floating Particles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(16)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-white rounded-full opacity-60 animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${3 + Math.random() * 2}s`
-            }}
-          ></div>
-        ))}
-      </div>
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
+    <>
+      <div className="min-h-screen bg-gray-50 relative overflow-hidden"> {/* Neutral background */}
+        {/* Removed Animated Background Elements */}
+        {/* Removed Floating Particles */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-green-600 via-emerald-600 to-blue-400 bg-clip-text text-transparent mb-4 drop-shadow-lg">
+          <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg"> {/* Single accent color */}
             Listening Quest
           </h1>
           <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
@@ -244,12 +224,12 @@ const Listening = () => {
           </p>
         </div>
         <div className="relative w-full max-w-3xl mx-auto">
-          <div className="relative bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 md:p-12">
+          <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12"> {/* Neutral card */}
             <div className="mb-4 text-center">
-              <h1 className="text-3xl md:text-4xl font-extrabold text-primary-700 mb-4 tracking-tight flex items-center justify-center gap-3">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-teal-700 mb-4 tracking-tight flex items-center justify-center gap-3">
                 <span role="img" aria-label="headphones" className="text-4xl">🎧</span> IELTS Listening Test
               </h1>
-              <div className="text-xl font-semibold text-gray-800 text-center bg-primary-50 border border-primary-200 rounded-xl py-4 px-4 shadow">
+              <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl py-4 px-4 shadow">
                 {passage.title}
               </div>
             </div>
@@ -263,7 +243,7 @@ const Listening = () => {
                   className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${
                     isPlaying 
                       ? 'bg-red-500 hover:bg-red-600' 
-                      : 'bg-gradient-to-r from-primary-500 to-green-400 hover:from-primary-600 hover:to-green-500'
+                      : 'bg-teal-500 hover:bg-teal-600'
                   } ${(isLoading || playCount >= MAX_PLAYS) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <span role="img" aria-label="audio">
@@ -288,9 +268,9 @@ const Listening = () => {
             {/* Questions */}
             {!showResults && (
               <div className="space-y-6">
-                <h3 className="text-xl font-bold text-primary-700">Questions:</h3>
+                <h3 className="text-xl font-bold text-teal-700">Questions:</h3>
                 {passage.questions.map((question, index) => (
-                  <div key={question.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div key={question.id} className="bg-white rounded-lg p-4 border border-gray-200">
                     <div className="font-semibold text-gray-800 mb-3">
                       {index + 1}. {question.question}
                     </div>
@@ -306,11 +286,11 @@ const Listening = () => {
                                 value={optionIndex}
                                 checked={answers[question.id] === optionIndex}
                                 onChange={(e) => handleAnswerChange(question.id, parseInt(e.target.value))}
-                                className="peer appearance-none w-6 h-6 rounded-full border-2 border-emerald-400 bg-white checked:bg-gradient-to-br checked:from-green-400 checked:to-emerald-400 checked:border-emerald-600 transition-all duration-200 focus:ring-2 focus:ring-emerald-300 shadow-sm"
+                                className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
                               />
-                              <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-emerald-600 peer-checked:bg-gradient-to-br peer-checked:from-green-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-emerald-300 transition-all duration-200"></span>
+                              <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
                             </span>
-                            <span className="text-gray-700 text-lg group-hover:text-emerald-700 transition-colors">{option}</span>
+                            <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">{option}</span>
                           </label>
                         ))}
                       </div>
@@ -322,7 +302,7 @@ const Listening = () => {
                         value={answers[question.id] || ''}
                         onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                         placeholder="Type your answer..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                     )}
                     
@@ -336,11 +316,11 @@ const Listening = () => {
                               value={true}
                               checked={answers[question.id] === true}
                               onChange={(e) => handleAnswerChange(question.id, e.target.value === 'true')}
-                              className="peer appearance-none w-6 h-6 rounded-full border-2 border-emerald-400 bg-white checked:bg-gradient-to-br checked:from-green-400 checked:to-emerald-400 checked:border-emerald-600 transition-all duration-200 focus:ring-2 focus:ring-emerald-300 shadow-sm"
+                              className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
                             />
-                            <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-emerald-600 peer-checked:bg-gradient-to-br peer-checked:from-green-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-emerald-300 transition-all duration-200"></span>
+                            <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
                           </span>
-                          <span className="text-gray-700 text-lg group-hover:text-emerald-700 transition-colors">True</span>
+                          <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">True</span>
                         </label>
                         <label className="flex items-center gap-3 cursor-pointer group">
                           <span className="relative flex items-center">
@@ -350,11 +330,11 @@ const Listening = () => {
                               value={false}
                               checked={answers[question.id] === false}
                               onChange={(e) => handleAnswerChange(question.id, e.target.value === 'true')}
-                              className="peer appearance-none w-6 h-6 rounded-full border-2 border-emerald-400 bg-white checked:bg-gradient-to-br checked:from-green-400 checked:to-emerald-400 checked:border-emerald-600 transition-all duration-200 focus:ring-2 focus:ring-emerald-300 shadow-sm"
+                              className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
                             />
-                            <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-emerald-600 peer-checked:bg-gradient-to-br peer-checked:from-green-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-emerald-300 transition-all duration-200"></span>
+                            <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
                           </span>
-                          <span className="text-gray-700 text-lg group-hover:text-emerald-700 transition-colors">False</span>
+                          <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">False</span>
                         </label>
                       </div>
                     )}
@@ -363,7 +343,7 @@ const Listening = () => {
                 
                 <button
                   onClick={handleSubmit}
-                  className="w-full py-3 px-6 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg shadow transition-colors"
+                  className="w-full py-3 px-6 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
                 >
                   Submit Answers
                 </button>
@@ -383,7 +363,7 @@ const Listening = () => {
                 {currentPassage < listeningPassages.length - 1 ? (
                   <button
                     onClick={handleNextPassage}
-                    className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg shadow transition-colors"
+                    className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
                   >
                     Next Passage
                   </button>
@@ -397,17 +377,7 @@ const Listening = () => {
           </div>
         </div>
       </div>
-      {/* Custom CSS for floating animation */}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-      `}</style>
-    </div>
+    </>
   );
 };
 

@@ -1,0 +1,55 @@
+ITW601 Assessment 1 – TESTMATE AI
+(ITW601) Information Technology - Work Integrated Learning
+Raphael Bernard Bonifacio (A00130994), Nijesh Manandhar (A00143435),
+Hien Pham (A00141910), and Minh Quoc Vo (A00144753)
+
+Testmate AI includes several key features to support IELTS and other
+English test preparation:
+• AI-Driven Diagnostic Tests
+• Real-Time Feedback on Speaking and Writing
+• Simulated Mock Tests
+• Conversational AI Modules
+• Peer-Learning Communities
+• Progress Tracking and Data Analytics
+
+Project Milestone
+In Week 7, the team focused on expanding the application with new pages and improving existing functionality.
+
+Key accomplishments:
+• Added Study Plan page with AI-powered personalized learning recommendations
+• Implemented Dashboard page with progress tracking and skill overview
+• Created Listening page with interactive test interface
+• Redesigned Homepage with modern UI and improved user experience
+• Enhanced Login page with better styling and user flow
+
+Technical updates:
+• Integrated OpenAI API for generating personalized study plans
+• Implemented React Router navigation for new pages
+• Enhanced state management for user progress tracking
+• Improved responsive design across all new components
+• Added form validation and error handling for study plan inputs
+
+Retrospective Review – Week 7 Work Log
+• Developed Study Plan page with form inputs for current score, target score, and test date
+• Created Dashboard page showing user progress, study stats, and recent activity
+• Built Listening page with radio button and checkbox question types
+• Updated Homepage design with modern styling and better layout
+• Improved Login page UI with enhanced visual design and user experience
+
+Backlog – Week 8 Planning
+Planned tasks for Week 8 include:
+• Implement backend API integration for user data persistence
+• Add real-time speech recognition for Speaking Test
+• Develop Writing Test page functionality
+• Create Reading Test interface
+• Implement user profile and settings features
+• Add achievement and gamification system
+
+Technical Progress Demo
+So far, the team has:
+• Completed Study Plan page with AI integration
+• Implemented Dashboard with progress tracking
+• Created Listening Test interface
+• Redesigned Homepage and Login pages
+• Established consistent navigation flow across all pages
+• Prepared foundation for advanced AI features and test functionality 

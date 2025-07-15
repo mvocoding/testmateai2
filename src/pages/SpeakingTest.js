@@ -152,32 +152,12 @@ const SpeakingTest = () => {
   const xpPercent = Math.min(100, (xp / XP_TO_LEVEL_UP) * 100);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-pink-200 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-purple-300 to-pink-300 rounded-full opacity-20 animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full opacity-20 animate-bounce"></div>
-        <div className="absolute bottom-20 left-1/4 w-20 h-20 bg-gradient-to-r from-pink-200 to-purple-200 rounded-full opacity-20 animate-ping"></div>
-        <div className="absolute bottom-40 right-1/3 w-28 h-28 bg-gradient-to-r from-purple-200 to-pink-200 rounded-full opacity-20 animate-pulse"></div>
-      </div>
-      {/* Floating Particles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(16)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-white rounded-full opacity-60 animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${3 + Math.random() * 2}s`
-            }}
-          ></div>
-        ))}
-      </div>
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
+    <>
+      <div className="min-h-screen bg-gray-50 relative overflow-hidden"> {/* Neutral background */}
+        {/* Removed Animated Background Elements */}
+        {/* Removed Floating Particles */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-purple-400 bg-clip-text text-transparent mb-4 drop-shadow-lg">
+          <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg"> {/* Single accent color */}
             Speaking Challenge
           </h1>
           <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
@@ -185,7 +165,7 @@ const SpeakingTest = () => {
           </p>
         </div>
         <div className="relative w-full max-w-3xl mx-auto">
-          <div className="relative bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 md:p-12">
+          <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12"> {/* Neutral card */}
             {/* Question */}
             <div className="mb-6 text-center">
               <div className="text-2xl md:text-3xl font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded-xl py-4 px-4 shadow inline-block">
@@ -290,17 +270,7 @@ const SpeakingTest = () => {
           </div>
         </div>
       </div>
-      {/* Custom CSS for floating animation */}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-      `}</style>
-    </div>
+    </>
   );
 };
 
