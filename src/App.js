@@ -8,6 +8,7 @@ import Reading from './pages/Reading';
 import Writing from './pages/Writing';
 import Dashboard from './pages/Dashboard';
 import StudyPlan from './pages/StudyPlan';
+import LiveChat from './components/LiveChat';
 import './App.css';
 
 const skills = [
@@ -117,6 +118,7 @@ function AppLayout() {
   const showSidebar = ['/speaking', '/listening', '/reading', '/writing', '/dashboard', '/study-plan'].some(path => location.pathname.startsWith(path));
   return (
     <div className="flex min-h-screen">
+      <LiveChat></LiveChat>
       {showSidebar && <SkillSidebar />}
       <main className={showSidebar ? 'flex-1 ml-56' : 'flex-1'}>
         <Routes>
