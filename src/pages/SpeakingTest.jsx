@@ -10,50 +10,12 @@ const questions = [
 const XP_PER_BAND = 5;
 const XP_TO_LEVEL_UP = 100;
 
-function mockGeminiFeedback(transcript) {
-  const words = transcript.split(' ').map((word) => {
-    const easyWords = [
-      'I',
-      'a',
-      'the',
-      'and',
-      'to',
-      'in',
-      'on',
-      'of',
-      'do',
-      'you',
-      'my',
-      'is',
-      'it',
-      'like',
-    ];
-    const native_like =
-      easyWords.includes(word.replace(/[^a-zA-Z]/g, '')) || Math.random() > 0.3;
-    return {
-      word,
-      native_like,
-      score: native_like
-        ? 0.9 + Math.random() * 0.1
-        : 0.5 + Math.random() * 0.3,
-      tip: native_like ? '' : "Practice this word's pronunciation.",
-    };
-  });
-  return {
-    band: (6 + Math.random() * 2.5).toFixed(1),
-    comment: 'Some words are native-like, others need practice. (Demo)',
-    words,
-  };
-}
-
 const FEEDBACK_TABS = [
   { key: 'general', label: 'General' },
-  { key: 'length', label: 'Length' },
-  { key: 'suggestions', label: 'Suggestions' },
-  { key: 'pronunciation', label: 'Pronunciation' },
   { key: 'grammar', label: 'Grammar' },
   { key: 'vocabulary', label: 'Vocabulary' },
   { key: 'coherence', label: 'Coherence' },
+  { key: 'suggestions', label: 'Suggestions' },
 ];
 
 const SpeakingTest = () => {

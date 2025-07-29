@@ -16,6 +16,7 @@ import Writing from './pages/Writing';
 import Dashboard from './pages/Dashboard';
 import StudyPlan from './pages/StudyPlan';
 import AskMeAnything from './pages/AskMeAnything';
+import { AskMeButton } from './components/AskMe';
 import './App.css';
 
 const skills = [
@@ -175,6 +176,7 @@ function AppLayout() {
   ].some((path) => location.pathname.startsWith(path));
   return (
     <div className="flex min-h-screen min-w-full bg-gray-50">
+      <AskMeButton></AskMeButton>
       {showSidebar && <SkillSidebar />}
       <main className={showSidebar ? 'flex-1 ml-56' : 'flex-1'}>
         <Routes>
