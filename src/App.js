@@ -32,18 +32,18 @@ function SkillSidebar() {
   const xpPercent = (xp / totalXP) * 100;
 
   const handleLogout = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   return (
     <aside className="h-screen w-56 bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl border-r border-white/50 flex flex-col items-center py-2 fixed left-0 top-0 z-40 shadow-2xl">
-      <div className="mb-2  text-3xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent tracking-tight">
+      <div className="mb-2  text-2xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent tracking-tight">
         Minh Quoc Vo
       </div>
 
       <div className="w-full p-2 mb-4">
         <div className="flex items-center gap-3 mb-2">
-          <span className="inline-block bg-purple-600 text-white text-lg font-bold px-4 py-1 rounded-full shadow">🏅 Level {level}</span>
+          <span className="m-auto inline-block bg-purple-600 text-white text-base font-bold px-4 py-1 rounded-full shadow">🏅 Level {level}</span>
           <span
             onClick={handleLogout}
             className="ml-auto inline-flex items-center gap-2 p-2 cursor-pointer rounded-lg bg-gradient-to-r from-red-400 to-pink-500 text-white text-sm font-medium hover:brightness-110 transition"
