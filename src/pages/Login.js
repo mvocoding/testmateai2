@@ -222,14 +222,6 @@ const Login = () => {
                 </div>
               </form>
             )}
-            {/* Demo Credentials */}
-            <div className="mt-6 bg-white bg-opacity-90 backdrop-blur-sm border border-white border-opacity-20 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-800 mb-2 flex items-center gap-2"><span role="img" aria-label="info">ℹ️</span> Demo</h3>
-              <p className="text-xs text-gray-700">
-                <strong>Step 1:</strong> Enter any valid email (e.g., demo@testmate.com)<br />
-                <strong>Step 2:</strong> Enter the code: <strong>123456</strong>
-              </p>
-            </div>
           </div>
         </main>
       </div>

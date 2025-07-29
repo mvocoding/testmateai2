@@ -3,11 +3,9 @@ import { Link } from 'react-router-dom';
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col"> {/* Neutral background */}
-      {/* Removed Animated Background Elements */}
-      {/* Removed Floating Particles */}
-      <div className="text-center mb-10">
-        <h1 className="text-5xl md:text-7xl font-black text-teal-700 mb-4 drop-shadow-lg"> {/* Single accent color */}
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col">
+      <div className="text-center mb-10 p-10">
+        <h1 className="text-5xl md:text-7xl font-black text-teal-700 mb-4 drop-shadow-lg">
           Welcome to TestMate AI
         </h1>
         <p className="text-xl md:text-2xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
@@ -56,7 +54,6 @@ const Home = () => {
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Feature 1 */}
           <div className="bg-gradient-to-br from-primary-50 to-primary-100 p-8 rounded-xl shadow flex flex-col items-center gap-4 border-2 border-primary-100">
             <div className="w-14 h-14 bg-primary-600 rounded-lg flex items-center justify-center mb-2 shadow-lg">
               <span className="text-white text-3xl">🧠</span>
@@ -66,7 +63,6 @@ const Home = () => {
               Quickly assess your current proficiency level and identify specific areas for improvement with our intelligent diagnostic system.
             </p>
           </div>
-          {/* Feature 2 */}
           <div className="bg-gradient-to-br from-secondary-50 to-secondary-100 p-8 rounded-xl shadow flex flex-col items-center gap-4 text-center   border-2 border-secondary-100">
             <div className="w-14 h-14 bg-secondary-600 rounded-lg flex items-center justify-center mb-2 shadow-lg">
               <span className="text-white text-3xl">💬</span>
@@ -76,7 +72,6 @@ const Home = () => {
               Practice speaking with AI-powered feedback on pronunciation, fluency, and grammar aligned to IELTS standards.
             </p>
           </div>
-          {/* Feature 3 */}
           <div className="bg-gradient-to-br from-primary-50 to-primary-100 p-8 rounded-xl shadow flex flex-col items-center gap-4 border-2 border-primary-100">
             <div className="w-14 h-14 bg-primary-600 rounded-lg flex items-center justify-center mb-2 shadow-lg">
               <span className="text-white text-3xl">📈</span>
@@ -93,10 +88,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">TestMate AI <span role="img" aria-label="ai">🤖</span></h3>
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">TestMate AI</h3>
             </div>
           </div>
-          
+
         </div>
       </footer>
     </div>

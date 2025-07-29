@@ -71,9 +71,7 @@ const StudyPlan = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 relative overflow-hidden"> {/* Changed background to neutral */}
-      {/* Removed Animated Background Elements */}
-      {/* Removed Floating Particles */}
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden">
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg"> {/* Single accent color */}

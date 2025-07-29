@@ -71,6 +71,7 @@ const listeningPassages = [
 
 const Listening = () => {
   const [currentPassage, setCurrentPassage] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
@@ -79,7 +80,7 @@ const Listening = () => {
   const [playCount, setPlayCount] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
-  
+
   const speechRef = useRef(null);
   const timerRef = useRef(null);
 
@@ -105,17 +106,17 @@ const Listening = () => {
 
     setIsLoading(true);
     const passage = listeningPassages[currentPassage];
-    
+
     if ('speechSynthesis' in window) {
       if (speechRef.current) {
         window.speechSynthesis.cancel();
       }
-      
+
       const utterance = new SpeechSynthesisUtterance(passage.text);
       utterance.rate = 0.9; // Slightly slower for clarity
       utterance.pitch = 1;
       utterance.volume = 1;
-      
+
       utterance.onstart = () => {
         setIsPlaying(true);
         setIsLoading(false);
@@ -125,17 +126,17 @@ const Listening = () => {
           setTimeRemaining(TIME_LIMIT);
         }
       };
-      
+
       utterance.onend = () => {
         setIsPlaying(false);
       };
-      
+
       utterance.onerror = () => {
         setIsPlaying(false);
         setIsLoading(false);
         alert('Error playing audio. Please try again.');
       };
-      
+
       speechRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     } else {
@@ -165,7 +166,7 @@ const Listening = () => {
 
     passage.questions.forEach(question => {
       const userAnswer = answers[question.id];
-      
+
       if (question.type === 'multiple_choice') {
         if (userAnswer === question.correct) correct++;
       } else if (question.type === 'fill_blank') {
@@ -196,6 +197,7 @@ const Listening = () => {
       setPlayCount(0);
       setTimeRemaining(0);
       setIsTimerActive(false);
+      setCurrentQuestion(0);
       if (speechRef.current) {
         window.speechSynthesis.cancel();
       }
@@ -209,175 +211,184 @@ const Listening = () => {
   };
 
   const passage = listeningPassages[currentPassage];
+  const questions = passage.questions;
+  const question = questions[currentQuestion];
 
   return (
-    <>
-      <div className="min-h-screen bg-gray-50 relative overflow-hidden"> {/* Neutral background */}
-        {/* Removed Animated Background Elements */}
-        {/* Removed Floating Particles */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg"> {/* Single accent color */}
-            Listening Quest
-          </h1>
-          <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
-            Listen to the passage and answer the questions to earn XP!
-          </p>
-        </div>
-        <div className="relative w-full max-w-3xl mx-auto">
-          <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12"> {/* Neutral card */}
-            <div className="mb-4 text-center">
-              <h1 className="text-3xl md:text-4xl font-extrabold text-teal-700 mb-4 tracking-tight flex items-center justify-center gap-3">
-                <span role="img" aria-label="headphones" className="text-4xl">🎧</span> IELTS Listening Test
-              </h1>
-              <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl py-4 px-4 shadow">
-                {passage.title}
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-4 py-8">
+      <div className="text-center mb-10">
+        <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">Listening Quest</h1>
+        <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
+          Listen to the passage and answer the questions to earn XP!
+        </p>
+      </div>
+      <div className="relative w-full max-w-5xl mx-auto flex flex-col md:flex-row gap-8">
+        <div className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6">
+          <div className="mb-4 text-center">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-teal-700 mb-4 tracking-tight flex items-center justify-center gap-3">
+              <span role="img" aria-label="headphones" className="text-4xl">🎧</span> IELTS Listening Test
+            </h1>
+            <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl py-4 px-4 shadow">
+              {passage.title}
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={isPlaying ? stopListening : startListening}
+                disabled={isLoading || playCount >= MAX_PLAYS}
+                className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-teal-500 hover:bg-teal-600'} ${(isLoading || playCount >= MAX_PLAYS) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span role="img" aria-label="audio">
+                  {isPlaying ? '⏸️' : '▶️'}
+                </span>
+                {isLoading ? 'Loading...' : isPlaying ? 'Pause' : 'Play Audio'}
+              </button>
+              <div className="text-sm text-gray-600">
+                Plays remaining: {MAX_PLAYS - playCount}
               </div>
             </div>
-
-            {/* Audio Controls */}
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={isPlaying ? stopListening : startListening}
-                  disabled={isLoading || playCount >= MAX_PLAYS}
-                  className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${
-                    isPlaying 
-                      ? 'bg-red-500 hover:bg-red-600' 
-                      : 'bg-teal-500 hover:bg-teal-600'
-                  } ${(isLoading || playCount >= MAX_PLAYS) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <span role="img" aria-label="audio">
-                    {isPlaying ? '⏸️' : '▶️'}
-                  </span>
-                  {isLoading ? 'Loading...' : isPlaying ? 'Pause' : 'Play Audio'}
-                </button>
-                
-                <div className="text-sm text-gray-600">
-                  Plays remaining: {MAX_PLAYS - playCount}
-                </div>
+            {/* Timer */}
+            {isTimerActive && (
+              <div className="text-lg font-bold text-red-600">
+                Time remaining: {formatTime(timeRemaining)}
               </div>
-
-              {/* Timer */}
-              {isTimerActive && (
-                <div className="text-lg font-bold text-red-600">
-                  Time remaining: {formatTime(timeRemaining)}
+            )}
+          </div>
+          {!showResults ? (
+            <div className="flex flex-col gap-6 mt-8">
+              <h3 className="text-xl font-bold text-teal-700">Question {currentQuestion + 1} of {questions.length}</h3>
+              <div className="bg-white rounded-lg p-4 border border-gray-200">
+                <div className="font-semibold text-gray-800 mb-3">
+                  {question.question}
                 </div>
-              )}
-            </div>
-
-            {/* Questions */}
-            {!showResults && (
-              <div className="space-y-6">
-                <h3 className="text-xl font-bold text-teal-700">Questions:</h3>
-                {passage.questions.map((question, index) => (
-                  <div key={question.id} className="bg-white rounded-lg p-4 border border-gray-200">
-                    <div className="font-semibold text-gray-800 mb-3">
-                      {index + 1}. {question.question}
-                    </div>
-                    
-                    {question.type === 'multiple_choice' && (
-                      <div className="space-y-2">
-                        {question.options.map((option, optionIndex) => (
-                          <label key={optionIndex} className="flex items-center gap-3 cursor-pointer group">
-                            <span className="relative flex items-center">
-                              <input
-                                type="radio"
-                                name={`question-${question.id}`}
-                                value={optionIndex}
-                                checked={answers[question.id] === optionIndex}
-                                onChange={(e) => handleAnswerChange(question.id, parseInt(e.target.value))}
-                                className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
-                              />
-                              <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
-                            </span>
-                            <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">{option}</span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {question.type === 'fill_blank' && (
-                      <input
-                        type="text"
-                        value={answers[question.id] || ''}
-                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                        placeholder="Type your answer..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      />
-                    )}
-                    
-                    {question.type === 'true_false' && (
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <span className="relative flex items-center">
-                            <input
-                              type="radio"
-                              name={`question-${question.id}`}
-                              value={true}
-                              checked={answers[question.id] === true}
-                              onChange={(e) => handleAnswerChange(question.id, e.target.value === 'true')}
-                              className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
-                            />
-                            <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
-                          </span>
-                          <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">True</span>
-                        </label>
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <span className="relative flex items-center">
-                            <input
-                              type="radio"
-                              name={`question-${question.id}`}
-                              value={false}
-                              checked={answers[question.id] === false}
-                              onChange={(e) => handleAnswerChange(question.id, e.target.value === 'true')}
-                              className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
-                            />
-                            <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
-                          </span>
-                          <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">False</span>
-                        </label>
-                      </div>
-                    )}
+                {question.type === 'multiple_choice' && (
+                  <div className="space-y-2">
+                    {question.options.map((option, optionIndex) => (
+                      <label key={optionIndex} className="flex items-center gap-3 cursor-pointer group">
+                        <span className="relative flex items-center">
+                          <input
+                            type="radio"
+                            name={`question-${question.id}`}
+                            value={optionIndex}
+                            checked={answers[question.id] === optionIndex}
+                            onChange={(e) => handleAnswerChange(question.id, parseInt(e.target.value))}
+                            className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
+                          />
+                          <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
+                        </span>
+                        <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">{option}</span>
+                      </label>
+                    ))}
                   </div>
-                ))}
-                
+                )}
+                {question.type === 'fill_blank' && (
+                  <input
+                    type="text"
+                    value={answers[question.id] || ''}
+                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                    placeholder="Type your answer..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                )}
+                {question.type === 'true_false' && (
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <span className="relative flex items-center">
+                        <input
+                          type="radio"
+                          name={`question-${question.id}`}
+                          value={true}
+                          checked={answers[question.id] === true}
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value === 'true')}
+                          className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
+                        />
+                        <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
+                      </span>
+                      <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">True</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <span className="relative flex items-center">
+                        <input
+                          type="radio"
+                          name={`question-${question.id}`}
+                          value={false}
+                          checked={answers[question.id] === false}
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value === 'true')}
+                          className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
+                        />
+                        <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
+                      </span>
+                      <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">False</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-between mt-6">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
+                  onClick={() => setCurrentQuestion(q => Math.max(0, q - 1))}
+                  disabled={currentQuestion === 0}
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
+                  onClick={() => setCurrentQuestion(q => Math.min(questions.length - 1, q + 1))}
+                  disabled={currentQuestion === questions.length - 1}
+                >
+                  Next
+                </button>
                 <button
                   onClick={handleSubmit}
-                  className="w-full py-3 px-6 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
+                  className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
                 >
                   Submit Answers
                 </button>
               </div>
-            )}
-
-            {/* Results */}
-            {showResults && (
-              <div className="text-center space-y-4">
-                <div className="text-2xl font-bold text-green-700">
-                  Your Score: Band {score}
-                </div>
-                <div className="text-lg text-gray-600">
-                  Passage {currentPassage + 1} of {listeningPassages.length}
-                </div>
-                
-                {currentPassage < listeningPassages.length - 1 ? (
-                  <button
-                    onClick={handleNextPassage}
-                    className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
-                  >
-                    Next Passage
-                  </button>
-                ) : (
-                  <div className="text-xl font-bold text-green-700">
-                    🎉 All passages completed!
-                  </div>
-                )}
+            </div>
+          ) : (
+            <div className="text-center space-y-4 mt-8">
+              <div className="text-2xl font-bold text-green-700">
+                Your Score: Band {score}
               </div>
-            )}
+              <div className="text-lg text-gray-600">
+                Passage {currentPassage + 1} of {listeningPassages.length}
+              </div>
+              {currentPassage < listeningPassages.length - 1 ? (
+                <button
+                  onClick={handleNextPassage}
+                  className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
+                >
+                  Next Passage
+                </button>
+              ) : (
+                <div className="text-xl font-bold text-green-700">
+                  🎉 All passages completed!
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        {/* Sidebar */}
+        <div className="w-full md:w-64 flex-shrink-0 mt-8 md:mt-0">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 flex flex-col gap-2 sticky top-24">
+            <div className="font-bold text-gray-700 mb-2 text-center">Questions</div>
+            {questions.map((q, idx) => (
+              <button
+                key={q.id}
+                onClick={() => setCurrentQuestion(idx)}
+                className={`w-full text-left px-4 py-2 rounded-lg font-semibold transition-all duration-150 mb-1 ${currentQuestion === idx ? 'bg-teal-500 text-white shadow' : 'bg-gray-100 text-gray-700 hover:bg-teal-100'}`}
+              >
+                Question {idx + 1}
+              </button>
+            ))}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
