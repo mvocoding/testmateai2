@@ -16,7 +16,7 @@ import Writing from './pages/Writing';
 import Dashboard from './pages/Dashboard';
 import StudyPlan from './pages/StudyPlan';
 import AskMeAnything from './pages/AskMeAnything';
-import { AskMeButton } from './components/AskMe';
+import { AskMeButton } from './components/AskMeButton';
 import './App.css';
 
 const skills = [
