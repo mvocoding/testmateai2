@@ -124,9 +124,6 @@ const SpeakingTest = () => {
             <h1 className="text-3xl font-bold text-teal-700 mb-2">
               Speaking Test
             </h1>
-            <p className="text-gray-600">
-              Select which part of the IELTS Speaking test you want to practice
-            </p>
           </div>
           <div className="flex gap-3 justify-center">
             {Object.entries(SPEAKING_PARTS).map(([key, part]) => (
@@ -159,7 +156,7 @@ const SpeakingTest = () => {
       <div className="relative w-full mx-auto flex flex-row gap-8">
         <div className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6 min-h-[500px]">
           <div className="mb-6 text-center">
-            <div className="text-2xl md:text-3xl font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded-xl py-4 px-4 shadow inline-block">
+            <div className="text-2xl md:text-3xl font-semibold text-teal-700 py-4 px-4 shadow inline-block">
               {currentQuestions[currentQ]}
             </div>
           </div>
@@ -170,7 +167,7 @@ const SpeakingTest = () => {
               className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${
                 isListening
                   ? 'bg-gray-400'
-                  : 'bg-gradient-to-r from-purple-500 to-pink-400 hover:from-purple-600 hover:to-pink-500'
+                  : 'bg-gradient-to-r from-primary-600 to-primary-400 hover:from-primary-700 hover:to-primary-500 text-white font-bold '
               } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <span role="img" aria-label="mic">

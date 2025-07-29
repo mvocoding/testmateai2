@@ -46,9 +46,6 @@ const Writing = () => {
             <h1 className="text-3xl font-bold text-teal-700 mb-2">
               Writing Test
             </h1>
-            <p className="text-gray-600">
-              Select which task of the IELTS Writing test you want to practice
-            </p>
           </div>
           <div className="flex gap-3 justify-center">
             {Object.entries(WRITING_PARTS).map(([key, task]) => (

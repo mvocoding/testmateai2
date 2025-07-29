@@ -1,87 +1,111 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const listeningPassages = [
-  {
-    id: 1,
-    title: 'University Campus Tour',
-    text: 'Welcome to our university campus. The main library is located in the center of campus, next to the student union building. The library is open from 8 AM to 10 PM on weekdays, and 9 AM to 6 PM on weekends. There are over 500,000 books and 50 study rooms available. The cafeteria is on the first floor of the student union, serving breakfast from 7 AM to 10 AM, lunch from 11 AM to 2 PM, and dinner from 5 PM to 8 PM. The gymnasium is behind the library and offers fitness classes every day. Parking is available in the north and south lots, with the north lot being closer to the main buildings.',
-    questions: [
+const LISTENING_LEVELS = {
+  multipleChoice: {
+    name: 'Multiple Choice',
+    description: 'Choose the best answer from given options',
+    passages: [
       {
         id: 1,
-        type: 'multiple_choice',
-        question: 'What time does the library close on weekdays?',
-        options: ['8 PM', '9 PM', '10 PM', '11 PM'],
-        correct: 2,
-      },
-      {
-        id: 2,
-        type: 'fill_blank',
-        question: 'The cafeteria serves dinner from _____ to _____.',
-        answer: '5 PM to 8 PM',
-      },
-      {
-        id: 3,
-        type: 'multiple_choice',
-        question: 'Where is the gymnasium located?',
-        options: [
-          'Next to the library',
-          'Behind the library',
-          'In front of the library',
-          'Inside the library',
+        title: 'University Campus Tour',
+        text: 'Welcome to our university campus. The main library is located in the center of campus, next to the student union building. The library is open from 8 AM to 10 PM on weekdays, and 9 AM to 6 PM on weekends. There are over 500,000 books and 50 study rooms available.',
+        questions: [
+          {
+            id: 1,
+            question: 'What time does the library close on weekdays?',
+            options: ['8 PM', '9 PM', '10 PM', '11 PM'],
+            correct: 2,
+          },
+          {
+            id: 2,
+            question: 'How many books are available in the library?',
+            options: ['400,000', '500,000', '600,000', '700,000'],
+            correct: 1,
+          },
         ],
-        correct: 1,
-      },
-      {
-        id: 4,
-        type: 'true_false',
-        question:
-          'The north parking lot is closer to the main buildings than the south lot.',
-        correct: true,
       },
     ],
   },
-  {
-    id: 2,
-    title: 'Job Interview Conversation',
-    text: "Interviewer: Good morning, Sarah. Thank you for coming in today. Let's start with your background. I see you have a degree in marketing and three years of experience. Can you tell me about your previous role? Sarah: Thank you for having me. In my previous position at ABC Company, I was responsible for managing social media campaigns and analyzing customer data. I increased our online engagement by 40% and helped launch two successful product campaigns. Interviewer: That's impressive. What would you say is your biggest strength? Sarah: I believe my strongest skill is my ability to analyze data and translate it into actionable marketing strategies. I'm also very organized and can manage multiple projects simultaneously. Interviewer: How do you handle working under pressure? Sarah: I actually work well under pressure. I prioritize tasks, set realistic deadlines, and communicate clearly with my team. In my last role, I successfully managed a campaign launch during a major company restructuring.",
-    questions: [
+  matching: {
+    name: 'Matching',
+    description: 'Match names with activities or information',
+    passages: [
       {
         id: 1,
-        type: 'multiple_choice',
-        question: 'How many years of experience does Sarah have?',
-        options: ['2 years', '3 years', '4 years', '5 years'],
-        correct: 1,
-      },
-      {
-        id: 2,
-        type: 'fill_blank',
-        question: 'Sarah increased online engagement by _____ percent.',
-        answer: '40',
-      },
-      {
-        id: 3,
-        type: 'multiple_choice',
-        question: 'What does Sarah consider her biggest strength?',
-        options: [
-          'Social media management',
-          'Data analysis',
-          'Team leadership',
-          'Project organization',
+        title: 'Student Activities Meeting',
+        text: 'John is organizing the photography club, Mary leads the debate team, David runs the chess club, and Sarah manages the drama society. The photography club meets on Mondays, debate team on Wednesdays, chess club on Fridays, and drama society on Saturdays.',
+        questions: [
+          {
+            id: 1,
+            question: 'Match each person with their activity:',
+            options: [
+              'John - Photography club',
+              'Mary - Debate team',
+              'David - Chess club',
+              'Sarah - Drama society',
+            ],
+            correct: [0, 1, 2, 3],
+            matching: true,
+          },
         ],
-        correct: 1,
-      },
-      {
-        id: 4,
-        type: 'true_false',
-        question:
-          'Sarah managed a campaign launch during a company restructuring.',
-        correct: true,
       },
     ],
   },
-];
+  sentenceCompletion: {
+    name: 'Sentence Completion',
+    description: 'Complete sentences with words from the audio',
+    passages: [
+      {
+        id: 1,
+        title: 'Weather Forecast',
+        text: 'Today will be sunny with a high temperature of 25 degrees Celsius. There is a 20% chance of rain in the afternoon. The wind will be light, around 10 kilometers per hour.',
+        questions: [
+          {
+            id: 1,
+            question:
+              'The high temperature today will be _____ degrees Celsius.',
+            answer: '25',
+            type: 'completion',
+          },
+          {
+            id: 2,
+            question: 'There is a _____ percent chance of rain.',
+            answer: '20',
+            type: 'completion',
+          },
+        ],
+      },
+    ],
+  },
+  shortAnswer: {
+    name: 'Short Answer Questions',
+    description: 'Answer questions briefly using words from the audio',
+    passages: [
+      {
+        id: 1,
+        title: 'Travel Information',
+        text: 'The train to London departs from platform 3 at 2:30 PM. The journey takes approximately 2 hours and 15 minutes. The ticket price is 45 pounds for adults and 25 pounds for children.',
+        questions: [
+          {
+            id: 1,
+            question: 'What platform does the train depart from?',
+            answer: 'platform 3',
+            type: 'shortAnswer',
+          },
+          {
+            id: 2,
+            question: 'How much does an adult ticket cost?',
+            answer: '45 pounds',
+            type: 'shortAnswer',
+          },
+        ],
+      },
+    ],
+  },
+};
 
 const Listening = () => {
+  const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
   const [currentPassage, setCurrentPassage] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -98,6 +122,9 @@ const Listening = () => {
 
   const MAX_PLAYS = 2;
   const TIME_LIMIT = 300; // 5 minutes per passage
+
+  const currentLevel = LISTENING_LEVELS[selectedLevel];
+  const currentPassages = currentLevel.passages;
 
   useEffect(() => {
     if (isTimerActive && timeRemaining > 0) {
@@ -117,7 +144,7 @@ const Listening = () => {
     }
 
     setIsLoading(true);
-    const passage = listeningPassages[currentPassage];
+    const passage = currentPassages[currentPassage];
 
     if ('speechSynthesis' in window) {
       if (speechRef.current) {
@@ -172,7 +199,7 @@ const Listening = () => {
   };
 
   const calculateScore = () => {
-    const passage = listeningPassages[currentPassage];
+    const passage = currentPassages[currentPassage];
     let correct = 0;
     let total = passage.questions.length;
 
@@ -205,7 +232,7 @@ const Listening = () => {
   };
 
   const handleNextPassage = () => {
-    if (currentPassage < listeningPassages.length - 1) {
+    if (currentPassage < currentPassages.length - 1) {
       setCurrentPassage((prev) => prev + 1);
       setAnswers({});
       setShowResults(false);
@@ -225,19 +252,55 @@ const Listening = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const passage = listeningPassages[currentPassage];
+  const passage = currentPassages[currentPassage];
   const questions = passage.questions;
   const question = questions[currentQuestion];
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">
+      <div className="w-full mx-auto mb-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
+          <div className="text-center mb-4">
+            <h1 className="text-3xl font-bold text-teal-700 mb-2">
+              Listening Test
+            </h1>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Object.entries(LISTENING_LEVELS).map(([key, level]) => (
+              <button
+                key={key}
+                onClick={() => {
+                  setSelectedLevel(key);
+                  setCurrentPassage(0);
+                  setCurrentQuestion(0);
+                  setAnswers({});
+                  setShowResults(false);
+                  setPlayCount(0);
+                  setTimeRemaining(0);
+                  setIsTimerActive(false);
+                }}
+                className={`px-4 py-3 rounded-xl font-semibold transition-all duration-200 text-sm ${
+                  selectedLevel === key
+                    ? 'bg-teal-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <div className="text-center">
+                  <div className="font-bold">{level.name}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="relative w-full mx-auto flex flex-col md:flex-row gap-8">
         <div className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12">
           <div className="mb-4 text-center">
             <div className="text-center mb-4">
-              <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">
-                Listening Challenge
-              </h1>
+              <h2 className="text-2xl font-bold text-teal-700 mb-2">
+                {currentLevel.name}
+              </h2>
             </div>
             <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl p-2">
               {passage.title}
@@ -283,7 +346,7 @@ const Listening = () => {
                 <div className="font-semibold text-gray-800 mb-3">
                   {question.question}
                 </div>
-                {question.type === 'multiple_choice' && (
+                {question.options ? (
                   <div className="space-y-2">
                     {question.options.map((option, optionIndex) => (
                       <label
@@ -312,8 +375,7 @@ const Listening = () => {
                       </label>
                     ))}
                   </div>
-                )}
-                {question.type === 'fill_blank' && (
+                ) : (
                   <input
                     type="text"
                     value={answers[question.id] || ''}
@@ -323,52 +385,6 @@ const Listening = () => {
                     placeholder="Type your answer..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
-                )}
-                {question.type === 'true_false' && (
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <span className="relative flex items-center">
-                        <input
-                          type="radio"
-                          name={`question-${question.id}`}
-                          value={true}
-                          checked={answers[question.id] === true}
-                          onChange={(e) =>
-                            handleAnswerChange(
-                              question.id,
-                              e.target.value === 'true'
-                            )
-                          }
-                          className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
-                        />
-                        <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
-                      </span>
-                      <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">
-                        True
-                      </span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <span className="relative flex items-center">
-                        <input
-                          type="radio"
-                          name={`question-${question.id}`}
-                          value={false}
-                          checked={answers[question.id] === false}
-                          onChange={(e) =>
-                            handleAnswerChange(
-                              question.id,
-                              e.target.value === 'true'
-                            )
-                          }
-                          className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
-                        />
-                        <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
-                      </span>
-                      <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">
-                        False
-                      </span>
-                    </label>
-                  </div>
                 )}
               </div>
               <div className="flex justify-between mt-6">
@@ -406,9 +422,9 @@ const Listening = () => {
                 Your Score: Band {score}
               </div>
               <div className="text-lg text-gray-600">
-                Passage {currentPassage + 1} of {listeningPassages.length}
+                Passage {currentPassage + 1} of {currentPassages.length}
               </div>
-              {currentPassage < listeningPassages.length - 1 ? (
+              {currentPassage < currentPassages.length - 1 ? (
                 <button
                   onClick={handleNextPassage}
                   className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
