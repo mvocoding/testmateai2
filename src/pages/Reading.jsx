@@ -8,9 +8,9 @@ const QUESTION = {
     'They make silk for clothing.',
     'They pollinate plants and crops.',
     'They eat harmful insects.',
-    'They live alone in the wild.'
+    'They live alone in the wild.',
   ],
-  correct: 1
+  correct: 1,
 };
 
 const Reading = () => {
@@ -29,17 +29,32 @@ const Reading = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-4 py-8">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">Reading Test</h1>
-        <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">Read the passage and answer the question below.</p>
-      </div>
-      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6">
-        <div className="text-gray-800 text-lg leading-relaxed mb-4 whitespace-pre-line">{PASSAGE}</div>
+      <div className="w-full  bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6">
+        <div className="text-center mb-10">
+          <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">
+            Reading Test
+          </h1>
+          <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
+            Read the passage and answer the question.
+          </p>
+        </div>
+        <div className="text-gray-800 text-lg leading-relaxed mb-4 whitespace-pre-line">
+          {PASSAGE}
+        </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div className="font-semibold text-gray-700 mb-2">{QUESTION.text}</div>
+          <div className="font-semibold text-gray-700 mb-2">
+            {QUESTION.text}
+          </div>
           <div className="flex flex-col gap-3">
             {QUESTION.options.map((option, idx) => (
-              <label key={idx} className={`flex items-center gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${selected === idx ? 'border-primary-500 bg-primary-50' : 'border-gray-200 bg-gray-50 hover:border-primary-300'}`}>
+              <label
+                key={idx}
+                className={`flex items-center gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${
+                  selected === idx
+                    ? 'border-primary-500 bg-primary-50'
+                    : 'border-gray-200 bg-gray-50 hover:border-primary-300'
+                }`}
+              >
                 <input
                   type="radio"
                   name="reading-question"
@@ -64,9 +79,16 @@ const Reading = () => {
           ) : (
             <div className="flex flex-col gap-4 items-center">
               {selected === QUESTION.correct ? (
-                <div className="text-green-700 font-bold text-lg">Correct! 🎉</div>
+                <div className="text-green-700 font-bold text-lg">
+                  Correct! 🎉
+                </div>
               ) : (
-                <div className="text-red-600 font-bold text-lg">Incorrect. The correct answer is: <span className="underline">{QUESTION.options[QUESTION.correct]}</span></div>
+                <div className="text-red-600 font-bold text-lg">
+                  Incorrect. The correct answer is:{' '}
+                  <span className="underline">
+                    {QUESTION.options[QUESTION.correct]}
+                  </span>
+                </div>
               )}
               <button
                 type="button"
@@ -83,4 +105,4 @@ const Reading = () => {
   );
 };
 
-export default Reading; 
+export default Reading;

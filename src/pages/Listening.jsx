@@ -3,70 +3,82 @@ import React, { useState, useEffect, useRef } from 'react';
 const listeningPassages = [
   {
     id: 1,
-    title: "University Campus Tour",
-    text: "Welcome to our university campus. The main library is located in the center of campus, next to the student union building. The library is open from 8 AM to 10 PM on weekdays, and 9 AM to 6 PM on weekends. There are over 500,000 books and 50 study rooms available. The cafeteria is on the first floor of the student union, serving breakfast from 7 AM to 10 AM, lunch from 11 AM to 2 PM, and dinner from 5 PM to 8 PM. The gymnasium is behind the library and offers fitness classes every day. Parking is available in the north and south lots, with the north lot being closer to the main buildings.",
+    title: 'University Campus Tour',
+    text: 'Welcome to our university campus. The main library is located in the center of campus, next to the student union building. The library is open from 8 AM to 10 PM on weekdays, and 9 AM to 6 PM on weekends. There are over 500,000 books and 50 study rooms available. The cafeteria is on the first floor of the student union, serving breakfast from 7 AM to 10 AM, lunch from 11 AM to 2 PM, and dinner from 5 PM to 8 PM. The gymnasium is behind the library and offers fitness classes every day. Parking is available in the north and south lots, with the north lot being closer to the main buildings.',
     questions: [
       {
         id: 1,
-        type: "multiple_choice",
-        question: "What time does the library close on weekdays?",
-        options: ["8 PM", "9 PM", "10 PM", "11 PM"],
-        correct: 2
+        type: 'multiple_choice',
+        question: 'What time does the library close on weekdays?',
+        options: ['8 PM', '9 PM', '10 PM', '11 PM'],
+        correct: 2,
       },
       {
         id: 2,
-        type: "fill_blank",
-        question: "The cafeteria serves dinner from _____ to _____.",
-        answer: "5 PM to 8 PM"
+        type: 'fill_blank',
+        question: 'The cafeteria serves dinner from _____ to _____.',
+        answer: '5 PM to 8 PM',
       },
       {
         id: 3,
-        type: "multiple_choice",
-        question: "Where is the gymnasium located?",
-        options: ["Next to the library", "Behind the library", "In front of the library", "Inside the library"],
-        correct: 1
+        type: 'multiple_choice',
+        question: 'Where is the gymnasium located?',
+        options: [
+          'Next to the library',
+          'Behind the library',
+          'In front of the library',
+          'Inside the library',
+        ],
+        correct: 1,
       },
       {
         id: 4,
-        type: "true_false",
-        question: "The north parking lot is closer to the main buildings than the south lot.",
-        correct: true
-      }
-    ]
+        type: 'true_false',
+        question:
+          'The north parking lot is closer to the main buildings than the south lot.',
+        correct: true,
+      },
+    ],
   },
   {
     id: 2,
-    title: "Job Interview Conversation",
+    title: 'Job Interview Conversation',
     text: "Interviewer: Good morning, Sarah. Thank you for coming in today. Let's start with your background. I see you have a degree in marketing and three years of experience. Can you tell me about your previous role? Sarah: Thank you for having me. In my previous position at ABC Company, I was responsible for managing social media campaigns and analyzing customer data. I increased our online engagement by 40% and helped launch two successful product campaigns. Interviewer: That's impressive. What would you say is your biggest strength? Sarah: I believe my strongest skill is my ability to analyze data and translate it into actionable marketing strategies. I'm also very organized and can manage multiple projects simultaneously. Interviewer: How do you handle working under pressure? Sarah: I actually work well under pressure. I prioritize tasks, set realistic deadlines, and communicate clearly with my team. In my last role, I successfully managed a campaign launch during a major company restructuring.",
     questions: [
       {
         id: 1,
-        type: "multiple_choice",
-        question: "How many years of experience does Sarah have?",
-        options: ["2 years", "3 years", "4 years", "5 years"],
-        correct: 1
+        type: 'multiple_choice',
+        question: 'How many years of experience does Sarah have?',
+        options: ['2 years', '3 years', '4 years', '5 years'],
+        correct: 1,
       },
       {
         id: 2,
-        type: "fill_blank",
-        question: "Sarah increased online engagement by _____ percent.",
-        answer: "40"
+        type: 'fill_blank',
+        question: 'Sarah increased online engagement by _____ percent.',
+        answer: '40',
       },
       {
         id: 3,
-        type: "multiple_choice",
-        question: "What does Sarah consider her biggest strength?",
-        options: ["Social media management", "Data analysis", "Team leadership", "Project organization"],
-        correct: 1
+        type: 'multiple_choice',
+        question: 'What does Sarah consider her biggest strength?',
+        options: [
+          'Social media management',
+          'Data analysis',
+          'Team leadership',
+          'Project organization',
+        ],
+        correct: 1,
       },
       {
         id: 4,
-        type: "true_false",
-        question: "Sarah managed a campaign launch during a company restructuring.",
-        correct: true
-      }
-    ]
-  }
+        type: 'true_false',
+        question:
+          'Sarah managed a campaign launch during a company restructuring.',
+        correct: true,
+      },
+    ],
+  },
 ];
 
 const Listening = () => {
@@ -90,7 +102,7 @@ const Listening = () => {
   useEffect(() => {
     if (isTimerActive && timeRemaining > 0) {
       timerRef.current = setTimeout(() => {
-        setTimeRemaining(prev => prev - 1);
+        setTimeRemaining((prev) => prev - 1);
       }, 1000);
     } else if (timeRemaining === 0 && isTimerActive) {
       handleSubmit();
@@ -120,7 +132,7 @@ const Listening = () => {
       utterance.onstart = () => {
         setIsPlaying(true);
         setIsLoading(false);
-        setPlayCount(prev => prev + 1);
+        setPlayCount((prev) => prev + 1);
         if (!isTimerActive) {
           setIsTimerActive(true);
           setTimeRemaining(TIME_LIMIT);
@@ -153,9 +165,9 @@ const Listening = () => {
   };
 
   const handleAnswerChange = (questionId, value) => {
-    setAnswers(prev => ({
+    setAnswers((prev) => ({
       ...prev,
-      [questionId]: value
+      [questionId]: value,
     }));
   };
 
@@ -164,13 +176,16 @@ const Listening = () => {
     let correct = 0;
     let total = passage.questions.length;
 
-    passage.questions.forEach(question => {
+    passage.questions.forEach((question) => {
       const userAnswer = answers[question.id];
 
       if (question.type === 'multiple_choice') {
         if (userAnswer === question.correct) correct++;
       } else if (question.type === 'fill_blank') {
-        if (userAnswer && userAnswer.toLowerCase().includes(question.answer.toLowerCase())) {
+        if (
+          userAnswer &&
+          userAnswer.toLowerCase().includes(question.answer.toLowerCase())
+        ) {
           correct++;
         }
       } else if (question.type === 'true_false') {
@@ -191,7 +206,7 @@ const Listening = () => {
 
   const handleNextPassage = () => {
     if (currentPassage < listeningPassages.length - 1) {
-      setCurrentPassage(prev => prev + 1);
+      setCurrentPassage((prev) => prev + 1);
       setAnswers({});
       setShowResults(false);
       setPlayCount(0);
@@ -216,19 +231,18 @@ const Listening = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-4 py-8">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">Listening Quest</h1>
-        <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
-          Listen to the passage and answer the questions to earn XP!
-        </p>
-      </div>
-      <div className="relative w-full max-w-5xl mx-auto flex flex-col md:flex-row gap-8">
-        <div className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6">
+      <div className="relative w-full mx-auto flex flex-col md:flex-row gap-8">
+        <div className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12">
           <div className="mb-4 text-center">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-teal-700 mb-4 tracking-tight flex items-center justify-center gap-3">
-              <span role="img" aria-label="headphones" className="text-4xl">🎧</span> IELTS Listening Test
-            </h1>
-            <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl py-4 px-4 shadow">
+            <div className="text-center mb-4">
+              <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">
+                Listening
+              </h1>
+              <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
+                Listen to the passage and answer the questions to earn XP!
+              </p>
+            </div>
+            <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl p-2">
               {passage.title}
             </div>
           </div>
@@ -237,7 +251,15 @@ const Listening = () => {
               <button
                 onClick={isPlaying ? stopListening : startListening}
                 disabled={isLoading || playCount >= MAX_PLAYS}
-                className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-teal-500 hover:bg-teal-600'} ${(isLoading || playCount >= MAX_PLAYS) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${
+                  isPlaying
+                    ? 'bg-red-500 hover:bg-red-600'
+                    : 'bg-teal-500 hover:bg-teal-600'
+                } ${
+                  isLoading || playCount >= MAX_PLAYS
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
               >
                 <span role="img" aria-label="audio">
                   {isPlaying ? '⏸️' : '▶️'}
@@ -257,7 +279,9 @@ const Listening = () => {
           </div>
           {!showResults ? (
             <div className="flex flex-col gap-6 mt-8">
-              <h3 className="text-xl font-bold text-teal-700">Question {currentQuestion + 1} of {questions.length}</h3>
+              <h3 className="text-xl font-bold text-teal-700">
+                Question {currentQuestion + 1} of {questions.length}
+              </h3>
               <div className="bg-white rounded-lg p-4 border border-gray-200">
                 <div className="font-semibold text-gray-800 mb-3">
                   {question.question}
@@ -265,19 +289,29 @@ const Listening = () => {
                 {question.type === 'multiple_choice' && (
                   <div className="space-y-2">
                     {question.options.map((option, optionIndex) => (
-                      <label key={optionIndex} className="flex items-center gap-3 cursor-pointer group">
+                      <label
+                        key={optionIndex}
+                        className="flex items-center gap-3 cursor-pointer group"
+                      >
                         <span className="relative flex items-center">
                           <input
                             type="radio"
                             name={`question-${question.id}`}
                             value={optionIndex}
                             checked={answers[question.id] === optionIndex}
-                            onChange={(e) => handleAnswerChange(question.id, parseInt(e.target.value))}
+                            onChange={(e) =>
+                              handleAnswerChange(
+                                question.id,
+                                parseInt(e.target.value)
+                              )
+                            }
                             className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
                           />
                           <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
                         </span>
-                        <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">{option}</span>
+                        <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">
+                          {option}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -286,7 +320,9 @@ const Listening = () => {
                   <input
                     type="text"
                     value={answers[question.id] || ''}
-                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                    onChange={(e) =>
+                      handleAnswerChange(question.id, e.target.value)
+                    }
                     placeholder="Type your answer..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
@@ -300,12 +336,19 @@ const Listening = () => {
                           name={`question-${question.id}`}
                           value={true}
                           checked={answers[question.id] === true}
-                          onChange={(e) => handleAnswerChange(question.id, e.target.value === 'true')}
+                          onChange={(e) =>
+                            handleAnswerChange(
+                              question.id,
+                              e.target.value === 'true'
+                            )
+                          }
                           className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
                         />
                         <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
                       </span>
-                      <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">True</span>
+                      <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">
+                        True
+                      </span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer group">
                       <span className="relative flex items-center">
@@ -314,12 +357,19 @@ const Listening = () => {
                           name={`question-${question.id}`}
                           value={false}
                           checked={answers[question.id] === false}
-                          onChange={(e) => handleAnswerChange(question.id, e.target.value === 'true')}
+                          onChange={(e) =>
+                            handleAnswerChange(
+                              question.id,
+                              e.target.value === 'true'
+                            )
+                          }
                           className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
                         />
                         <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
                       </span>
-                      <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">False</span>
+                      <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">
+                        False
+                      </span>
                     </label>
                   </div>
                 )}
@@ -328,7 +378,7 @@ const Listening = () => {
                 <button
                   type="button"
                   className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
-                  onClick={() => setCurrentQuestion(q => Math.max(0, q - 1))}
+                  onClick={() => setCurrentQuestion((q) => Math.max(0, q - 1))}
                   disabled={currentQuestion === 0}
                 >
                   Previous
@@ -336,7 +386,11 @@ const Listening = () => {
                 <button
                   type="button"
                   className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
-                  onClick={() => setCurrentQuestion(q => Math.min(questions.length - 1, q + 1))}
+                  onClick={() =>
+                    setCurrentQuestion((q) =>
+                      Math.min(questions.length - 1, q + 1)
+                    )
+                  }
                   disabled={currentQuestion === questions.length - 1}
                 >
                   Next
@@ -375,12 +429,18 @@ const Listening = () => {
         {/* Sidebar */}
         <div className="w-full md:w-64 flex-shrink-0 mt-8 md:mt-0">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 flex flex-col gap-2 sticky top-24">
-            <div className="font-bold text-gray-700 mb-2 text-center">Questions</div>
+            <div className="font-bold text-gray-700 mb-2 text-center">
+              Questions
+            </div>
             {questions.map((q, idx) => (
               <button
                 key={q.id}
                 onClick={() => setCurrentQuestion(idx)}
-                className={`w-full text-left px-4 py-2 rounded-lg font-semibold transition-all duration-150 mb-1 ${currentQuestion === idx ? 'bg-teal-500 text-white shadow' : 'bg-gray-100 text-gray-700 hover:bg-teal-100'}`}
+                className={`w-full text-left px-4 py-2 rounded-lg font-semibold transition-all duration-150 mb-1 ${
+                  currentQuestion === idx
+                    ? 'bg-teal-500 text-white shadow'
+                    : 'bg-gray-100 text-gray-700 hover:bg-teal-100'
+                }`}
               >
                 Question {idx + 1}
               </button>
@@ -392,4 +452,4 @@ const Listening = () => {
   );
 };
 
-export default Listening; 
+export default Listening;
