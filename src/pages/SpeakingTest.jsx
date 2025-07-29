@@ -84,7 +84,10 @@ const SpeakingTest = () => {
       setTranscript(result);
       setIsListening(false);
       setIsLoading(true);
-      const aiFeedback = await generateSpeakingFeedback(questions[currentQ], result);
+      const aiFeedback = await generateSpeakingFeedback(
+        questions[currentQ],
+        result
+      );
       setFeedback((prev) => {
         const updated = [...prev];
         updated[currentQ] = aiFeedback;
@@ -127,9 +130,6 @@ const SpeakingTest = () => {
             <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">
               Speaking Challenge
             </h1>
-            <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
-              Answer the questions and earn XP to level up your speaking skills!
-            </p>
           </div>
           <div className="mb-6 text-center">
             <div className="text-2xl md:text-3xl font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded-xl py-4 px-4 shadow inline-block">

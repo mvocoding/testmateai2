@@ -32,11 +32,8 @@ const Reading = () => {
       <div className="w-full  bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6">
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">
-            Reading Test
+            Reading Challenge
           </h1>
-          <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
-            Read the passage and answer the question.
-          </p>
         </div>
         <div className="text-gray-800 text-lg leading-relaxed mb-4 whitespace-pre-line">
           {PASSAGE}

@@ -17,7 +17,7 @@ const Writing = () => {
       <div className="w-full  bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">
-            Writing Test
+            Writing Challenge
           </h1>
         </div>
         {!submitted ? (

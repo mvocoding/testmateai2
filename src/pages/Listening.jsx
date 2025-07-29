@@ -236,11 +236,8 @@ const Listening = () => {
           <div className="mb-4 text-center">
             <div className="text-center mb-4">
               <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">
-                Listening
+                Listening Challenge
               </h1>
-              <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
-                Listen to the passage and answer the questions to earn XP!
-              </p>
             </div>
             <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl p-2">
               {passage.title}
