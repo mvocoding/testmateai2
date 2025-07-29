@@ -11,15 +11,17 @@ import StudyPlan from './pages/StudyPlan';
 import './App.css';
 
 const skills = [
-  { name: 'Speaking', path: '/speaking' },
-  { name: 'Listening', path: '/listening' },
-  { name: 'Reading', path: '/reading' },
-  { name: 'Writing', path: '/writing' },
+  { name: 'Speaking', path: '/speaking', color: 'from-blue-400 to-cyan-400' },
+  { name: 'Listening', path: '/listening', color: 'from-blue-400 to-cyan-400' },
+  { name: 'Reading', path: '/reading', color: 'from-blue-400 to-cyan-400' },
+  { name: 'Writing', path: '/writing', color: 'from-blue-400 to-cyan-400' },
 ];
 
 const utilityButtons = [
-  { name: 'Dashboard', path: '/dashboard', icon: '📊', color: 'from-indigo-400 to-purple-400' },
-  { name: 'AI Study Plan', path: '/study-plan', icon: '🤖', color: 'from-teal-400 to-cyan-400' },
+  { name: 'Mock Test', path: '/mocktest', icon: '📝', color: 'from-indigo-400 to-purple-400' },
+  { name: 'Dashboard', path: '/dashboard', icon: '📈', color: 'from-indigo-400 to-purple-400' },
+  { name: 'AI Study Plan', path: '/study-plan', icon: '🧠', color: 'from-indigo-400 to-purple-400' },
+  { name: 'Profile', path: '/profile', icon: '👤', color: 'from-indigo-400 to-purple-400' },
 ];
 
 function SkillSidebar() {
@@ -34,19 +36,38 @@ function SkillSidebar() {
   };
 
   return (
-    <aside className="h-screen w-56 bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl border-r border-white/50 flex flex-col items-center py-8 fixed left-0 top-0 z-40 shadow-2xl">
-      <div className="mb-8 text-3xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent tracking-tight">
-        TestMate
+    <aside className="h-screen w-56 bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl border-r border-white/50 flex flex-col items-center py-2 fixed left-0 top-0 z-40 shadow-2xl">
+      <div className="mb-2  text-3xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent tracking-tight">
+        Minh Quoc Vo
+      </div>
+
+      <div className="w-full p-2 mb-4">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="inline-block bg-purple-600 text-white text-lg font-bold px-4 py-1 rounded-full shadow">🏅 Level {level}</span>
+          <span
+            onClick={handleLogout}
+            className="ml-auto inline-flex items-center gap-2 p-2 cursor-pointer rounded-lg bg-gradient-to-r from-red-400 to-pink-500 text-white text-sm font-medium hover:brightness-110 transition"
+          >
+            🔚
+          </span>        </div>
+        <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
+          <div
+            className="absolute left-0 top-0 h-3 bg-gradient-to-r from-pink-400 to-purple-500 transition-all duration-700"
+            style={{ width: `${xpPercent}%` }}
+          ></div>
+        </div>
+      </div>
+      <div className="w-full px-4 mb-6">
+        <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
       </div>
 
       <nav className="flex flex-col gap-3 w-full px-4 mb-6">
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">Skills</h3>
         {skills.map(skill => (
           <NavLink
             key={skill.name}
             to={skill.path}
             className={({ isActive }) =>
-              `group relative w-full px-4 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all duration-300 text-lg transform hover:scale-105 ${isActive
+              `group relative w-full p-2 rounded-2xl font-bold flex items-center gap-3 transition-all duration-300 text-lg transform hover:scale-105 ${isActive
                 ? `bg-gradient-to-r ${skill.color} text-white shadow-lg border-2 border-white/20`
                 : 'bg-white/60 text-gray-700 hover:bg-white/80 hover:shadow-md border-2 border-transparent hover:border-white/30'
               }`
@@ -60,18 +81,17 @@ function SkillSidebar() {
         ))}
       </nav>
 
-      <div className="w-full px-4 mb-6">
+      <div className="w-full px-2 mb-2">
         <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
       </div>
 
       <nav className="flex flex-col gap-3 w-full px-4 mb-6">
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">Tools</h3>
         {utilityButtons.map(button => (
           <NavLink
             key={button.name}
             to={button.path}
             className={({ isActive }) =>
-              `group relative w-full px-4 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all duration-300 text-lg transform hover:scale-105 ${isActive
+              `group relative w-full p-2 rounded-2xl font-bold flex items-center gap-3 transition-all duration-300 text-lg transform hover:scale-105 ${isActive
                 ? `bg-gradient-to-r ${button.color} text-white shadow-lg border-2 border-white/20`
                 : 'bg-white/60 text-gray-700 hover:bg-white/80 hover:shadow-md border-2 border-transparent hover:border-white/30'
               }`
@@ -88,40 +108,6 @@ function SkillSidebar() {
         ))}
       </nav>
 
-      <div className="w-full px-4 mb-6">
-        <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-      </div>
-
-      <div className="w-full px-4 mb-6 mt-auto">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="inline-block bg-purple-600 text-white text-lg font-bold px-4 py-1 rounded-full shadow">🏅 Level {level}</span>
-          <span className="text-xs text-gray-500 font-semibold">XP</span>
-        </div>
-        <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
-          <div
-            className="absolute left-0 top-0 h-3 bg-gradient-to-r from-pink-400 to-purple-500 transition-all duration-700"
-            style={{ width: `${xpPercent}%` }}
-          ></div>
-          <span className="absolute right-2 top-0 text-xs text-white font-bold drop-shadow">{xp} / {totalXP}</span>
-        </div>
-      </div>
-
-      <div className="w-full px-4 mb-6">
-        <button
-          onClick={handleLogout}
-          className="group relative w-full px-4 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all duration-300 text-lg transform hover:scale-105 bg-white/60 text-gray-700 hover:bg-red-50 hover:text-red-600 hover:shadow-md border-2 border-transparent hover:border-red-200"
-        >
-          <span className="text-2xl transition-transform duration-300 group-hover:scale-110">⏻</span>
-          <span className="font-semibold">Logout</span>
-        </button>
-      </div>
-
-      <div className="mb-4 text-center">
-        <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-xl shadow-lg">
-          🎯
-        </div>
-        <p className="text-xs text-gray-500 mt-2 font-medium">Level Up!</p>
-      </div>
     </aside>
   );
 }
