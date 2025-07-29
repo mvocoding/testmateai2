@@ -171,7 +171,7 @@ const Reading = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">
-      <div className="w-full max-w-6xl mx-auto mb-6">
+      <div className="w-full mx-auto mb-6">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
           <div className="text-center mb-4">
             <h1 className="text-3xl font-bold text-teal-700 mb-2">
@@ -204,7 +204,7 @@ const Reading = () => {
         </div>
       </div>
 
-      <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6">
+      <div className="w-full  bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-teal-700 mb-2">
             {currentPassage.name}

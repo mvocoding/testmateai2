@@ -107,7 +107,7 @@ const LISTENING_LEVELS = {
 const Listening = () => {
   const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
   const [currentPassage, setCurrentPassage] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  // Removed currentQuestion state to show all questions at once
   const [isPlaying, setIsPlaying] = useState(false);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
@@ -239,7 +239,7 @@ const Listening = () => {
       setPlayCount(0);
       setTimeRemaining(0);
       setIsTimerActive(false);
-      setCurrentQuestion(0);
+      // Removed setCurrentQuestion(0) since all questions are shown at once
       if (speechRef.current) {
         window.speechSynthesis.cancel();
       }
@@ -254,7 +254,7 @@ const Listening = () => {
 
   const passage = currentPassages[currentPassage];
   const questions = passage.questions;
-  const question = questions[currentQuestion];
+  // Removed single question selection
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">
@@ -272,7 +272,7 @@ const Listening = () => {
                 onClick={() => {
                   setSelectedLevel(key);
                   setCurrentPassage(0);
-                  setCurrentQuestion(0);
+                  // Removed setCurrentQuestion(0) since all questions are shown at once
                   setAnswers({});
                   setShowResults(false);
                   setPlayCount(0);
@@ -338,84 +338,71 @@ const Listening = () => {
             )}
           </div>
           {!showResults ? (
-            <div className="flex flex-col gap-6 mt-8">
-              <h3 className="text-xl font-bold text-teal-700">
-                Question {currentQuestion + 1} of {questions.length}
-              </h3>
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <div className="font-semibold text-gray-800 mb-3">
-                  {question.question}
-                </div>
-                {question.options ? (
-                  <div className="space-y-2">
-                    {question.options.map((option, optionIndex) => (
-                      <label
-                        key={optionIndex}
-                        className="flex items-center gap-3 cursor-pointer group"
-                      >
-                        <span className="relative flex items-center">
-                          <input
-                            type="radio"
-                            name={`question-${question.id}`}
-                            value={optionIndex}
-                            checked={answers[question.id] === optionIndex}
-                            onChange={(e) =>
-                              handleAnswerChange(
-                                question.id,
-                                parseInt(e.target.value)
-                              )
-                            }
-                            className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
-                          />
-                          <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
-                        </span>
-                        <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">
-                          {option}
-                        </span>
-                      </label>
-                    ))}
+            <form
+              className="flex flex-col gap-6 mt-8"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
+              <h3 className="text-xl font-bold text-teal-700">Questions</h3>
+              {questions.map((question, idx) => (
+                <div
+                  key={question.id}
+                  className="bg-white rounded-lg p-4 border border-gray-200"
+                >
+                  <div className="font-semibold text-gray-800 mb-3">
+                    {`Q${idx + 1}. ${question.question}`}
                   </div>
-                ) : (
-                  <input
-                    type="text"
-                    value={answers[question.id] || ''}
-                    onChange={(e) =>
-                      handleAnswerChange(question.id, e.target.value)
-                    }
-                    placeholder="Type your answer..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
-                )}
-              </div>
-              <div className="flex justify-between mt-6">
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
-                  onClick={() => setCurrentQuestion((q) => Math.max(0, q - 1))}
-                  disabled={currentQuestion === 0}
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
-                  onClick={() =>
-                    setCurrentQuestion((q) =>
-                      Math.min(questions.length - 1, q + 1)
-                    )
-                  }
-                  disabled={currentQuestion === questions.length - 1}
-                >
-                  Next
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
-                >
-                  Submit Answers
-                </button>
-              </div>
-            </div>
+                  {question.options ? (
+                    <div className="space-y-2">
+                      {question.options.map((option, optionIndex) => (
+                        <label
+                          key={optionIndex}
+                          className="flex items-center gap-3 cursor-pointer group"
+                        >
+                          <span className="relative flex items-center">
+                            <input
+                              type="radio"
+                              name={`question-${question.id}`}
+                              value={optionIndex}
+                              checked={answers[question.id] === optionIndex}
+                              onChange={(e) =>
+                                handleAnswerChange(
+                                  question.id,
+                                  parseInt(e.target.value)
+                                )
+                              }
+                              className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
+                            />
+                            <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
+                          </span>
+                          <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">
+                            {option}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={answers[question.id] || ''}
+                      onChange={(e) =>
+                        handleAnswerChange(question.id, e.target.value)
+                      }
+                      placeholder="Type your answer..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                  )}
+                </div>
+              ))}
+              <button
+                type="submit"
+                className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
+              >
+                Submit Answers
+              </button>
+            </form>
           ) : (
             <div className="text-center space-y-4 mt-8">
               <div className="text-2xl font-bold text-green-700">
@@ -445,17 +432,27 @@ const Listening = () => {
             <div className="font-bold text-gray-700 mb-2 text-center">
               Questions
             </div>
-            {questions.map((q, idx) => (
+            {currentPassages.map((p, idx) => (
               <button
-                key={q.id}
-                onClick={() => setCurrentQuestion(idx)}
+                key={p.id}
+                onClick={() => {
+                  setCurrentPassage(idx);
+                  setAnswers({});
+                  setShowResults(false);
+                  setPlayCount(0);
+                  setTimeRemaining(0);
+                  setIsTimerActive(false);
+                  if (speechRef.current) {
+                    window.speechSynthesis.cancel();
+                  }
+                }}
                 className={`w-full text-left px-4 py-2 rounded-lg font-semibold transition-all duration-150 mb-1 ${
-                  currentQuestion === idx
+                  currentPassage === idx
                     ? 'bg-teal-500 text-white shadow'
                     : 'bg-gray-100 text-gray-700 hover:bg-teal-100'
                 }`}
               >
-                Question {idx + 1}
+                Passage {idx + 1}
               </button>
             ))}
           </div>
