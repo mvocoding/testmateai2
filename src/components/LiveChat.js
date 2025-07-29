@@ -37,22 +37,40 @@ const LiveChat = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const headers = {
+        "content-type": "application/json",
+        "authorization": "Bearer sk-rs6abnDpts1fROkx99NSUw",
+        "user-agent": "Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0",
+      };
+
+      const payload = {
+        "temperature": 0,
+        "messages": [
+          { "role": "system", "content": [{ "type": "text", "text": "You are an IELTS TestMate AI assistant. Help users with IELTS preparation, answer questions about the test format, provide study tips, and assist with practice questions. Be friendly, encouraging, and knowledgeable about IELTS." }] },
+          { "role": "user", "content": [{ "type": "text", "text": inputMessage }] }
+        ],
+        "model": "vertex_ai/gemini-2.0-flash-001",
+        "response_format": { "type": "json_object" }
+      };
+
+      const response = await fetch("https://litellm.ds.lightricks.com/chat/completions", {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: inputMessage,
-          context: 'IELTS TestMate Assistant'
-        })
+        headers: headers,
+        body: JSON.stringify(payload)
       });
 
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
       const data = await response.json();
+      const rawContent = data.choices[0].message.content;
+      debugger;
+      const aiResponse = JSON.parse(rawContent).response;
 
       const aiMessage = {
         id: Date.now() + 1,
-        text: data.response || "I'm here to help with your IELTS preparation! How can I assist you today?",
+        text: aiResponse,
         sender: 'ai',
         timestamp: new Date().toLocaleTimeString()
       };
@@ -86,7 +104,7 @@ const LiveChat = () => {
           <div className="bg-teal-600 text-white p-4 rounded-t-2xl flex justify-between items-center">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="font-semibold">TestMate AI Assistant</span>
+              <span className="font-semibold">AI Assistant</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
