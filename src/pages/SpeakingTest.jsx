@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { generateSpeakingFeedback } from '../utils';
 
 const questions = [
   'What do you do in your free time?',
@@ -8,56 +9,6 @@ const questions = [
 
 const XP_PER_BAND = 5;
 const XP_TO_LEVEL_UP = 100;
-
-const USE_OPENAI = true;
-const OPENAI_API_KEY =
-  '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';
-
-async function getOpenAIFeedback(question, transcript) {
-  const prompt = `You are an IELTS speaking examiner and pronunciation coach.\nEvaluate this answer for the question: "${question}"\n\nStudent's answer: "${transcript}"\n\nReturn a JSON with:\n- band: (0-9, float)\n- comment: (short feedback on fluency, grammar, vocabulary, pronunciation)\n- words: [{word: string, native_like: boolean, score: float, tip: string}]\n- length_feedback: (is the answer too short? what should be added?)\n- suggestions: [specific suggestions for improvement, e.g., use more complex sentences, add examples, elaborate on ideas]\n- pronunciation_tips: [personalized tips for improving pronunciation]\n- grammar_feedback: (detailed feedback on grammar mistakes and how to fix them)\n- vocabulary_feedback: (feedback on vocabulary range and suggestions for better word choices)\n- coherence_feedback: (feedback on organization and logical flow)`;
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 16000,
-      temperature: 0.4,
-    }),
-  });
-  const data = await response.json();
-  try {
-    let raw = data.choices[0].message.content.trim();
-    raw = raw
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/```$/, '')
-      .trim();
-    return JSON.parse(raw);
-  } catch (e) {
-    return {
-      band: 6.0,
-      comment: 'Could not parse AI feedback. (Demo)',
-      words: transcript
-        .split(' ')
-        .map((word) => ({ word, native_like: true, score: 1.0, tip: '' })),
-      length_feedback:
-        'The answer is a bit short. Try to elaborate more and provide examples.',
-      suggestions: [
-        'Add more details to your answer.',
-        'Use linking words.',
-        'Give a personal example.',
-      ],
-      pronunciation_tips: ['Practice intonation.', 'Work on vowel clarity.'],
-      grammar_feedback: 'Check your verb tenses and subject-verb agreement.',
-      vocabulary_feedback: 'Try to use a wider range of vocabulary.',
-      coherence_feedback:
-        'Organize your answer with clear points and examples.',
-    };
-  }
-}
 
 function mockGeminiFeedback(transcript) {
   const words = transcript.split(' ').map((word) => {
@@ -133,27 +84,14 @@ const SpeakingTest = () => {
       setTranscript(result);
       setIsListening(false);
       setIsLoading(true);
-      if (USE_OPENAI) {
-        const aiFeedback = await getOpenAIFeedback(questions[currentQ], result);
-        setFeedback((prev) => {
-          const updated = [...prev];
-          updated[currentQ] = aiFeedback;
-          return updated;
-        });
-        setIsLoading(false);
-        updateXP(aiFeedback.band);
-      } else {
-        setTimeout(() => {
-          const aiFeedback = mockGeminiFeedback(result);
-          setFeedback((prev) => {
-            const updated = [...prev];
-            updated[currentQ] = aiFeedback;
-            return updated;
-          });
-          setIsLoading(false);
-          updateXP(aiFeedback.band);
-        }, 1000);
-      }
+      const aiFeedback = await generateSpeakingFeedback(questions[currentQ], result);
+      setFeedback((prev) => {
+        const updated = [...prev];
+        updated[currentQ] = aiFeedback;
+        return updated;
+      });
+      setIsLoading(false);
+      updateXP(aiFeedback.band);
     };
     recognition.onerror = function () {
       setIsListening(false);
@@ -182,7 +120,7 @@ const SpeakingTest = () => {
   const xpPercent = Math.min(100, (xp / XP_TO_LEVEL_UP) * 100);
 
   return (
-    <div className=" bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-4 py-8">
+    <div className=" bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">
       <div className="relative w-full mx-auto flex flex-row gap-8">
         <div className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6 min-h-[500px]">
           <div className="text-center mb-4">

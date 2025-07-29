@@ -28,7 +28,7 @@ const Reading = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">
       <div className="w-full  bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 mb-6">
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">

@@ -33,12 +33,6 @@ const utilityButtons = [
     color: 'from-indigo-400 to-purple-400',
   },
   {
-    name: 'Dashboard',
-    path: '/dashboard',
-    icon: '📈',
-    color: 'from-indigo-400 to-purple-400',
-  },
-  {
     name: 'AI Study Plan',
     path: '/study-plan',
     icon: '🧠',
@@ -51,9 +45,15 @@ const utilityButtons = [
     color: 'from-indigo-400 to-purple-400',
   },
   {
-    name: 'Profile',
-    path: '/profile',
+    name: 'Review',
+    path: '/review',
     icon: '👤',
+    color: 'from-indigo-400 to-purple-400',
+  },
+  {
+    name: 'Dashboard',
+    path: '/dashboard',
+    icon: '📈',
     color: 'from-indigo-400 to-purple-400',
   },
 ];
@@ -174,19 +174,19 @@ function AppLayout() {
     '/ask-me',
   ].some((path) => location.pathname.startsWith(path));
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen min-w-full bg-gray-50">
       {showSidebar && <SkillSidebar />}
       <main className={showSidebar ? 'flex-1 ml-56' : 'flex-1'}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/study-plan" element={<StudyPlan />} />
           <Route path="/speaking" element={<SpeakingTest />} />
           <Route path="/listening" element={<Listening />} />
           <Route path="/reading" element={<Reading />} />
           <Route path="/writing" element={<Writing />} />
           <Route path="/ask-me" element={<AskMeAnything />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </main>
     </div>

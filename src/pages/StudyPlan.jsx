@@ -1,35 +1,5 @@
 import React, { useState } from 'react';
-
-const OPENAI_API_KEY =
-  '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';
-
-async function getAIStudyPlan({ currentScore, targetScore, testDate }) {
-  const prompt = `You are an IELTS study coach AI.\nA student wants to improve their IELTS score.\nCurrent/last band: ${currentScore}\nTarget band: ${targetScore}\nTest date: ${testDate}\n\nCreate a JSON study plan with:\n- summary: (short motivational summary)\n- weeks: (number of weeks to study)\n- recommendations: [list of actionable recommendations]\n- weekly_schedule: [{week: number, focus: string, tasks: [string]}]\n- focus_areas: [skills to focus on, with reason]`;
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 2048,
-      temperature: 0.4,
-    }),
-  });
-  const data = await response.json();
-  try {
-    let raw = data.choices[0].message.content.trim();
-    raw = raw
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/```$/, '')
-      .trim();
-    return JSON.parse(raw);
-  } catch (e) {
-    return null;
-  }
-}
+import { generateStudyPlan } from '../utils';
 
 const StudyPlan = () => {
   const [formData, setFormData] = useState({
@@ -60,7 +30,7 @@ const StudyPlan = () => {
       ? formData.lastTestScore
       : formData.currentScore;
     try {
-      const plan = await getAIStudyPlan({
+      const plan = await generateStudyPlan({
         currentScore,
         targetScore: formData.targetScore,
         testDate: formData.testDate,
@@ -79,16 +49,14 @@ const StudyPlan = () => {
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
-        <div className="w-full max-w-4xl mx-auto">
+        <div className="w-full mx-auto">
           {!studyPlan ? (
             <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12">
               {' '}
-              {/* Neutral card */}
               <form onSubmit={generateStudyPlan} className="space-y-6">
                 <div className="text-center mb-8">
                   <h1 className="text-4xl md:text-6xl font-black text-teal-700 mb-4 drop-shadow-lg">
                     {' '}
-                    {/* Single accent color */}
                     AI Study Plan
                   </h1>
                   <p className="text-lg md:text-xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
@@ -96,7 +64,6 @@ const StudyPlan = () => {
                   </p>
                 </div>
 
-                {/* Previous Test Score */}
                 <div className="flex items-center gap-3 mb-4">
                   <input
                     type="checkbox"
@@ -234,11 +201,9 @@ const StudyPlan = () => {
             </div>
           ) : (
             <div className="space-y-8">
-              {/* Plan Summary */}
               {studyPlan.summary && (
                 <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
                   {' '}
-                  {/* Neutral card */}
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">
                     Your Personalized Study Plan
                   </h2>
@@ -248,7 +213,6 @@ const StudyPlan = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div className="text-center p-4 bg-gray-100 rounded-xl">
                       {' '}
-                      {/* Neutral */}
                       <div className="text-2xl font-bold text-teal-600">
                         Current:{' '}
                         {studyPlan.currentScore ||
@@ -259,7 +223,6 @@ const StudyPlan = () => {
                     </div>
                     <div className="text-center p-4 bg-gray-100 rounded-xl">
                       {' '}
-                      {/* Neutral */}
                       <div className="text-2xl font-bold text-teal-600">
                         Target: {studyPlan.targetScore || formData.targetScore}
                       </div>
@@ -267,7 +230,6 @@ const StudyPlan = () => {
                     </div>
                     <div className="text-center p-4 bg-gray-100 rounded-xl">
                       {' '}
-                      {/* Neutral */}
                       <div className="text-2xl font-bold text-teal-600">
                         {studyPlan.weeks || studyPlan.weeksToStudy} weeks
                       </div>
@@ -292,11 +254,9 @@ const StudyPlan = () => {
                 </div>
               )}
 
-              {/* Recommendations */}
               {studyPlan.recommendations && (
                 <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
                   {' '}
-                  {/* Neutral card */}
                   <h3 className="text-xl font-bold text-gray-800 mb-6">
                     AI Recommendations
                   </h3>
@@ -307,7 +267,6 @@ const StudyPlan = () => {
                         className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl"
                       >
                         {' '}
-                        {/* Neutral */}
                         <div className="text-2xl">{rec.icon || '💡'}</div>
                         <div className="flex-1">
                           <div className="font-semibold text-gray-800 mb-1">
@@ -323,11 +282,9 @@ const StudyPlan = () => {
                 </div>
               )}
 
-              {/* Weekly Schedule */}
               {studyPlan.weekly_schedule && (
                 <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
                   {' '}
-                  {/* Neutral card */}
                   <h3 className="text-xl font-bold text-gray-800 mb-6">
                     Weekly Study Schedule
                   </h3>
@@ -335,7 +292,6 @@ const StudyPlan = () => {
                     {studyPlan.weekly_schedule.map((week, index) => (
                       <div key={index} className="bg-gray-50 rounded-xl p-4">
                         {' '}
-                        {/* Neutral */}
                         <div className="text-lg font-bold text-gray-800 mb-2">
                           Week {week.week}
                         </div>
@@ -361,11 +317,9 @@ const StudyPlan = () => {
                 </div>
               )}
 
-              {/* Focus Areas */}
               {studyPlan.focus_areas && (
                 <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
                   {' '}
-                  {/* Neutral card */}
                   <h3 className="text-xl font-bold text-gray-800 mb-6">
                     Focus Areas
                   </h3>
@@ -376,7 +330,6 @@ const StudyPlan = () => {
                         className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
                       >
                         {' '}
-                        {/* Neutral */}
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
@@ -416,7 +369,6 @@ const StudyPlan = () => {
           )}
         </div>
       </div>
-      {/* Removed custom CSS for floating animation */}
     </div>
   );
 };

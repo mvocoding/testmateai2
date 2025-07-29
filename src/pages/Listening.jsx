@@ -230,7 +230,7 @@ const Listening = () => {
   const question = questions[currentQuestion];
 
   return (
-    <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">
       <div className="relative w-full mx-auto flex flex-col md:flex-row gap-8">
         <div className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12">
           <div className="mb-4 text-center">
