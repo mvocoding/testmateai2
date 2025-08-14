@@ -15,7 +15,7 @@ export const generateTextResponse = async (inputMessage, setMessages, setIsLoadi
           content: [
             {
               type: 'text',
-              text: 'You are an IELTS TestMate AI assistant. Help users with IELTS preparation, answer questions about the test format, provide study tips, and assist with practice questions. Be friendly, encouraging, and knowledgeable about IELTS.',
+              text: 'You are an IELTS TestMate AI assistant. Help users with IELTS preparation, answer questions about the test format, provide study tips, and assist with practice questions. You can also help users create personalized study plans. If users ask about study plans, guide them to use the study plan form or provide general study advice. Be friendly, encouraging, and knowledgeable about IELTS.',
             },
           ],
         },

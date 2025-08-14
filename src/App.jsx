@@ -16,6 +16,7 @@ import Writing from './pages/Writing';
 import Dashboard from './pages/Dashboard';
 import StudyPlan from './pages/StudyPlan';
 import AskMeAnything from './pages/AskMeAnything';
+import MockTest from './pages/MockTest';
 import { AskMeButton } from './components/AskMeButton';
 import './App.css';
 
@@ -31,12 +32,6 @@ const utilityButtons = [
     name: 'Mock Test',
     path: '/mocktest',
     icon: '📝',
-    color: 'from-indigo-400 to-purple-400',
-  },
-  {
-    name: 'AI Study Plan',
-    path: '/study-plan',
-    icon: '🧠',
     color: 'from-indigo-400 to-purple-400',
   },
   {
@@ -173,6 +168,7 @@ function AppLayout() {
     '/dashboard',
     '/study-plan',
     '/ask-me',
+    '/mocktest',
   ].some((path) => location.pathname.startsWith(path));
   return (
     <div className="flex min-h-screen min-w-full bg-gray-50">
@@ -182,12 +178,12 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/study-plan" element={<StudyPlan />} />
           <Route path="/speaking" element={<SpeakingTest />} />
           <Route path="/listening" element={<Listening />} />
           <Route path="/reading" element={<Reading />} />
           <Route path="/writing" element={<Writing />} />
           <Route path="/ask-me" element={<AskMeAnything />} />
+          <Route path="/mocktest" element={<MockTest />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </main>
