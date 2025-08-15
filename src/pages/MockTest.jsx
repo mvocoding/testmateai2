@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import dataService from '../services/dataService';
 
 const MockTest = () => {
   const [currentSection, setCurrentSection] = useState('listening');
@@ -20,185 +21,33 @@ const MockTest = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioRef] = useState(useRef(null));
   const [recognitionRef] = useState(useRef(null));
+  const [testData, setTestData] = useState(null);
+  const [sections, setSections] = useState([]);
 
-  // Mock test data
-  const testData = {
-    listening: [
-      {
-        id: 1,
-        type: 'multiple-choice',
-        question: 'What is the main topic of the conversation?',
-        audio: 'https://example.com/audio1.mp3',
-        options: [
-          'Weather forecast',
-          'Travel plans',
-          'Restaurant booking',
-          'Shopping list',
-        ],
-        correct: 1,
-      },
-      {
-        id: 2,
-        type: 'fill-blank',
-        question:
-          'The speaker mentioned that the event will take place on _______.',
-        audio: 'https://example.com/audio2.mp3',
-        correct: 'Saturday',
-      },
-      {
-        id: 3,
-        type: 'multiple-choice',
-        question: 'How many people are expected to attend?',
-        audio: 'https://example.com/audio3.mp3',
-        options: ['50', '75', '100', '125'],
-        correct: 2,
-      },
-      {
-        id: 4,
-        type: 'true-false',
-        question: 'The speaker confirms that parking will be available.',
-        audio: 'https://example.com/audio4.mp3',
-        correct: true,
-      },
-      {
-        id: 5,
-        type: 'fill-blank',
-        question: 'The contact number for reservations is _______.',
-        audio: 'https://example.com/audio5.mp3',
-        correct: '555-0123',
-      },
-    ],
-    speaking: [
-      {
-        id: 1,
-        part: 1,
-        title: 'Personal Introduction',
-        question: "Tell me about your hometown. What's it like?",
-        timeLimit: 120,
-        topics: [
-          'Location',
-          'Population',
-          'Famous landmarks',
-          'Your experience',
-        ],
-      },
-      {
-        id: 2,
-        part: 2,
-        title: 'Individual Long Turn',
-        question:
-          'Describe a place you would like to visit. You should say:\n• Where it is\n• Why you want to go there\n• What you would do there\n• How you would feel about visiting this place',
-        timeLimit: 180,
-        preparationTime: 60,
-      },
-      {
-        id: 3,
-        part: 3,
-        title: 'Two-Way Discussion',
-        question:
-          "Let's talk about travel and tourism. What are the benefits and drawbacks of tourism for local communities?",
-        timeLimit: 240,
-        followUpQuestions: [
-          'How has tourism changed in recent years?',
-          'What types of tourism are most popular in your country?',
-          'How can tourism be made more sustainable?',
-        ],
-      },
-    ],
-    reading: [
-      {
-        id: 1,
-        type: 'multiple-choice',
-        passage:
-          'The Industrial Revolution was a period of major industrialization and innovation during the late 18th and early 19th centuries. The Industrial Revolution began in Great Britain and quickly spread throughout the world. This period marked a major turning point in history, as almost every aspect of daily life was influenced in some way.',
-        question:
-          'What was the main characteristic of the Industrial Revolution?',
-        options: [
-          'Agricultural development',
-          'Industrialization and innovation',
-          'Political reform',
-          'Social equality',
-        ],
-        correct: 1,
-      },
-      {
-        id: 2,
-        type: 'true-false',
-        passage:
-          'Climate change refers to long-term shifts in temperatures and weather patterns. These shifts may be natural, such as through variations in the solar cycle. But since the 1800s, human activities have been the main driver of climate change, primarily due to the burning of fossil fuels like coal, oil and gas.',
-        question:
-          'Human activities have been the main cause of climate change since the 1800s.',
-        correct: true,
-      },
-      {
-        id: 3,
-        type: 'fill-blank',
-        passage:
-          'Artificial Intelligence (AI) is the simulation of human intelligence in machines that are programmed to think and learn like humans. The term can also be applied to any machine that exhibits traits associated with a human mind such as learning and problem-solving.',
-        question: 'AI is the simulation of _______ intelligence in machines.',
-        correct: 'human',
-      },
-      {
-        id: 4,
-        type: 'multiple-choice',
-        passage:
-          "The human brain is the command center for the human nervous system. It receives signals from the body's sensory organs and outputs information to the muscles. The human brain has the same basic structure as other mammal brains but is larger relative to body size than any other brains.",
-        question: 'What is the main function of the human brain?',
-        options: [
-          'Digestion',
-          'Command center for nervous system',
-          'Blood circulation',
-          'Muscle building',
-        ],
-        correct: 1,
-      },
-      {
-        id: 5,
-        type: 'matching',
-        passage:
-          'Renewable energy sources include solar power, wind energy, hydroelectric power, and geothermal energy. These sources are naturally replenished and have a much lower environmental impact than fossil fuels.',
-        question:
-          'Match the renewable energy sources with their characteristics:',
-        options: [
-          { source: 'Solar power', characteristic: 'Uses sunlight' },
-          { source: 'Wind energy', characteristic: 'Uses air movement' },
-          { source: 'Hydroelectric power', characteristic: 'Uses water flow' },
-          {
-            source: 'Geothermal energy',
-            characteristic: 'Uses heat from earth',
-          },
-        ],
-      },
-    ],
-    writing: [
-      {
-        id: 1,
-        type: 'task1',
-        title: 'Academic Writing Task 1',
-        question:
-          'The chart below shows the percentage of households in different income brackets in three countries in 2020. Summarize the information by selecting and reporting the main features, and make comparisons where relevant.',
-        chartData: 'Income Distribution Chart (mock data)',
-        timeLimit: 20 * 60, // 20 minutes
-        wordLimit: '150-200 words',
-      },
-      {
-        id: 2,
-        type: 'task2',
-        title: 'Academic Writing Task 2',
-        question:
-          'Some people believe that technology has made life easier and more convenient, while others argue that it has made life more complicated and stressful. Discuss both views and give your own opinion.',
-        timeLimit: 40 * 60, // 40 minutes
-        wordLimit: '250-300 words',
-      },
-    ],
-  };
+    // Load mock test data
+  useEffect(() => {
+    const loadTestData = async () => {
+      try {
+        const mockTest = await dataService.fetchMockTest(1); // Load first mock test
+        if (mockTest) {
+          setTestData(mockTest.questions);
+          setSections(mockTest.sections);
+          
+          // Update time remaining based on loaded sections
+          const newTimeRemaining = {};
+          mockTest.sections.forEach(section => {
+            const minutes = parseInt(section.time.split(' ')[0]);
+            newTimeRemaining[section.id] = minutes * 60;
+          });
+          setTimeRemaining(newTimeRemaining);
+        }
+      } catch (error) {
+        console.error('Error loading mock test data:', error);
+      }
+    };
 
-  const sections = [
-    { id: 'listening', name: 'Listening', time: '30 minutes', questions: 5 },
-    { id: 'speaking', name: 'Speaking', time: '15 minutes', questions: 3 },
-    { id: 'reading', name: 'Reading', time: '60 minutes', questions: 5 },
-    { id: 'writing', name: 'Writing', time: '60 minutes', questions: 2 },
-  ];
+    loadTestData();
+  }, []);
 
   useEffect(() => {
     let interval;
@@ -228,6 +77,8 @@ const MockTest = () => {
   };
 
   const nextQuestion = () => {
+    if (!testData || !testData[currentSection]) return;
+    
     const currentQuestions = testData[currentSection];
     if (currentQuestion < currentQuestions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
@@ -242,6 +93,8 @@ const MockTest = () => {
   };
 
   const prevQuestion = () => {
+    if (!testData) return;
+    
     if (currentQuestion > 0) {
       setCurrentQuestion((prev) => prev - 1);
     } else {
@@ -273,11 +126,13 @@ const MockTest = () => {
     recognition.onend = () => setIsRecording(false);
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      handleAnswer(
-        'speaking',
-        testData.speaking[currentQuestion].id,
-        transcript
-      );
+      if (testData && testData.speaking && testData.speaking[currentQuestion]) {
+        handleAnswer(
+          'speaking',
+          testData.speaking[currentQuestion].id,
+          transcript
+        );
+      }
     };
 
     recognitionRef.current = recognition;
@@ -299,6 +154,10 @@ const MockTest = () => {
   };
 
   const renderQuestion = () => {
+    if (!testData || !testData[currentSection]) {
+      return <div className="text-center py-8">Loading questions...</div>;
+    }
+    
     const currentQuestions = testData[currentSection];
     const question = currentQuestions[currentQuestion];
 
@@ -698,18 +557,25 @@ const MockTest = () => {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {sections.map((section) => (
-                <div
-                  key={section.id}
-                  className="bg-white p-6 rounded-lg border border-gray-200"
-                >
-                  <h3 className="text-lg font-semibold mb-2">{section.name}</h3>
-                  <p className="text-gray-600 mb-2">{section.time}</p>
-                  <p className="text-sm text-gray-500">
-                    {section.questions} questions
-                  </p>
+              {sections.length > 0 ? (
+                sections.map((section) => (
+                  <div
+                    key={section.id}
+                    className="bg-white p-6 rounded-lg border border-gray-200"
+                  >
+                    <h3 className="text-lg font-semibold mb-2">{section.name}</h3>
+                    <p className="text-gray-600 mb-2">{section.time}</p>
+                    <p className="text-sm text-gray-500">
+                      {section.questions} questions
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading test sections...</p>
                 </div>
-              ))}
+              )}
             </div>
 
             <button
@@ -795,6 +661,7 @@ const MockTest = () => {
               <button
                 onClick={prevQuestion}
                 disabled={
+                  !testData ||
                   currentQuestion === 0 &&
                   sections.findIndex((s) => s.id === currentSection) === 0
                 }
@@ -806,6 +673,7 @@ const MockTest = () => {
               <button
                 onClick={nextQuestion}
                 disabled={
+                  !testData ||
                   currentQuestion === testData[currentSection].length - 1 &&
                   sections.findIndex((s) => s.id === currentSection) ===
                     sections.length - 1

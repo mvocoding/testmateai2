@@ -1,0 +1,1292 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "currentScore": 6.5,
+      "targetScore": 7.5,
+      "testDate": "2024-03-15",
+      "hasPreviousTest": true,
+      "lastTestScore": 6.0,
+      "level": 3,
+      "xp": 250,
+      "studyPlan": {
+        "summary": "Focus on improving Writing and Speaking skills",
+        "weeks": 8,
+        "recommendations": [
+          "Practice writing essays daily",
+          "Join speaking practice groups",
+          "Focus on grammar accuracy",
+          "Expand vocabulary in academic topics"
+        ],
+        "focus_areas": [
+          {
+            "skill": "Writing",
+            "reason": "Current score is 0.5 below target"
+          },
+          {
+            "skill": "Speaking",
+            "reason": "Needs more practice with fluency"
+          }
+        ],
+        "weekly_schedule": [
+          {
+            "week": 1,
+            "focus": "Writing Task 2",
+            "tasks": ["Essay structure", "Argument development", "Vocabulary building"]
+          },
+          {
+            "week": 2,
+            "focus": "Speaking Part 2",
+            "tasks": ["Long turn practice", "Fluency exercises", "Topic vocabulary"]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "currentScore": 5.5,
+      "targetScore": 6.5,
+      "testDate": "2024-04-20",
+      "hasPreviousTest": false,
+      "level": 1,
+      "xp": 75,
+      "studyPlan": {
+        "summary": "Comprehensive preparation for first IELTS attempt",
+        "weeks": 12,
+        "recommendations": [
+          "Start with basic grammar review",
+          "Build vocabulary systematically",
+          "Practice all four skills equally",
+          "Take regular mock tests"
+        ],
+        "focus_areas": [
+          {
+            "skill": "All Skills",
+            "reason": "First-time test taker needs balanced preparation"
+          }
+        ],
+        "weekly_schedule": [
+          {
+            "week": 1,
+            "focus": "Foundation",
+            "tasks": ["Grammar basics", "Essential vocabulary", "Test format overview"]
+          },
+          {
+            "week": 2,
+            "focus": "Listening",
+            "tasks": ["Note-taking skills", "Audio comprehension", "Question types"]
+          }
+        ]
+      }
+    }
+  ],
+  "mockTests": [
+    {
+      "id": 1,
+      "name": "IELTS Academic Mock Test 1",
+      "description": "Complete IELTS Academic test with all four sections",
+      "duration": "2 hours 45 minutes",
+      "sections": [
+        {
+          "id": "listening",
+          "name": "Listening",
+          "time": "30 minutes",
+          "questions": 5
+        },
+        {
+          "id": "speaking",
+          "name": "Speaking",
+          "time": "15 minutes",
+          "questions": 3
+        },
+        {
+          "id": "reading",
+          "name": "Reading",
+          "time": "60 minutes",
+          "questions": 5
+        },
+        {
+          "id": "writing",
+          "name": "Writing",
+          "time": "60 minutes",
+          "questions": 2
+        }
+      ],
+      "questions": {
+        "listening": [
+          {
+            "id": 1,
+            "type": "multiple-choice",
+            "question": "What is the main topic of the conversation?",
+            "audio": "https://example.com/audio1.mp3",
+            "options": [
+              "Weather forecast",
+              "Travel plans",
+              "Restaurant booking",
+              "Shopping list"
+            ],
+            "correct": 1
+          },
+          {
+            "id": 2,
+            "type": "fill-blank",
+            "question": "The speaker mentioned that the event will take place on _______.",
+            "audio": "https://example.com/audio2.mp3",
+            "correct": "Saturday"
+          },
+          {
+            "id": 3,
+            "type": "multiple-choice",
+            "question": "How many people are expected to attend?",
+            "audio": "https://example.com/audio3.mp3",
+            "options": ["50", "75", "100", "125"],
+            "correct": 2
+          },
+          {
+            "id": 4,
+            "type": "true-false",
+            "question": "The speaker confirms that parking will be available.",
+            "audio": "https://example.com/audio4.mp3",
+            "correct": true
+          },
+          {
+            "id": 5,
+            "type": "fill-blank",
+            "question": "The contact number for reservations is _______.",
+            "audio": "https://example.com/audio5.mp3",
+            "correct": "555-0123"
+          }
+        ],
+        "speaking": [
+          {
+            "id": 1,
+            "part": 1,
+            "title": "Personal Introduction",
+            "question": "Tell me about your hometown. What's it like?",
+            "timeLimit": 120,
+            "topics": [
+              "Location",
+              "Population",
+              "Famous landmarks",
+              "Your experience"
+            ]
+          },
+          {
+            "id": 2,
+            "part": 2,
+            "title": "Individual Long Turn",
+            "question": "Describe a place you would like to visit. You should say:\n• Where it is\n• Why you want to go there\n• What you would do there\n• How you would feel about visiting this place",
+            "timeLimit": 180,
+            "preparationTime": 60
+          },
+          {
+            "id": 3,
+            "part": 3,
+            "title": "Two-Way Discussion",
+            "question": "Let's talk about travel and tourism. What are the benefits and drawbacks of tourism for local communities?",
+            "timeLimit": 240,
+            "followUpQuestions": [
+              "How has tourism changed in recent years?",
+              "What types of tourism are most popular in your country?",
+              "How can tourism be made more sustainable?"
+            ]
+          }
+        ],
+        "reading": [
+          {
+            "id": 1,
+            "type": "multiple-choice",
+            "passage": "The Industrial Revolution was a period of major industrialization and innovation during the late 18th and early 19th centuries. The Industrial Revolution began in Great Britain and quickly spread throughout the world. This period marked a major turning point in history, as almost every aspect of daily life was influenced in some way.",
+            "question": "What was the main characteristic of the Industrial Revolution?",
+            "options": [
+              "Agricultural development",
+              "Industrialization and innovation",
+              "Political reform",
+              "Social equality"
+            ],
+            "correct": 1
+          },
+          {
+            "id": 2,
+            "type": "true-false",
+            "passage": "Climate change refers to long-term shifts in temperatures and weather patterns. These shifts may be natural, such as through variations in the solar cycle. But since the 1800s, human activities have been the main driver of climate change, primarily due to the burning of fossil fuels like coal, oil and gas.",
+            "question": "Human activities have been the main cause of climate change since the 1800s.",
+            "correct": true
+          },
+          {
+            "id": 3,
+            "type": "fill-blank",
+            "passage": "Artificial Intelligence (AI) is the simulation of human intelligence in machines that are programmed to think and learn like humans. The term can also be applied to any machine that exhibits traits associated with a human mind such as learning and problem-solving.",
+            "question": "AI is the simulation of _______ intelligence in machines.",
+            "correct": "human"
+          },
+          {
+            "id": 4,
+            "type": "multiple-choice",
+            "passage": "The human brain is the command center for the human nervous system. It receives signals from the body's sensory organs and outputs information to the muscles. The human brain has the same basic structure as other mammal brains but is larger relative to body size than any other brains.",
+            "question": "What is the main function of the human brain?",
+            "options": [
+              "Digestion",
+              "Command center for nervous system",
+              "Blood circulation",
+              "Muscle building"
+            ],
+            "correct": 1
+          },
+          {
+            "id": 5,
+            "type": "matching",
+            "passage": "Renewable energy sources include solar power, wind energy, hydroelectric power, and geothermal energy. These sources are naturally replenished and have a much lower environmental impact than fossil fuels.",
+            "question": "Match the renewable energy sources with their characteristics:",
+            "options": [
+              { "source": "Solar power", "characteristic": "Uses sunlight" },
+              { "source": "Wind energy", "characteristic": "Uses air movement" },
+              { "source": "Hydroelectric power", "characteristic": "Uses water flow" },
+              { "source": "Geothermal energy", "characteristic": "Uses heat from earth" }
+            ]
+          }
+        ],
+        "writing": [
+          {
+            "id": 1,
+            "type": "task1",
+            "title": "Academic Writing Task 1",
+            "question": "The chart below shows the percentage of households in different income brackets in three countries in 2020. Summarize the information by selecting and reporting the main features, and make comparisons where relevant.",
+            "chartData": "Income Distribution Chart (mock data)",
+            "timeLimit": 1200,
+            "wordLimit": "150-200 words"
+          },
+          {
+            "id": 2,
+            "type": "task2",
+            "title": "Academic Writing Task 2",
+            "question": "Some people believe that technology has made life easier and more convenient, while others argue that it has made life more complicated and stressful. Discuss both views and give your own opinion.",
+            "timeLimit": 2400,
+            "wordLimit": "250-300 words"
+          }
+        ]
+      }
+    }
+  ],
+  "practiceQuestions": {
+    "listening": {
+      "multipleChoice": {
+        "name": "Multiple Choice",
+        "description": "Choose the best answer from given options",
+        "passages": [
+          {
+            "id": 1,
+            "title": "University Campus Tour",
+            "text": "Welcome to our university campus. The main library is located in the center of campus, next to the student union building. The library is open from 8 AM to 10 PM on weekdays, and 9 AM to 6 PM on weekends. There are over 500,000 books and 50 study rooms available.",
+            "questions": [
+              {
+                "id": 1,
+                "question": "What time does the library close on weekdays?",
+                "options": ["8 PM", "9 PM", "10 PM", "11 PM"],
+                "correct": 2
+              },
+              {
+                "id": 2,
+                "question": "How many books are available in the library?",
+                "options": ["400,000", "500,000", "600,000", "700,000"],
+                "correct": 1
+              }
+            ]
+          }
+        ]
+      },
+      "matching": {
+        "name": "Matching",
+        "description": "Match names with activities or information",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Student Activities Meeting",
+            "text": "John is organizing the photography club, Mary leads the debate team, David runs the chess club, and Sarah manages the drama society. The photography club meets on Mondays, debate team on Wednesdays, chess club on Fridays, and drama society on Saturdays.",
+            "questions": [
+              {
+                "id": 1,
+                "question": "Match each person with their activity:",
+                "options": [
+                  "John - Photography club",
+                  "Mary - Debate team",
+                  "David - Chess club",
+                  "Sarah - Drama society"
+                ],
+                "correct": [0, 1, 2, 3],
+                "matching": true
+              }
+            ]
+          }
+        ]
+      },
+      "sentenceCompletion": {
+        "name": "Sentence Completion",
+        "description": "Complete sentences with words from the audio",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Weather Forecast",
+            "text": "Today will be sunny with a high temperature of 25 degrees Celsius. There is a 20% chance of rain in the afternoon. The wind will be light, around 10 kilometers per hour.",
+            "questions": [
+              {
+                "id": 1,
+                "question": "The high temperature today will be _____ degrees Celsius.",
+                "answer": "25",
+                "type": "completion"
+              },
+              {
+                "id": 2,
+                "question": "There is a _____ percent chance of rain.",
+                "answer": "20",
+                "type": "completion"
+              }
+            ]
+          }
+        ]
+      },
+      "shortAnswer": {
+        "name": "Short Answer Questions",
+        "description": "Answer questions briefly using words from the audio",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Travel Information",
+            "text": "The train to London departs from platform 3 at 2:30 PM. The journey takes approximately 2 hours and 15 minutes. The ticket price is 45 pounds for adults and 25 pounds for children.",
+            "questions": [
+              {
+                "id": 1,
+                "question": "What platform does the train depart from?",
+                "answer": "platform 3",
+                "type": "shortAnswer"
+              },
+              {
+                "id": 2,
+                "question": "How much does an adult ticket cost?",
+                "answer": "45 pounds",
+                "type": "shortAnswer"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "reading": {
+      "multipleChoice": {
+        "name": "Multiple Choice",
+        "description": "Choose the best answer from given options",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Honeybees",
+            "passage": "The honeybee is a remarkable insect known for its role in pollination and for producing honey and beeswax. Honeybees live in well-organized colonies and communicate with each other through a unique dance language. Their work is essential for the growth of many crops and wild plants. These social insects have a complex hierarchy with a queen, workers, and drones, each playing specific roles in the colony's survival.",
+            "questions": [
+              {
+                "text": "What is one important role of the honeybee?",
+                "options": [
+                  "They make silk for clothing.",
+                  "They pollinate plants and crops.",
+                  "They eat harmful insects.",
+                  "They live alone in the wild."
+                ],
+                "correct": 1
+              },
+              {
+                "text": "How do honeybees communicate with each other?",
+                "options": [
+                  "Through vocal sounds",
+                  "Through a unique dance language",
+                  "Through chemical signals only",
+                  "Through physical contact"
+                ],
+                "correct": 1
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "Solar Energy",
+            "passage": "Solar energy is one of the most abundant and clean sources of renewable energy available on Earth. The sun provides enough energy in one hour to meet the world's energy needs for an entire year. Solar panels convert sunlight into electricity through a process called the photovoltaic effect. This technology has become increasingly affordable and efficient over the past few decades.",
+            "questions": [
+              {
+                "text": "How much energy does the sun provide in one hour?",
+                "options": [
+                  "Enough for one day",
+                  "Enough for one week",
+                  "Enough for one month",
+                  "Enough for one year"
+                ],
+                "correct": 3
+              },
+              {
+                "text": "What process converts sunlight into electricity?",
+                "options": [
+                  "Photosynthesis",
+                  "Photovoltaic effect",
+                  "Thermal conversion",
+                  "Chemical reaction"
+                ],
+                "correct": 1
+              }
+            ]
+          }
+        ]
+      },
+      "trueFalse": {
+        "name": "True / False / Not Given",
+        "description": "Determine if statements are true, false, or not mentioned",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Climate Change",
+            "passage": "Climate change is affecting global weather patterns. Scientists have observed increased temperatures worldwide, leading to more extreme weather events. Some regions are experiencing longer droughts, while others face increased rainfall and flooding. The melting of polar ice caps is contributing to rising sea levels, which threatens coastal communities around the world. Research indicates that human activities, particularly the burning of fossil fuels, are the primary drivers of these changes.",
+            "questions": [
+              {
+                "text": "Global temperatures have increased in recent years.",
+                "options": ["True", "False", "Not Given"],
+                "correct": 0
+              },
+              {
+                "text": "All regions are experiencing drought conditions.",
+                "options": ["True", "False", "Not Given"],
+                "correct": 1
+              },
+              {
+                "text": "Scientists use satellites to monitor climate change.",
+                "options": ["True", "False", "Not Given"],
+                "correct": 2
+              }
+            ]
+          }
+        ]
+      },
+      "yesNo": {
+        "name": "Yes / No / Not Given",
+        "description": "Answer yes, no, or not given based on the passage",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Electric Vehicles",
+            "passage": "Electric vehicles are becoming increasingly popular as people seek more environmentally friendly transportation options. These vehicles produce zero emissions during operation and can be charged using renewable energy sources. Many governments are offering incentives to encourage the adoption of electric vehicles.",
+            "questions": [
+              {
+                "text": "Do electric vehicles produce emissions during operation?",
+                "options": ["Yes", "No", "Not Given"],
+                "correct": 1
+              },
+              {
+                "text": "Are governments providing incentives for electric vehicles?",
+                "options": ["Yes", "No", "Not Given"],
+                "correct": 0
+              },
+              {
+                "text": "Are all electric vehicles more expensive than gasoline cars?",
+                "options": ["Yes", "No", "Not Given"],
+                "correct": 2
+              }
+            ]
+          }
+        ]
+      },
+      "matching": {
+        "name": "Matching",
+        "description": "Match headings, information, or features",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Ocean Ecosystems",
+            "passage": "The ocean contains diverse ecosystems that support a wide variety of marine life. Coral reefs are among the most productive ecosystems, providing habitat for thousands of species. Deep-sea vents support unique communities of organisms that thrive in extreme conditions. Mangrove forests protect coastlines and serve as nurseries for many fish species.",
+            "questions": [
+              {
+                "text": "Match each ecosystem with its characteristic:",
+                "options": [
+                  "Coral reefs - Most productive ecosystems",
+                  "Deep-sea vents - Extreme conditions",
+                  "Mangrove forests - Coastal protection"
+                ],
+                "correct": [0, 1, 2],
+                "type": "matching"
+              }
+            ]
+          }
+        ]
+      },
+      "sentenceCompletion": {
+        "name": "Sentence Completion",
+        "description": "Complete sentences with words from the passage",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Human Brain",
+            "passage": "The human brain contains approximately 86 billion neurons. These neurons communicate through electrical and chemical signals. The brain is responsible for all our thoughts, emotions, and actions. It continues to develop throughout our lives.",
+            "questions": [
+              {
+                "text": "Complete the sentence: The human brain contains about _____ billion neurons.",
+                "answer": "86",
+                "type": "completion"
+              },
+              {
+                "text": "Neurons communicate through _____ and chemical signals.",
+                "answer": "electrical",
+                "type": "completion"
+              }
+            ]
+          }
+        ]
+      },
+      "diagramLabeling": {
+        "name": "Diagram Labeling",
+        "description": "Label parts of a diagram using information from the text",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Water Cycle",
+            "passage": "The water cycle consists of four main stages: evaporation, condensation, precipitation, and collection. Water evaporates from oceans and lakes, condenses into clouds, falls as rain or snow, and collects back into water bodies.",
+            "questions": [
+              {
+                "text": "Label the water cycle stages:",
+                "options": [
+                  "Evaporation",
+                  "Condensation",
+                  "Precipitation",
+                  "Collection"
+                ],
+                "correct": [0, 1, 2, 3],
+                "type": "diagram"
+              }
+            ]
+          }
+        ]
+      },
+      "shortAnswer": {
+        "name": "Short Answer Questions",
+        "description": "Answer questions briefly using words from the passage",
+        "passages": [
+          {
+            "id": 1,
+            "title": "Internet History",
+            "passage": "The Internet was developed in the 1960s as a military project called ARPANET. It was designed to allow computers to communicate even if some connections were destroyed. Today, the Internet connects billions of people worldwide.",
+            "questions": [
+              {
+                "text": "What was the original name of the Internet?",
+                "answer": "ARPANET",
+                "type": "shortAnswer"
+              },
+              {
+                "text": "When was the Internet first developed?",
+                "answer": "1960s",
+                "type": "shortAnswer"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "speaking": {
+      "part1": {
+        "name": "Part 1: Introduction & Interview",
+        "description": "Personal questions about familiar topics",
+        "questions": [
+          "What do you do in your free time?",
+          "Do you enjoy reading books?",
+          "What kind of music do you like?",
+          "Where do you live?",
+          "What do you do for work or study?"
+        ]
+      },
+      "part2": {
+        "name": "Part 2: Individual Long Turn",
+        "description": "Speak for 2 minutes on a given topic",
+        "questions": [
+          "Describe a place you would like to visit",
+          "Talk about a book you have read recently",
+          "Describe a person who has influenced you",
+          "Talk about an important event in your life",
+          "Describe your hometown"
+        ]
+      },
+      "part3": {
+        "name": "Part 3: Two-Way Discussion",
+        "description": "Discuss abstract topics and ideas",
+        "questions": [
+          "What are the advantages and disadvantages of living in a big city?",
+          "How has technology changed the way people communicate?",
+          "Do you think education should be free for everyone?",
+          "What are the benefits of learning a foreign language?",
+          "How important is it to protect the environment?"
+        ]
+      }
+    },
+    "writing": {
+      "task1": {
+        "name": "Task 1: Academic/General",
+        "description": "Describe visual information (charts, graphs, processes)",
+        "prompts": [
+          "The chart below shows the percentage of households in different income brackets in three countries. Summarize the information by selecting and reporting the main features.",
+          "The diagram illustrates the process of how coffee is produced. Summarize the information by selecting and reporting the main features.",
+          "The graph shows the average monthly temperatures in four cities. Summarize the information by selecting and reporting the main features.",
+          "The table shows the number of students enrolled in different courses at a university. Summarize the information by selecting and reporting the main features.",
+          "The map shows the development of a town over a 50-year period. Summarize the information by selecting and reporting the main features."
+        ]
+      },
+      "task2": {
+        "name": "Task 2: Essay",
+        "description": "Write an essay on a given topic",
+        "prompts": [
+          "Some people believe that technology has made life easier and more convenient, while others think it has made life more complex and stressful. Discuss both views and give your opinion.",
+          "Many people believe that the best way to learn a foreign language is to live in the country where it is spoken. To what extent do you agree or disagree?",
+          "Some people think that the government should spend money on public services rather than on the arts. To what extent do you agree or disagree?",
+          "In many countries, people are living longer. What are the advantages and disadvantages of this trend?",
+          "Some people believe that children should be taught to be competitive, while others think they should be taught to cooperate. Discuss both views and give your opinion."
+        ]
+      }
+    }
+  },
+  "aiResponses": {
+    "studyPlanQuestions": [
+      "Have you taken an IELTS test before? (Yes/No)",
+      "What was your last IELTS score?",
+      "What is your estimated current score?",
+      "What is your target band score?",
+      "When is your test date?"
+    ],
+    "generalQuestions": [
+      "What is the IELTS test format?",
+      "How can I improve my listening skills?",
+      "What are the best strategies for the reading test?",
+      "How can I prepare for the speaking test?",
+      "What should I focus on for the writing test?"
+    ]
+  },
+  "dashboard": {
+    "userStats": {
+      "totalTestsTaken": 12,
+      "averageScore": 6.8,
+      "bestScore": 7.5,
+      "studyStreak": 15,
+      "totalStudyTime": "45 hours",
+      "completedLessons": 28,
+      "currentStreak": 5
+    },
+    "recentActivity": [
+      {
+        "id": 1,
+        "type": "mock_test",
+        "title": "Completed Mock Test #3",
+        "score": 7.0,
+        "date": "2024-01-15",
+        "time": "14:30",
+        "details": "Listening: 7.5, Reading: 6.5, Writing: 7.0, Speaking: 7.0"
+      },
+      {
+        "id": 2,
+        "type": "practice",
+        "title": "Listening Practice - Multiple Choice",
+        "score": 85,
+        "date": "2024-01-14",
+        "time": "16:45",
+        "details": "Completed 10 questions with 85% accuracy"
+      },
+      {
+        "id": 3,
+        "type": "study_plan",
+        "title": "Completed Week 2 Tasks",
+        "score": null,
+        "date": "2024-01-13",
+        "time": "10:20",
+        "details": "Finished all scheduled tasks for Week 2"
+      },
+      {
+        "id": 4,
+        "type": "practice",
+        "title": "Reading Practice - True/False",
+        "score": 90,
+        "date": "2024-01-12",
+        "time": "19:15",
+        "details": "Completed passage with 90% accuracy"
+      },
+      {
+        "id": 5,
+        "type": "speaking",
+        "title": "Speaking Practice - Part 2",
+        "score": 6.5,
+        "date": "2024-01-11",
+        "time": "13:30",
+        "details": "Practiced long turn speaking with AI feedback"
+      }
+    ],
+    "progressCharts": {
+      "scoreProgress": [
+        { "date": "2024-01-01", "score": 6.0 },
+        { "date": "2024-01-05", "score": 6.2 },
+        { "date": "2024-01-10", "score": 6.5 },
+        { "date": "2024-01-15", "score": 6.8 }
+      ],
+      "skillProgress": {
+        "listening": 75,
+        "reading": 68,
+        "writing": 72,
+        "speaking": 65
+      },
+      "weeklyStudyTime": [
+        { "week": "Week 1", "hours": 8 },
+        { "week": "Week 2", "hours": 12 },
+        { "week": "Week 3", "hours": 10 },
+        { "week": "Week 4", "hours": 15 }
+      ]
+    },
+    "upcomingTasks": [
+      {
+        "id": 1,
+        "title": "Complete Mock Test #4",
+        "type": "mock_test",
+        "dueDate": "2024-01-18",
+        "priority": "high",
+        "estimatedTime": "2 hours 45 minutes"
+      },
+      {
+        "id": 2,
+        "title": "Practice Writing Task 2",
+        "type": "writing",
+        "dueDate": "2024-01-17",
+        "priority": "medium",
+        "estimatedTime": "45 minutes"
+      },
+      {
+        "id": 3,
+        "title": "Review Speaking Part 3",
+        "type": "speaking",
+        "dueDate": "2024-01-16",
+        "priority": "medium",
+        "estimatedTime": "30 minutes"
+      },
+      {
+        "id": 4,
+        "title": "Vocabulary Building Session",
+        "type": "vocabulary",
+        "dueDate": "2024-01-16",
+        "priority": "low",
+        "estimatedTime": "20 minutes"
+      }
+    ],
+    "achievements": [
+      {
+        "id": 1,
+        "title": "First Mock Test",
+        "description": "Completed your first full mock test",
+        "icon": "🎯",
+        "date": "2024-01-05",
+        "unlocked": true
+      },
+      {
+        "id": 2,
+        "title": "Study Streak",
+        "description": "Studied for 7 consecutive days",
+        "icon": "🔥",
+        "date": "2024-01-10",
+        "unlocked": true
+      },
+      {
+        "id": 3,
+        "title": "Score Improvement",
+        "description": "Improved your score by 0.5 points",
+        "icon": "📈",
+        "date": "2024-01-15",
+        "unlocked": true
+      },
+      {
+        "id": 4,
+        "title": "Perfect Score",
+        "description": "Get 100% on any practice section",
+        "icon": "⭐",
+        "date": null,
+        "unlocked": false
+      },
+      {
+        "id": 5,
+        "title": "Target Achiever",
+        "description": "Reach your target IELTS score",
+        "icon": "🏆",
+        "date": null,
+        "unlocked": false
+      }
+    ],
+    "recommendations": [
+      {
+        "id": 1,
+        "title": "Focus on Speaking",
+        "description": "Your speaking score is 0.5 points below your target. Try more speaking practice sessions.",
+        "type": "improvement",
+        "priority": "high"
+      },
+      {
+        "id": 2,
+        "title": "Take Another Mock Test",
+        "description": "It's been 3 days since your last mock test. Regular testing helps track progress.",
+        "type": "practice",
+        "priority": "medium"
+      },
+      {
+        "id": 3,
+        "title": "Review Writing Feedback",
+        "description": "You have 2 pending writing assignments to review. Feedback helps improve quickly.",
+        "type": "review",
+        "priority": "medium"
+      }
+    ]
+  },
+  "studyPlans": {
+    "templates": [
+      {
+        "id": 1,
+        "name": "8-Week Intensive",
+        "description": "Comprehensive 8-week plan for serious test takers",
+        "duration": 8,
+        "targetScore": 7.5,
+        "weeklyHours": 15,
+        "suitableFor": ["Intermediate", "Advanced"],
+        "structure": [
+          {
+            "week": 1,
+            "focus": "Foundation & Assessment",
+            "dailyTasks": [
+              "Complete diagnostic test",
+              "Review test format and strategies",
+              "Set up study schedule",
+              "Begin vocabulary building"
+            ],
+            "weeklyGoals": [
+              "Understand test format completely",
+              "Identify weak areas",
+              "Establish study routine"
+            ]
+          },
+          {
+            "week": 2,
+            "focus": "Listening Skills",
+            "dailyTasks": [
+              "Practice note-taking techniques",
+              "Complete 2 listening exercises daily",
+              "Review audio transcripts",
+              "Practice prediction skills"
+            ],
+            "weeklyGoals": [
+              "Improve note-taking speed",
+              "Master question types",
+              "Build audio comprehension"
+            ]
+          },
+          {
+            "week": 3,
+            "focus": "Reading Skills",
+            "dailyTasks": [
+              "Practice skimming and scanning",
+              "Complete 2 reading passages daily",
+              "Review answer strategies",
+              "Build academic vocabulary"
+            ],
+            "weeklyGoals": [
+              "Improve reading speed",
+              "Master question types",
+              "Enhance comprehension"
+            ]
+          },
+          {
+            "week": 4,
+            "focus": "Writing Task 1",
+            "dailyTasks": [
+              "Study chart/graph descriptions",
+              "Practice data analysis",
+              "Write 1 Task 1 essay daily",
+              "Review model answers"
+            ],
+            "weeklyGoals": [
+              "Master data description",
+              "Improve coherence",
+              "Enhance vocabulary"
+            ]
+          },
+          {
+            "week": 5,
+            "focus": "Writing Task 2",
+            "dailyTasks": [
+              "Study essay structures",
+              "Practice argument development",
+              "Write 1 Task 2 essay daily",
+              "Review grammar and vocabulary"
+            ],
+            "weeklyGoals": [
+              "Master essay structure",
+              "Improve argumentation",
+              "Enhance grammar accuracy"
+            ]
+          },
+          {
+            "week": 6,
+            "focus": "Speaking Skills",
+            "dailyTasks": [
+              "Practice Part 1 questions",
+              "Record and review responses",
+              "Build topic vocabulary",
+              "Practice fluency exercises"
+            ],
+            "weeklyGoals": [
+              "Improve fluency",
+              "Enhance pronunciation",
+              "Build confidence"
+            ]
+          },
+          {
+            "week": 7,
+            "focus": "Full Mock Tests",
+            "dailyTasks": [
+              "Take 2 full mock tests",
+              "Review all answers thoroughly",
+              "Analyze mistakes",
+              "Focus on weak areas"
+            ],
+            "weeklyGoals": [
+              "Simulate test conditions",
+              "Improve time management",
+              "Build stamina"
+            ]
+          },
+          {
+            "week": 8,
+            "focus": "Final Preparation",
+            "dailyTasks": [
+              "Take final mock test",
+              "Review all weak areas",
+              "Practice relaxation techniques",
+              "Prepare for test day"
+            ],
+            "weeklyGoals": [
+              "Achieve target score",
+              "Build confidence",
+              "Prepare mentally"
+            ]
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "12-Week Balanced",
+        "description": "Balanced approach for steady improvement",
+        "duration": 12,
+        "targetScore": 6.5,
+        "weeklyHours": 10,
+        "suitableFor": ["Beginner", "Intermediate"],
+        "structure": [
+          {
+            "week": 1,
+            "focus": "Introduction",
+            "dailyTasks": [
+              "Learn test format",
+              "Take diagnostic test",
+              "Set up study space",
+              "Create study schedule"
+            ],
+            "weeklyGoals": [
+              "Understand test requirements",
+              "Identify starting level",
+              "Establish routine"
+            ]
+          },
+          {
+            "week": 2,
+            "focus": "Basic Skills",
+            "dailyTasks": [
+              "Grammar review",
+              "Basic vocabulary building",
+              "Simple listening exercises",
+              "Reading comprehension practice"
+            ],
+            "weeklyGoals": [
+              "Strengthen foundation",
+              "Build confidence",
+              "Improve basic skills"
+            ]
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "name": "4-Week Crash Course",
+        "description": "Intensive preparation for urgent test takers",
+        "duration": 4,
+        "targetScore": 6.0,
+        "weeklyHours": 20,
+        "suitableFor": ["Intermediate", "Advanced"],
+        "structure": [
+          {
+            "week": 1,
+            "focus": "Quick Assessment & Strategy",
+            "dailyTasks": [
+              "Take diagnostic test",
+              "Learn test strategies",
+              "Practice all sections",
+              "Identify priorities"
+            ],
+            "weeklyGoals": [
+              "Understand test format",
+              "Identify weak areas",
+              "Learn key strategies"
+            ]
+          },
+          {
+            "week": 2,
+            "focus": "Intensive Practice",
+            "dailyTasks": [
+              "Complete 3 practice sections daily",
+              "Review all answers",
+              "Focus on weak areas",
+              "Practice time management"
+            ],
+            "weeklyGoals": [
+              "Improve all skills",
+              "Build speed",
+              "Enhance accuracy"
+            ]
+          },
+          {
+            "week": 3,
+            "focus": "Mock Tests",
+            "dailyTasks": [
+              "Take 1 full mock test daily",
+              "Thorough review of mistakes",
+              "Targeted practice",
+              "Strategy refinement"
+            ],
+            "weeklyGoals": [
+              "Simulate test conditions",
+              "Improve performance",
+              "Build confidence"
+            ]
+          },
+          {
+            "week": 4,
+            "focus": "Final Preparation",
+            "dailyTasks": [
+              "Take final mock tests",
+              "Review weak areas",
+              "Practice relaxation",
+              "Prepare for test day"
+            ],
+            "weeklyGoals": [
+              "Achieve target score",
+              "Build confidence",
+              "Mental preparation"
+            ]
+          }
+        ]
+      }
+    ],
+    "resources": {
+      "videos": [
+        {
+          "id": 1,
+          "title": "IELTS Test Format Overview",
+          "description": "Complete guide to IELTS test structure and timing",
+          "duration": "15 minutes",
+          "url": "https://example.com/ielts-overview",
+          "category": "introduction",
+          "difficulty": "beginner"
+        },
+        {
+          "id": 2,
+          "title": "Listening Strategies",
+          "description": "Essential strategies for IELTS Listening section",
+          "duration": "20 minutes",
+          "url": "https://example.com/listening-strategies",
+          "category": "listening",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": 3,
+          "title": "Reading Techniques",
+          "description": "Skimming, scanning, and detailed reading techniques",
+          "duration": "25 minutes",
+          "url": "https://example.com/reading-techniques",
+          "category": "reading",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": 4,
+          "title": "Writing Task 1 Masterclass",
+          "description": "How to describe charts, graphs, and processes",
+          "duration": "30 minutes",
+          "url": "https://example.com/writing-task1",
+          "category": "writing",
+          "difficulty": "advanced"
+        },
+        {
+          "id": 5,
+          "title": "Speaking Part 2 Guide",
+          "description": "How to structure your 2-minute speaking response",
+          "duration": "18 minutes",
+          "url": "https://example.com/speaking-part2",
+          "category": "speaking",
+          "difficulty": "intermediate"
+        }
+      ],
+      "articles": [
+        {
+          "id": 1,
+          "title": "10 Common IELTS Mistakes to Avoid",
+          "description": "Learn from others' mistakes to improve your score",
+          "readTime": "8 minutes",
+          "url": "https://example.com/common-mistakes",
+          "category": "tips",
+          "difficulty": "all"
+        },
+        {
+          "id": 2,
+          "title": "Time Management Strategies",
+          "description": "How to manage your time effectively during the test",
+          "readTime": "12 minutes",
+          "url": "https://example.com/time-management",
+          "category": "strategy",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": 3,
+          "title": "Vocabulary Building Techniques",
+          "description": "Effective methods to expand your academic vocabulary",
+          "readTime": "15 minutes",
+          "url": "https://example.com/vocabulary-building",
+          "category": "vocabulary",
+          "difficulty": "all"
+        },
+        {
+          "id": 4,
+          "title": "Grammar Review for IELTS",
+          "description": "Essential grammar points for high scores",
+          "readTime": "20 minutes",
+          "url": "https://example.com/grammar-review",
+          "category": "grammar",
+          "difficulty": "intermediate"
+        }
+      ],
+      "practiceMaterials": [
+        {
+          "id": 1,
+          "title": "Academic Vocabulary List",
+          "description": "500 essential academic words for IELTS",
+          "type": "vocabulary",
+          "downloadUrl": "https://example.com/academic-vocab.pdf",
+          "category": "vocabulary"
+        },
+        {
+          "id": 2,
+          "title": "Writing Templates",
+          "description": "Ready-to-use templates for Task 1 and Task 2",
+          "type": "templates",
+          "downloadUrl": "https://example.com/writing-templates.pdf",
+          "category": "writing"
+        },
+        {
+          "id": 3,
+          "title": "Speaking Cue Cards",
+          "description": "50 practice cue cards for Speaking Part 2",
+          "type": "cue_cards",
+          "downloadUrl": "https://example.com/speaking-cards.pdf",
+          "category": "speaking"
+        },
+        {
+          "id": 4,
+          "title": "Grammar Exercises",
+          "description": "Targeted grammar exercises for IELTS",
+          "type": "exercises",
+          "downloadUrl": "https://example.com/grammar-exercises.pdf",
+          "category": "grammar"
+        }
+      ]
+    },
+    "progressTracking": {
+      "milestones": [
+        {
+          "id": 1,
+          "title": "First Practice Test",
+          "description": "Complete your first practice test",
+          "targetScore": null,
+          "reward": "10 XP",
+          "completed": true
+        },
+        {
+          "id": 2,
+          "title": "Score Improvement",
+          "description": "Improve your score by 0.5 points",
+          "targetScore": null,
+          "reward": "25 XP",
+          "completed": true
+        },
+        {
+          "id": 3,
+          "title": "Study Streak",
+          "description": "Study for 7 consecutive days",
+          "targetScore": null,
+          "reward": "50 XP",
+          "completed": true
+        },
+        {
+          "id": 4,
+          "title": "Target Score",
+          "description": "Achieve your target IELTS score",
+          "targetScore": 7.5,
+          "reward": "100 XP",
+          "completed": false
+        },
+        {
+          "id": 5,
+          "title": "Perfect Section",
+          "description": "Get 100% on any practice section",
+          "targetScore": null,
+          "reward": "75 XP",
+          "completed": false
+        }
+      ],
+      "weeklyGoals": [
+        {
+          "week": 1,
+          "goals": [
+            "Complete diagnostic test",
+            "Set up study schedule",
+            "Practice 2 hours daily"
+          ],
+          "completed": true
+        },
+        {
+          "week": 2,
+          "goals": [
+            "Focus on listening skills",
+            "Complete 5 listening exercises",
+            "Improve note-taking"
+          ],
+          "completed": true
+        },
+        {
+          "week": 3,
+          "goals": [
+            "Focus on reading skills",
+            "Complete 5 reading passages",
+            "Practice time management"
+          ],
+          "completed": false
+        },
+        {
+          "week": 4,
+          "goals": [
+            "Focus on writing skills",
+            "Write 3 Task 1 essays",
+            "Write 3 Task 2 essays"
+          ],
+          "completed": false
+        }
+      ]
+    }
+  }
+}

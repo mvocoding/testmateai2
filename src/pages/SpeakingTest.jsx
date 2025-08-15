@@ -1,52 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateSpeakingFeedback } from '../utils';
-
-const SPEAKING_PARTS = {
-  part1: {
-    name: 'Part 1: Introduction & Interview',
-    description: 'Personal questions about familiar topics',
-    questions: [
-      'What do you do in your free time?',
-      'Do you enjoy reading books?',
-      'What kind of music do you like?',
-      'Where do you live?',
-      'What do you do for work or study?',
-    ],
-  },
-  part2: {
-    name: 'Part 2: Individual Long Turn',
-    description: 'Speak for 2 minutes on a given topic',
-    questions: [
-      'Describe a place you would like to visit',
-      'Talk about a book you have read recently',
-      'Describe a person who has influenced you',
-      'Talk about an important event in your life',
-      'Describe your hometown',
-    ],
-  },
-  part3: {
-    name: 'Part 3: Two-Way Discussion',
-    description: 'Discuss abstract topics and ideas',
-    questions: [
-      'What are the advantages and disadvantages of living in a big city?',
-      'How has technology changed the way people communicate?',
-      'Do you think education should be free for everyone?',
-      'What are the benefits of learning a foreign language?',
-      'How important is it to protect the environment?',
-    ],
-  },
-};
-
-const XP_PER_BAND = 5;
-const XP_TO_LEVEL_UP = 100;
-
-const FEEDBACK_TABS = [
-  { key: 'general', label: 'General' },
-  { key: 'grammar', label: 'Grammar' },
-  { key: 'vocabulary', label: 'Vocabulary' },
-  { key: 'coherence', label: 'Coherence' },
-  { key: 'suggestions', label: 'Suggestions' },
-];
+import dataService from '../services/dataService';
 
 const SpeakingTest = () => {
   const [selectedPart, setSelectedPart] = useState('part1');
@@ -59,6 +13,45 @@ const SpeakingTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [speakingData, setSpeakingData] = useState(null);
+
+  // Load speaking data
+  useEffect(() => {
+    const loadSpeakingData = async () => {
+      try {
+        const data = await dataService.fetchPracticeQuestions('speaking');
+        setSpeakingData(data);
+      } catch (error) {
+        console.error('Error loading speaking data:', error);
+      }
+    };
+
+    loadSpeakingData();
+  }, []);
+
+  if (!speakingData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading speaking exercises...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const SPEAKING_PARTS = speakingData;
+
+const XP_PER_BAND = 5;
+const XP_TO_LEVEL_UP = 100;
+
+const FEEDBACK_TABS = [
+  { key: 'general', label: 'General' },
+  { key: 'grammar', label: 'Grammar' },
+  { key: 'vocabulary', label: 'Vocabulary' },
+  { key: 'coherence', label: 'Coherence' },
+  { key: 'suggestions', label: 'Suggestions' },
+];
 
   const currentQuestions = SPEAKING_PARTS[selectedPart].questions;
 

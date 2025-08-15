@@ -1,117 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-
-const LISTENING_LEVELS = {
-  multipleChoice: {
-    name: 'Multiple Choice',
-    description: 'Choose the best answer from given options',
-    passages: [
-      {
-        id: 1,
-        title: 'University Campus Tour',
-        text: 'Welcome to our university campus. The main library is located in the center of campus, next to the student union building. The library is open from 8 AM to 10 PM on weekdays, and 9 AM to 6 PM on weekends. There are over 500,000 books and 50 study rooms available.',
-        questions: [
-          {
-            id: 1,
-            question: 'What time does the library close on weekdays?',
-            options: ['8 PM', '9 PM', '10 PM', '11 PM'],
-            correct: 2,
-          },
-          {
-            id: 2,
-            question: 'How many books are available in the library?',
-            options: ['400,000', '500,000', '600,000', '700,000'],
-            correct: 1,
-          },
-        ],
-      },
-    ],
-  },
-  matching: {
-    name: 'Matching',
-    description: 'Match names with activities or information',
-    passages: [
-      {
-        id: 1,
-        title: 'Student Activities Meeting',
-        text: 'John is organizing the photography club, Mary leads the debate team, David runs the chess club, and Sarah manages the drama society. The photography club meets on Mondays, debate team on Wednesdays, chess club on Fridays, and drama society on Saturdays.',
-        questions: [
-          {
-            id: 1,
-            question: 'Match each person with their activity:',
-            options: [
-              'John - Photography club',
-              'Mary - Debate team',
-              'David - Chess club',
-              'Sarah - Drama society',
-            ],
-            correct: [0, 1, 2, 3],
-            matching: true,
-          },
-        ],
-      },
-    ],
-  },
-  sentenceCompletion: {
-    name: 'Sentence Completion',
-    description: 'Complete sentences with words from the audio',
-    passages: [
-      {
-        id: 1,
-        title: 'Weather Forecast',
-        text: 'Today will be sunny with a high temperature of 25 degrees Celsius. There is a 20% chance of rain in the afternoon. The wind will be light, around 10 kilometers per hour.',
-        questions: [
-          {
-            id: 1,
-            question:
-              'The high temperature today will be _____ degrees Celsius.',
-            answer: '25',
-            type: 'completion',
-          },
-          {
-            id: 2,
-            question: 'There is a _____ percent chance of rain.',
-            answer: '20',
-            type: 'completion',
-          },
-        ],
-      },
-    ],
-  },
-  shortAnswer: {
-    name: 'Short Answer Questions',
-    description: 'Answer questions briefly using words from the audio',
-    passages: [
-      {
-        id: 1,
-        title: 'Travel Information',
-        text: 'The train to London departs from platform 3 at 2:30 PM. The journey takes approximately 2 hours and 15 minutes. The ticket price is 45 pounds for adults and 25 pounds for children.',
-        questions: [
-          {
-            id: 1,
-            question: 'What platform does the train depart from?',
-            answer: 'platform 3',
-            type: 'shortAnswer',
-          },
-          {
-            id: 2,
-            question: 'How much does an adult ticket cost?',
-            answer: '45 pounds',
-            type: 'shortAnswer',
-          },
-        ],
-      },
-    ],
-  },
-};
+import dataService from '../services/dataService';
 
 const Listening = () => {
   const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
   const [currentPassage, setCurrentPassage] = useState(0);
-  // Removed currentQuestion state to show all questions at once
-  const [isPlaying, setIsPlaying] = useState(false);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
+  const [listeningData, setListeningData] = useState(null);
+  
+  // Removed currentQuestion state to show all questions at once
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [playCount, setPlayCount] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -123,8 +22,19 @@ const Listening = () => {
   const MAX_PLAYS = 2;
   const TIME_LIMIT = 300; // 5 minutes per passage
 
-  const currentLevel = LISTENING_LEVELS[selectedLevel];
-  const currentPassages = currentLevel.passages;
+  // Load listening data
+  useEffect(() => {
+    const loadListeningData = async () => {
+      try {
+        const data = await dataService.fetchPracticeQuestions('listening');
+        setListeningData(data);
+      } catch (error) {
+        console.error('Error loading listening data:', error);
+      }
+    };
+
+    loadListeningData();
+  }, []);
 
   useEffect(() => {
     if (isTimerActive && timeRemaining > 0) {
@@ -136,6 +46,21 @@ const Listening = () => {
     }
     return () => clearTimeout(timerRef.current);
   }, [timeRemaining, isTimerActive]);
+
+  if (!listeningData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading listening exercises...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const LISTENING_LEVELS = listeningData;
+  const currentLevel = LISTENING_LEVELS[selectedLevel];
+  const currentPassages = currentLevel.passages;
 
   const startListening = () => {
     if (playCount >= MAX_PLAYS) {
