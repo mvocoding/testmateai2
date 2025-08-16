@@ -63,7 +63,6 @@ function SkillSidebar() {
   useEffect(() => {
     const loadUserData = () => {
       const userData = getUser();
-      console.log('Loading user data in sidebar:', userData);
       setUser(userData);
     };
 
@@ -71,12 +70,10 @@ function SkillSidebar() {
 
     // Refresh user data when localStorage changes
     const handleStorageChange = () => {
-      console.log('Storage changed, refreshing user data');
       loadUserData();
     };
 
     const handleUserDataUpdate = () => {
-      console.log('User data updated event received, refreshing user data');
       loadUserData();
     };
 
@@ -84,7 +81,6 @@ function SkillSidebar() {
     const pollInterval = setInterval(() => {
       const currentUser = getUser();
       if (currentUser && (!user || currentUser.xp !== user.xp || currentUser.level !== user.level)) {
-        console.log('User data changed detected by polling, updating sidebar');
         setUser(currentUser);
       }
     }, 2000);
@@ -97,7 +93,7 @@ function SkillSidebar() {
       window.removeEventListener('userDataUpdated', handleUserDataUpdate);
       clearInterval(pollInterval);
     };
-  }, [user]); // Include user in dependency array
+  }, []); // Empty dependency array - only run on mount
 
   const level = user?.level || 1;
   const xp = user?.xp || 0;

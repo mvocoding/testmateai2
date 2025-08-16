@@ -20,8 +20,7 @@ const MockTest = () => {
   const [isTestStarted, setIsTestStarted] = useState(false);
   const [showingIntroduction, setShowingIntroduction] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  // const [audioRef] = useState(useRef(null));
-  // const [recognitionRef] = useState(useRef(null));
+  const [recognitionRef] = useState(useRef(null));
   const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState({
     listening: [],
@@ -31,7 +30,7 @@ const MockTest = () => {
   });
   
   // Test completion and results states
-  // const [isTestCompleted, setIsTestCompleted] = useState(false);
+  const [isTestCompleted, setIsTestCompleted] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [showResults, setShowResults] = useState(false);
   
@@ -229,12 +228,9 @@ const MockTest = () => {
           // Generate random questions for each section
           const generatedQuestions = {};
           for (const section of mockTest.sections) {
-            console.log(`Loading questions for section: ${section.id}`);
             const sectionQuestions = await dataService.fetchMockTestQuestions(1, section.id);
-            console.log(`Questions loaded for ${section.id}:`, sectionQuestions);
             generatedQuestions[section.id] = sectionQuestions || [];
           }
-          console.log('Final generated questions:', generatedQuestions);
           setQuestions(generatedQuestions);
         }
       } catch (error) {

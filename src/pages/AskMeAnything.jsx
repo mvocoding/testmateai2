@@ -13,7 +13,7 @@ const AskMeAnything = () => {
   //   hasPreviousTest: false,
   //   lastTestScore: '',
   // });
-  // const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isContinuousRecording, setIsContinuousRecording] = useState(false);
@@ -252,7 +252,7 @@ const AskMeAnything = () => {
         voiceRecognitionRef.current = null;
       }
     };
-  }, [startContinuousVoiceChat]);
+  }, []);
 
   // Override handleSendMessage to optionally take input and voice flag
   const handleSendMessage = async (overrideInput, isVoice = false) => {

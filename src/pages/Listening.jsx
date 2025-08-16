@@ -63,10 +63,15 @@ const Listening = () => {
         setTimeRemaining((prev) => prev - 1);
       }, 1000);
     } else if (timeRemaining === 0 && isTimerActive) {
-      handleSubmit();
+      // Auto-submit when timer reaches zero
+      setIsTimerActive(false);
+      clearTimeout(timerRef.current);
+      const finalScore = calculateScore();
+      setScore(finalScore);
+      setShowResults(true);
     }
     return () => clearTimeout(timerRef.current);
-  }, [timeRemaining, isTimerActive, handleSubmit]);
+  }, [timeRemaining, isTimerActive]);
 
   if (!listeningData) {
     return (

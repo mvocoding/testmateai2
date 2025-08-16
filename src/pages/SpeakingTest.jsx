@@ -11,7 +11,7 @@ const SpeakingTest = () => {
   const [level, setLevel] = useState(1);
   const [isListening, setIsListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // const [showLevelUp, setShowLevelUp] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [speakingData, setSpeakingData] = useState(null);
 

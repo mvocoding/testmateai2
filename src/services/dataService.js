@@ -1,8 +1,7 @@
-import mockData from '../data/mockdata.json';
 import { generateStudyPlan as generateStudyPlanFromUtils } from '../utils';
 
 // Initialize localStorage with mock data if it doesn't exist
-const initializeData = () => {
+const initializeData = async () => {
   if (!localStorage.getItem('testmate_user')) {
     const defaultUser = {
       id: 1,
@@ -28,10 +27,21 @@ const initializeData = () => {
     localStorage.setItem('testmate_vocabulary', JSON.stringify([]));
   }
 
-  // Always reset mock data to ensure we have the latest version without matching questions
-  localStorage.setItem('testmate_mockdata', JSON.stringify(mockData));
+  // Fetch mock data from public folder
+  try {
+    const response = await fetch('/mockdata.json');
+    if (response.ok) {
+      const mockData = await response.json();
+      localStorage.setItem('testmate_mockdata', JSON.stringify(mockData));
+    } else {
+      console.error('Failed to load mockdata.json');
+    }
+  } catch (error) {
+    console.error('Error loading mockdata.json:', error);
+  }
 };
 
+// Initialize data when the module loads
 initializeData();
 
 export const getUser = () => {
@@ -191,17 +201,18 @@ export const updateVocabularyItem = (id, updates) => {
 export const getMockData = () => {
   try {
     const data = localStorage.getItem('testmate_mockdata');
-    return data ? JSON.parse(data) : mockData;
+    return data ? JSON.parse(data) : null; // Return null if mockdata is not found
   } catch (error) {
     console.error('Error getting mock data:', error);
-    return mockData;
+    return null;
   }
 };
 
 export const resetMockData = () => {
   try {
     localStorage.removeItem('testmate_mockdata');
-    localStorage.setItem('testmate_mockdata', JSON.stringify(mockData));
+    // Re-fetch mock data from public folder
+    initializeData();
     console.log('Mock data reset successfully');
   } catch (error) {
     console.error('Error resetting mock data:', error);
@@ -211,7 +222,7 @@ export const resetMockData = () => {
 export const getPracticeQuestions = (type) => {
   try {
     const data = getMockData();
-    return data.practiceQuestions?.[type] || null;
+    return data?.practiceQuestions?.[type] || null;
   } catch (error) {
     console.error('Error getting practice questions:', error);
     return null;
@@ -221,7 +232,7 @@ export const getPracticeQuestions = (type) => {
 export const getMockTests = () => {
   try {
     const data = getMockData();
-    return data.mockTests || [];
+    return data?.mockTests || [];
   } catch (error) {
     console.error('Error getting mock tests:', error);
     return [];
@@ -231,7 +242,7 @@ export const getMockTests = () => {
 export const fetchMockTest = (testId) => {
   try {
     const data = getMockData();
-    const mockTest = data.mockTests?.find(test => test.id === testId);
+    const mockTest = data?.mockTests?.find(test => test.id === testId);
     return mockTest || null;
   } catch (error) {
     console.error('Error fetching mock test:', error);
@@ -323,9 +334,9 @@ export const fetchMockTestQuestions = (testId, sectionId) => {
     console.log(`Fetching questions for test ${testId}, section ${sectionId}`);
     const data = getMockData();
     console.log('Mock data structure:', Object.keys(data));
-    console.log('Practice questions structure:', Object.keys(data.practiceQuestions || {}));
+    console.log('Practice questions structure:', Object.keys(data?.practiceQuestions || {}));
     
-    const sectionData = data.practiceQuestions?.[sectionId];
+    const sectionData = data?.practiceQuestions?.[sectionId];
     console.log(`Section data for ${sectionId}:`, sectionData);
     
     if (!sectionData) {
