@@ -42,12 +42,9 @@ const Writing = () => {
 
   const FEEDBACK_TABS = [
     { key: 'overview', label: 'Overview' },
-    { key: 'task_achievement', label: 'Task Achievement' },
-    { key: 'coherence', label: 'Coherence & Cohesion' },
+    { key: 'sample_answer', label: 'Sample Answer' },
     { key: 'vocabulary', label: 'Vocabulary' },
     { key: 'grammar', label: 'Grammar' },
-    { key: 'corrections', label: 'Corrections' },
-    { key: 'tips', label: 'Improvement Tips' },
   ];
 
   const handleSubmit = async (e) => {
@@ -63,9 +60,16 @@ const Writing = () => {
         answer,
         wordCount
       );
-      setAiFeedback(feedback);
+      // Validate feedback structure
+      if (feedback && typeof feedback === 'object') {
+        setAiFeedback(feedback);
+      } else {
+        console.error('Invalid feedback structure:', feedback);
+        setAiFeedback(null);
+      }
     } catch (error) {
       console.error('Error generating AI feedback:', error);
+      setAiFeedback(null);
     } finally {
       setIsAnalyzing(false);
     }
@@ -161,7 +165,7 @@ const Writing = () => {
             </div>
 
             {/* AI Analysis Section */}
-            {aiFeedback && (
+            {aiFeedback && typeof aiFeedback === 'object' ? (
               <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
                 <div className="flex mb-4 w-full overflow-x-auto border-b border-orange-200">
                   {FEEDBACK_TABS.map((tab) => (
@@ -183,17 +187,17 @@ const Writing = () => {
                 {activeTab === 'overview' && (
                   <div className="space-y-4">
                     <div className="text-lg font-semibold text-orange-800">
-                      Overall Performance: Band {aiFeedback.overall_score}
+                      Overall Performance: Band {typeof aiFeedback.overall_score === 'number' ? aiFeedback.overall_score : 'N/A'}
                     </div>
                     <div className="text-gray-700">
-                      <strong>Feedback:</strong> {aiFeedback.overall_feedback}
+                      <strong>Feedback:</strong> {typeof aiFeedback.overall_feedback === 'string' ? aiFeedback.overall_feedback : JSON.stringify(aiFeedback.overall_feedback)}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-white rounded-lg p-4 border border-orange-200">
                         <h4 className="font-semibold text-orange-800 mb-2">Strengths</h4>
                         <ul className="list-disc ml-4 text-sm text-gray-700">
                           {aiFeedback.detailed_analysis?.strengths?.map((strength, idx) => (
-                            <li key={idx}>{strength}</li>
+                            <li key={idx}>{typeof strength === 'string' ? strength : JSON.stringify(strength)}</li>
                           ))}
                         </ul>
                       </div>
@@ -201,7 +205,7 @@ const Writing = () => {
                         <h4 className="font-semibold text-orange-800 mb-2">Areas for Improvement</h4>
                         <ul className="list-disc ml-4 text-sm text-gray-700">
                           {aiFeedback.detailed_analysis?.weaknesses?.map((weakness, idx) => (
-                            <li key={idx}>{weakness}</li>
+                            <li key={idx}>{typeof weakness === 'string' ? weakness : JSON.stringify(weakness)}</li>
                           ))}
                         </ul>
                       </div>
@@ -209,35 +213,17 @@ const Writing = () => {
                   </div>
                 )}
 
-                {/* Task Achievement Tab */}
-                {activeTab === 'task_achievement' && (
+                {/* Sample Answer Tab */}
+                {activeTab === 'sample_answer' && (
                   <div className="space-y-4">
                     <div className="text-lg font-semibold text-orange-800 mb-3">
-                      Task Achievement Analysis
+                      Sample Answer (Band 8-9)
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
-                      {aiFeedback.task_achievement}
+                      {typeof aiFeedback.sample_answer === 'string' ? aiFeedback.sample_answer : JSON.stringify(aiFeedback.sample_answer)}
                     </div>
                     <div className="text-sm text-gray-600">
-                      <strong>Tip:</strong> Make sure you address all parts of the question thoroughly.
-                    </div>
-                  </div>
-                )}
-
-                {/* Coherence & Cohesion Tab */}
-                {activeTab === 'coherence' && (
-                  <div className="space-y-4">
-                    <div className="text-lg font-semibold text-orange-800 mb-3">
-                      Coherence & Cohesion Analysis
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
-                      {aiFeedback.coherence_cohesion}
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-orange-200">
-                      <h4 className="font-semibold text-orange-800 mb-2">Structure Analysis</h4>
-                      <div className="text-sm text-gray-700">
-                        {aiFeedback.structure_analysis}
-                      </div>
+                      <strong>Note:</strong> This is a high-quality sample answer for reference. Compare it with your own work to identify areas for improvement.
                     </div>
                   </div>
                 )}
@@ -246,20 +232,15 @@ const Writing = () => {
                 {activeTab === 'vocabulary' && (
                   <div className="space-y-4">
                     <div className="text-lg font-semibold text-orange-800 mb-3">
-                      Vocabulary Analysis
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
-                      {aiFeedback.lexical_resource}
+                      Vocabulary Words from Sample Answer
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-orange-200">
-                      <h4 className="font-semibold text-orange-800 mb-2">Vocabulary Improvements</h4>
-                      <div className="space-y-2">
-                        {aiFeedback.vocabulary_improvements?.map((improvement, idx) => (
-                          <div key={idx} className="text-sm text-gray-700 p-2 bg-gray-50 rounded">
-                            <strong>Original:</strong> {improvement.original} → <strong>Suggested:</strong> {improvement.suggested}
-                            <br />
-                            <span className="text-gray-600">{improvement.reason}</span>
-                          </div>
+                      <h4 className="font-semibold text-orange-800 mb-2">Important Words to Review</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {aiFeedback.vocabulary_words?.map((word, idx) => (
+                          <span key={idx} className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                            {typeof word === 'string' ? word : JSON.stringify(word)}
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -273,62 +254,18 @@ const Writing = () => {
                       Grammar Analysis
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
-                      {aiFeedback.grammatical_range_accuracy}
+                      {typeof aiFeedback.grammatical_range_accuracy === 'string' ? aiFeedback.grammatical_range_accuracy : JSON.stringify(aiFeedback.grammatical_range_accuracy)}
                     </div>
                   </div>
                 )}
 
-                {/* Corrections Tab */}
-                {activeTab === 'corrections' && (
-                  <div className="space-y-4">
-                    <div className="text-lg font-semibold text-orange-800 mb-3">
-                      Grammar Corrections
-                    </div>
-                    <div className="space-y-3">
-                      {aiFeedback.grammar_corrections?.map((correction, idx) => (
-                        <div key={idx} className="bg-white rounded-lg p-4 border border-orange-200">
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Original:</strong> {correction.original}
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Corrected:</strong> {correction.corrected}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            <strong>Explanation:</strong> {correction.explanation}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Improvement Tips Tab */}
-                {activeTab === 'tips' && (
-                  <div className="space-y-4">
-                    <div className="text-lg font-semibold text-orange-800 mb-3">
-                      Personalized Improvement Tips
-                    </div>
-                    <div className="space-y-3">
-                      {aiFeedback.improvement_tips?.map((tip, idx) => (
-                        <div key={idx} className="bg-white rounded-lg p-4 border border-orange-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-orange-600 text-lg">💡</span>
-                            <span className="font-semibold text-orange-800">Tip {idx + 1}</span>
-                          </div>
-                          <div className="text-gray-700">{tip}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-orange-200">
-                      <h4 className="font-semibold text-orange-800 mb-2">Suggestions</h4>
-                      <ul className="list-disc ml-4 text-sm text-gray-700">
-                        {aiFeedback.detailed_analysis?.suggestions?.map((suggestion, idx) => (
-                          <li key={idx}>{suggestion}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                )}
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
+                <div className="text-center text-gray-600">
+                  <p>AI feedback is not available at the moment.</p>
+                  <p className="text-sm mt-2">Your essay has been submitted successfully.</p>
+                </div>
               </div>
             )}
 

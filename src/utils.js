@@ -466,30 +466,24 @@ Writing Task: "${task}"
 Student's Essay: "${userEssay}"
 Word Count: ${wordCount}
 
+First, write a high-quality sample answer (Band 8-9) for this task, then analyze the student's essay.
+
 Return a JSON with:
 - overall_score: (0-9, float)
 - overall_feedback: (general feedback on writing performance)
-- task_achievement: (how well the task was addressed)
-- coherence_cohesion: (feedback on organization and flow)
-- lexical_resource: (vocabulary usage and range)
+- sample_answer: (a high-quality Band 8-9 sample answer for the same task)
+- vocabulary_words: [list of important/advanced vocabulary words from the sample answer for review]
 - grammatical_range_accuracy: (grammar usage and accuracy)
 - detailed_analysis: {
     strengths: [list of strengths in the essay],
     weaknesses: [areas that need improvement],
     suggestions: [specific suggestions for improvement]
   }
-- grammar_corrections: [{
-    original: string,
-    corrected: string,
-    explanation: string
-  }]
 - vocabulary_improvements: [{
     original: string,
     suggested: string,
     reason: string
-  }]
-- structure_analysis: (analysis of essay structure and organization)
-- improvement_tips: [personalized tips for better writing performance]`;
+  }] (based on comparing student's vocabulary with sample answer vocabulary)`;
 
     const payload = {
       temperature: 0.4,
@@ -529,34 +523,20 @@ Return a JSON with:
     return {
       overall_score: 6.0,
       overall_feedback: 'Could not parse AI feedback. (Demo)',
-      task_achievement: 'The task was partially addressed.',
-      coherence_cohesion: 'The essay has some logical flow.',
-      lexical_resource: 'Vocabulary range is adequate.',
+      sample_answer: 'This is a sample answer demonstrating high-quality writing for this task. It would include clear structure, advanced vocabulary, and proper grammar.',
+      vocabulary_words: ['sophisticated', 'comprehensive', 'methodology', 'implementation', 'analysis'],
       grammatical_range_accuracy: 'Grammar usage is generally correct.',
       detailed_analysis: {
         strengths: ['Clear main points', 'Good topic sentences'],
         weaknesses: ['Limited vocabulary', 'Some grammar errors'],
         suggestions: ['Expand vocabulary', 'Review grammar rules']
       },
-      grammar_corrections: [
-        {
-          original: 'example error',
-          corrected: 'corrected version',
-          explanation: 'This is a demo correction.'
-        }
-      ],
       vocabulary_improvements: [
         {
           original: 'basic word',
           suggested: 'advanced word',
           reason: 'More precise and academic'
         }
-      ],
-      structure_analysis: 'The essay follows a basic structure.',
-      improvement_tips: [
-        'Practice writing regularly',
-        'Read model essays',
-        'Focus on time management'
       ]
     };
   }
