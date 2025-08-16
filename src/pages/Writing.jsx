@@ -16,7 +16,7 @@ const Writing = () => {
   useEffect(() => {
     const loadWritingData = async () => {
       try {
-        const data = await dataService.fetchPracticeQuestions('writing');
+        const data = await dataService.getPracticeQuestions('writing');
         setWritingData(data);
       } catch (error) {
         console.error('Error loading writing data:', error);
