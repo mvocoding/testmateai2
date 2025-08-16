@@ -407,16 +407,31 @@ const Reading = () => {
                                Important Vocabulary
                              </div>
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                               {aiFeedback.vocabulary_notes?.map((vocab, idx) => (
-                                 <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
-                                   <div className="font-semibold text-green-800 mb-1">
-                                     {vocab.word}
+                               {aiFeedback.vocabulary_notes?.map((vocab, idx) => {
+                                 // Handle different vocabulary data structures
+                                 let word, definition;
+                                 if (typeof vocab === 'string') {
+                                   word = vocab;
+                                   definition = 'Definition not available';
+                                 } else if (vocab && typeof vocab === 'object') {
+                                   word = vocab.word || vocab.mistake || 'Unknown word';
+                                   definition = vocab.definition || vocab.solution || 'Definition not available';
+                                 } else {
+                                   word = 'Unknown word';
+                                   definition = 'Definition not available';
+                                 }
+                                 
+                                 return (
+                                   <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
+                                     <div className="font-semibold text-green-800 mb-1">
+                                       {word}
+                                     </div>
+                                     <div className="text-sm text-gray-700">
+                                       {definition}
+                                     </div>
                                    </div>
-                                   <div className="text-sm text-gray-700">
-                                     {vocab.definition}
-                                   </div>
-                                 </div>
-                               ))}
+                                 );
+                               })}
                              </div>
                            </div>
                          )}
