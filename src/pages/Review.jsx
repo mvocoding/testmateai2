@@ -36,10 +36,20 @@ const Review = () => {
       alert('No vocabulary words available for review.');
       return;
     }
+    
+    console.log('Starting quiz with vocabulary words:', vocabularyWords);
 
     setIsLoading(true);
     try {
       const quiz = await generateVocabularyQuiz(vocabularyWords);
+      console.log('Quiz data received:', quiz);
+      console.log('Quiz questions:', quiz?.questions);
+      
+      // Validate quiz structure
+      if (!quiz || !quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
+        throw new Error('Invalid quiz structure received');
+      }
+      
       setCurrentQuiz(quiz);
       setCurrentQuestionIndex(0);
       setSelectedAnswer(null);
@@ -54,27 +64,27 @@ const Review = () => {
     }
   };
 
-  const handleAnswerSelect = (answer) => {
-    if (isAnswered) return;
-    setSelectedAnswer(answer);
-    setIsAnswered(true);
-    
-    if (answer === currentQuiz.questions[currentQuestionIndex].correct_answer) {
-      setScore(score + 1);
-    }
-  };
+     const handleAnswerSelect = (answer) => {
+     if (isAnswered || !currentQuiz?.questions?.[currentQuestionIndex]) return;
+     setSelectedAnswer(answer);
+     setIsAnswered(true);
+     
+     if (answer === currentQuiz.questions[currentQuestionIndex].correct_answer) {
+       setScore(score + 1);
+     }
+   };
 
-  const nextQuestion = () => {
-    if (currentQuestionIndex < currentQuiz.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer(null);
-      setIsAnswered(false);
-    } else {
-      // Quiz completed
-      setIsQuizMode(false);
-      setCurrentQuiz(null);
-    }
-  };
+     const nextQuestion = () => {
+     if (currentQuestionIndex < (currentQuiz?.questions?.length || 0) - 1) {
+       setCurrentQuestionIndex(currentQuestionIndex + 1);
+       setSelectedAnswer(null);
+       setIsAnswered(false);
+     } else {
+       // Quiz completed
+       setIsQuizMode(false);
+       setCurrentQuiz(null);
+     }
+   };
 
   const resetQuiz = () => {
     setIsQuizMode(false);
@@ -85,7 +95,10 @@ const Review = () => {
     setScore(0);
   };
 
-  const currentQuestion = currentQuiz?.questions[currentQuestionIndex];
+  const currentQuestion = currentQuiz?.questions?.[currentQuestionIndex];
+  console.log('Current quiz:', currentQuiz);
+  console.log('Current question index:', currentQuestionIndex);
+  console.log('Current question:', currentQuestion);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -160,81 +173,103 @@ const Review = () => {
                 <h2 className="text-2xl font-bold text-gray-800">
                   Vocabulary Quiz
                 </h2>
-                <p className="text-gray-600">
-                  Question {currentQuestionIndex + 1} of {currentQuiz.questions.length}
-                </p>
+                                 <p className="text-gray-600">
+                   Question {currentQuestionIndex + 1} of {currentQuiz?.questions?.length || 0}
+                 </p>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-purple-600">
-                  Score: {score}/{currentQuiz.questions.length}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {Math.round((score / currentQuiz.questions.length) * 100)}%
-                </div>
+                                 <div className="text-2xl font-bold text-purple-600">
+                   Score: {score}/{currentQuiz?.questions?.length || 0}
+                 </div>
+                 <div className="text-sm text-gray-500">
+                   {Math.round((score / (currentQuiz?.questions?.length || 1)) * 100)}%
+                 </div>
               </div>
             </div>
 
             {/* Progress Bar */}
             <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-              <div
-                className="bg-gradient-to-r from-purple-600 to-purple-400 h-2 rounded-full transition-all duration-300"
-                style={{
-                  width: `${((currentQuestionIndex + 1) / currentQuiz.questions.length) * 100}%`
-                }}
-              ></div>
+                             <div
+                 className="bg-gradient-to-r from-purple-600 to-purple-400 h-2 rounded-full transition-all duration-300"
+                 style={{
+                   width: `${((currentQuestionIndex + 1) / (currentQuiz?.questions?.length || 1)) * 100}%`
+                 }}
+               ></div>
             </div>
 
-            {/* Question */}
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 mb-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                {currentQuestion.question}
-              </h3>
-              <div className="text-lg text-purple-700 font-medium">
-                Word: <span className="text-purple-900">{currentQuestion.word}</span>
-              </div>
-            </div>
+                         {/* Question */}
+             {currentQuestion ? (
+               <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 mb-6">
+                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                   {currentQuestion.question}
+                 </h3>
+                 <div className="text-lg text-purple-700 font-medium">
+                   Word: <span className="text-purple-900">{currentQuestion.word}</span>
+                 </div>
+               </div>
+             ) : (
+               <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 mb-6">
+                 <div className="text-center text-gray-600">
+                   <p>No question available. Please try again.</p>
+                   <button 
+                     onClick={resetQuiz}
+                     className="mt-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                   >
+                     Restart Quiz
+                   </button>
+                 </div>
+               </div>
+             )}
 
-            {/* Answer Options */}
-            <div className="space-y-3 mb-6">
-              {currentQuestion.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(option)}
-                  disabled={isAnswered}
-                  className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                    isAnswered
-                      ? option === currentQuestion.correct_answer
-                        ? 'bg-green-100 border-green-400 text-green-800'
-                        : option === selectedAnswer
-                        ? 'bg-red-100 border-red-400 text-red-800'
-                        : 'bg-gray-100 border-gray-300 text-gray-600'
-                      : selectedAnswer === option
-                      ? 'bg-purple-100 border-purple-400 text-purple-800'
-                      : 'bg-white border-gray-300 text-gray-700 hover:bg-purple-50 hover:border-purple-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-sm font-bold ${
-                      isAnswered
-                        ? option === currentQuestion.correct_answer
-                          ? 'bg-green-500 border-green-500 text-white'
-                          : option === selectedAnswer
-                          ? 'bg-red-500 border-red-500 text-white'
-                          : 'bg-gray-300 border-gray-300 text-gray-600'
-                        : selectedAnswer === option
-                        ? 'bg-purple-500 border-purple-500 text-white'
-                        : 'bg-white border-gray-400 text-gray-600'
-                    }`}>
-                      {String.fromCharCode(65 + index)}
+                                      {/* Answer Options */}
+             {currentQuestion && currentQuestion.options ? (
+               <div className="space-y-3 mb-6">
+                 {currentQuestion.options.map((option, index) => (
+                 <button
+                   key={index}
+                   onClick={() => handleAnswerSelect(option)}
+                   disabled={isAnswered}
+                   className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                     isAnswered
+                       ? option === currentQuestion.correct_answer
+                         ? 'bg-green-100 border-green-400 text-green-800'
+                         : option === selectedAnswer
+                         ? 'bg-red-100 border-red-400 text-red-800'
+                         : 'bg-gray-100 border-gray-300 text-gray-600'
+                       : selectedAnswer === option
+                       ? 'bg-purple-100 border-purple-400 text-purple-800'
+                       : 'bg-white border-gray-300 text-gray-700 hover:bg-purple-50 hover:border-purple-300'
+                                      }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-sm font-bold ${
+                        isAnswered
+                          ? option === currentQuestion.correct_answer
+                            ? 'bg-green-500 border-green-500 text-white'
+                            : option === selectedAnswer
+                            ? 'bg-red-500 border-red-500 text-white'
+                            : 'bg-gray-300 border-gray-300 text-gray-600'
+                          : selectedAnswer === option
+                          ? 'bg-purple-500 border-purple-500 text-white'
+                          : 'bg-white border-gray-400 text-gray-600'
+                      }`}>
+                        {String.fromCharCode(65 + index)}
+                      </div>
+                      <span className="font-medium">{option}</span>
                     </div>
-                    <span className="font-medium">{option}</span>
+                  </button>
+                ))}
+                </div>
+              ) : (
+                <div className="space-y-3 mb-6">
+                  <div className="text-center text-gray-600">
+                    <p>No answer options available.</p>
                   </div>
-                </button>
-              ))}
-            </div>
+                </div>
+              )}
 
-            {/* Feedback */}
-            {isAnswered && (
+                         {/* Feedback */}
+             {isAnswered && currentQuestion && (
               <div className={`p-4 rounded-xl mb-6 ${
                 selectedAnswer === currentQuestion.correct_answer
                   ? 'bg-green-100 border border-green-300'
@@ -274,16 +309,16 @@ const Review = () => {
                 Exit Quiz
               </button>
               
-              {isAnswered && (
-                <button
-                  onClick={nextQuestion}
-                  className="bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-700 hover:to-purple-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-200"
-                >
-                  {currentQuestionIndex < currentQuiz.questions.length - 1
-                    ? 'Next Question'
-                    : 'Finish Quiz'}
-                </button>
-              )}
+                             {isAnswered && (
+                 <button
+                   onClick={nextQuestion}
+                   className="bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-700 hover:to-purple-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-200"
+                 >
+                   {currentQuestionIndex < (currentQuiz?.questions?.length || 0) - 1
+                     ? 'Next Question'
+                     : 'Finish Quiz'}
+                 </button>
+               )}
             </div>
           </div>
         )}

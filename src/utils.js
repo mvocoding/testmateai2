@@ -594,28 +594,92 @@ Return a JSON with:
       throw new Error('API request failed');
     }
 
-    const data = await response.json();
-    const rawContent = data.choices[0].message.content;
-    const quiz = JSON.parse(rawContent);
-    
-    return quiz;
+         const data = await response.json();
+     const rawContent = data.choices[0].message.content;
+     const quiz = JSON.parse(rawContent);
+     
+     // Handle case where AI returns array directly instead of object with questions property
+     if (Array.isArray(quiz)) {
+       return { questions: quiz };
+     }
+     
+     return quiz;
   } catch (error) {
     console.error('Error generating vocabulary quiz:', error);
-    // Return demo quiz
-    return {
-      questions: vocabularyWords.slice(0, Math.min(10, vocabularyWords.length)).map((word, index) => ({
-        word: word,
-        question: `What is the meaning of "${word}"?`,
-        options: [
-          `Definition ${index + 1}A`,
-          `Definition ${index + 1}B`,
-          `Definition ${index + 1}C`,
-          `Definition ${index + 1}D`
-        ],
-        correct_answer: `Definition ${index + 1}A`,
-        explanation: `This is a demo explanation for the word "${word}".`
-      }))
+    // Return demo quiz with realistic definitions
+    console.log('Using demo quiz for words:', vocabularyWords);
+    const demoDefinitions = {
+      'sophisticated': {
+        correct: 'Complex and refined in character',
+        options: ['Complex and refined in character', 'Simple and basic', 'Old and outdated', 'New and modern']
+      },
+      'comprehensive': {
+        correct: 'Complete and thorough',
+        options: ['Complete and thorough', 'Brief and short', 'Difficult and complex', 'Easy and simple']
+      },
+      'methodology': {
+        correct: 'A system of methods used in research',
+        options: ['A system of methods used in research', 'A type of technology', 'A form of communication', 'A style of writing']
+      },
+      'implementation': {
+        correct: 'The process of putting a plan into action',
+        options: ['The process of putting a plan into action', 'The creation of a plan', 'The evaluation of results', 'The discussion of ideas']
+      },
+      'analysis': {
+        correct: 'Detailed examination of something',
+        options: ['Detailed examination of something', 'Quick overview of something', 'Simple description', 'Basic summary']
+      },
+      'perspective': {
+        correct: 'A particular way of viewing something',
+        options: ['A particular way of viewing something', 'A physical location', 'A time period', 'A type of object']
+      },
+      'significant': {
+        correct: 'Important or meaningful',
+        options: ['Important or meaningful', 'Small or minor', 'Temporary or brief', 'Common or ordinary']
+      },
+      'consequently': {
+        correct: 'As a result or therefore',
+        options: ['As a result or therefore', 'At the same time', 'In the beginning', 'For example']
+      },
+      'furthermore': {
+        correct: 'In addition or moreover',
+        options: ['In addition or moreover', 'However or but', 'Therefore or so', 'Meanwhile or while']
+      },
+      'nevertheless': {
+        correct: 'Despite that or however',
+        options: ['Despite that or however', 'Because of that', 'In addition to', 'As a result of']
+      }
     };
+
+    const questions = vocabularyWords.slice(0, Math.min(10, vocabularyWords.length)).map((word, index) => {
+        const demo = demoDefinitions[word.toLowerCase()];
+        if (demo) {
+          return {
+            word: word,
+            question: `What is the meaning of "${word}"?`,
+            options: demo.options,
+            correct_answer: demo.correct,
+            explanation: `"${word}" means "${demo.correct}". This word is commonly used in academic and professional contexts.`
+          };
+        } else {
+          // Fallback for words not in demo definitions
+          return {
+            word: word,
+            question: `What is the meaning of "${word}"?`,
+            options: [
+              'Advanced or complex',
+              'Simple or basic', 
+              'Old or traditional',
+              'New or modern'
+            ],
+            correct_answer: 'Advanced or complex',
+            explanation: `"${word}" is an advanced vocabulary word that you should review and practice.`
+          };
+        }
+      });
+    
+    console.log('Generated demo questions:', questions);
+    return { questions };
   }
 };
 
