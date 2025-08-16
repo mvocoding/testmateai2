@@ -127,10 +127,15 @@ const Listening = () => {
   };
 
   const handleAnswerChange = (questionId, value) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: value,
-    }));
+    console.log(`handleAnswerChange: questionId = ${questionId}, value = ${value}, type = ${typeof value}`);
+    setAnswers((prev) => {
+      const newAnswers = {
+        ...prev,
+        [questionId]: value,
+      };
+      console.log('New answers object:', newAnswers);
+      return newAnswers;
+    });
   };
 
   const calculateScore = () => {
@@ -141,7 +146,8 @@ const Listening = () => {
     passage.questions.forEach((question) => {
       const userAnswer = answers[question.id];
 
-      if (question.type === 'multiple_choice') {
+      if (question.options) {
+        // Multiple choice question
         if (userAnswer === question.correct) correct++;
       } else if (question.type === 'fill_blank') {
         if (
@@ -165,52 +171,93 @@ const Listening = () => {
     setScore(finalScore);
     setShowResults(true);
     
+    // Debug: Log the answers object
+    console.log('Answers object:', answers);
+    console.log('Questions:', questions);
+    
     // Generate AI feedback
     setIsAnalyzing(true);
     try {
-      const feedback = await generateListeningFeedback(
-        passage,
-        questions,
-        answers
-      );
-      
-      // Fix the AI feedback to use actual correct answers from our data
-      const correctedFeedback = {
-        ...feedback,
-        question_analysis: feedback.question_analysis?.map((analysis, idx) => {
-          const question = questions[idx];
-          let actualCorrectAnswer, actualStudentAnswer;
+             // Format answers for AI feedback - convert indices to actual answer text
+       const formattedAnswers = {};
+       questions.forEach((question, idx) => {
+         const userAnswer = answers[question.id];
+         console.log(`Question ${question.id}: userAnswer = ${userAnswer}, type = ${typeof userAnswer}`);
+         console.log(`Question options:`, question.options);
+         console.log(`Question type: ${question.type}`);
+         console.log(`Has options: ${!!question.options}`);
+         console.log(`User answer check: ${userAnswer !== undefined && userAnswer !== null}`);
+         
+         if (question.options && userAnswer !== undefined && userAnswer !== null) {
+           formattedAnswers[question.id] = question.options[userAnswer];
+           console.log(`Formatted answer for ${question.id}: ${formattedAnswers[question.id]}`);
+         } else {
+           formattedAnswers[question.id] = userAnswer;
+           console.log(`Using raw answer for ${question.id}: ${userAnswer}`);
+         }
+       });
+       
+       console.log('Formatted answers:', formattedAnswers);
+
+             const feedback = await generateListeningFeedback(
+         passage,
+         questions,
+         formattedAnswers
+       );
+       
+       console.log('AI Feedback received:', feedback);
+       
+       // Fix the AI feedback to use actual correct answers from our data
+       const correctedFeedback = {
+         ...feedback,
+         question_analysis: feedback.question_analysis?.map((analysis, idx) => {
+           const question = questions[idx];
+           const userAnswer = answers[question.id];
+           
+           console.log(`Correcting feedback for question ${idx + 1}:`);
+           console.log(`  Question ID: ${question.id}`);
+           console.log(`  User answer: ${userAnswer}`);
+           console.log(`  Question options:`, question.options);
+           console.log(`  Correct answer index: ${question.correct}`);
+           
+           // Get actual answer text
+           let actualCorrectAnswer, actualStudentAnswer;
+           if (question.options) {
+             actualCorrectAnswer = question.options ? question.options[question.correct] : question.correct;
+             actualStudentAnswer = question.options && userAnswer !== undefined && userAnswer !== null
+               ? question.options[userAnswer] 
+               : 'No answer provided';
+             console.log(`  Actual correct answer: ${actualCorrectAnswer}`);
+             console.log(`  Actual student answer: ${actualStudentAnswer}`);
+           } else {
+             actualCorrectAnswer = question.answer || question.correct;
+             actualStudentAnswer = userAnswer || 'No answer provided';
+           }
           
-          if (question.type === 'multiple_choice') {
-            actualCorrectAnswer = question.options ? question.options[question.correct] : question.correct;
-            actualStudentAnswer = question.options && answers[question.id] !== undefined 
-              ? question.options[answers[question.id]] 
-              : answers[question.id] || 'No answer provided';
-          } else {
-            actualCorrectAnswer = question.answer || question.correct;
-            actualStudentAnswer = answers[question.id] || 'No answer provided';
-          }
+                     // Determine if the answer is actually correct based on our data
+           let isActuallyCorrect = false;
+           if (question.options) {
+             isActuallyCorrect = userAnswer === question.correct;
+           } else if (question.type === 'fill_blank') {
+             const userAnswerText = (userAnswer || '').toString().toLowerCase().trim();
+             const correctAnswer = (question.answer || question.correct).toString().toLowerCase().trim();
+             isActuallyCorrect = userAnswerText === correctAnswer;
+           } else if (question.type === 'true_false') {
+             isActuallyCorrect = userAnswer === question.correct;
+           }
           
-          // Determine if the answer is actually correct based on our data
-          let isActuallyCorrect = false;
-          if (question.type === 'multiple_choice') {
-            isActuallyCorrect = answers[question.id] === question.correct;
-          } else if (question.type === 'fill_blank') {
-            const userAnswer = (answers[question.id] || '').toString().toLowerCase().trim();
-            const correctAnswer = (question.answer || question.correct).toString().toLowerCase().trim();
-            isActuallyCorrect = userAnswer === correctAnswer;
-          } else if (question.type === 'true_false') {
-            isActuallyCorrect = answers[question.id] === question.correct;
-          }
-          
-          return {
-            ...analysis,
-            correct_answer: actualCorrectAnswer,
-            student_answer: actualStudentAnswer,
-            is_correct: isActuallyCorrect
-          };
-        }) || []
-      };
+                     const correctedAnalysis = {
+             ...analysis,
+             correct_answer: actualCorrectAnswer,
+             student_answer: actualStudentAnswer,
+             is_correct: isActuallyCorrect
+           };
+           console.log(`Corrected analysis for question ${idx + 1}:`, correctedAnalysis);
+           return correctedAnalysis;
+         }) || []
+       };
+       
+       console.log('Final corrected feedback:', correctedFeedback);
       
       setAiFeedback(correctedFeedback);
       
@@ -340,9 +387,7 @@ const Listening = () => {
                 </span>
                 {isLoading ? 'Loading...' : isPlaying ? 'Pause' : 'Play Audio'}
               </button>
-              <div className="text-sm text-gray-600">
-                Plays remaining: {MAX_PLAYS - playCount}
-              </div>
+
             </div>
             {/* Timer */}
             {isTimerActive && (
@@ -476,40 +521,40 @@ const Listening = () => {
                       <div className="text-lg font-semibold text-blue-800 mb-3">
                         Detailed Question Analysis
                       </div>
-                      {aiFeedback.question_analysis?.map((analysis, idx) => (
-                        <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                              analysis.is_correct 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {analysis.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                            </span>
-                            <span className="font-semibold text-blue-800">
-                              Question {analysis.question_number}
-                            </span>
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Question:</strong> {typeof analysis.question_text === 'string' ? analysis.question_text : JSON.stringify(analysis.question_text)}
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Your Answer:</strong> {analysis.student_answer}
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Correct Answer:</strong> {analysis.correct_answer}
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Explanation:</strong> {typeof analysis.explanation === 'string' ? analysis.explanation : JSON.stringify(analysis.explanation)}
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Listening Tip:</strong> {typeof analysis.listening_tips === 'string' ? analysis.listening_tips : JSON.stringify(analysis.listening_tips)}
-                          </div>
-                          <div className="text-sm text-gray-700">
-                            <strong>Key Vocabulary:</strong> {analysis.key_vocabulary?.join(', ')}
-                          </div>
-                        </div>
-                      ))}
+                                                                    {aiFeedback.question_analysis?.map((analysis, idx) => (
+                         <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
+                           <div className="flex items-center gap-2 mb-2">
+                             <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                               analysis.is_correct 
+                                 ? 'bg-green-100 text-green-800' 
+                                 : 'bg-red-100 text-red-800'
+                             }`}>
+                               {analysis.is_correct ? '✓ Correct' : '✗ Incorrect'}
+                             </span>
+                             <span className="font-semibold text-blue-800">
+                               Question {analysis.question_number}
+                             </span>
+                           </div>
+                           <div className="text-sm text-gray-700 mb-2">
+                             <strong>Question:</strong> {analysis.question_text}
+                           </div>
+                                                       <div className="text-sm text-gray-700 mb-2">
+                              <strong>Your Answer:</strong> {analysis.student_answer}
+                            </div>
+                            <div className="text-sm text-gray-700 mb-2">
+                              <strong>Correct Answer:</strong> {analysis.correct_answer}
+                            </div>
+                           <div className="text-sm text-gray-700 mb-2">
+                             <strong>Explanation:</strong> {analysis.explanation}
+                           </div>
+                           <div className="text-sm text-gray-700 mb-2">
+                             <strong>Listening Tip:</strong> {analysis.listening_tips}
+                           </div>
+                           <div className="text-sm text-gray-700">
+                             <strong>Key Vocabulary:</strong> {analysis.key_vocabulary?.join(', ')}
+                           </div>
+                         </div>
+                       ))}
                     </div>
                   )}
 
