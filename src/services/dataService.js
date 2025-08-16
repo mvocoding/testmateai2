@@ -334,31 +334,31 @@ export const fetchMockTestQuestions = (testId, sectionId) => {
          questionType.passages.forEach(passage => {
            console.log(`Processing passage:`, passage);
            if (passage.questions) {
-             // For listening, we want to group questions by passage
-             if (sectionId === 'listening') {
-               // Create a single question object that contains all questions for this passage
-               allQuestions.push({
-                 id: passage.id,
-                 question: `Passage: ${passage.title}`,
-                 passageText: passage.text,
-                 passageTitle: passage.title,
-                 questions: passage.questions, // Keep all questions for this passage
-                 questionType: questionType.name,
-                 type: 'passage' // Mark as a passage type
-               });
-             } else {
-               // For other sections, process each question individually
-               passage.questions.forEach(question => {
-                 allQuestions.push({
-                   ...question,
-                   // Map text to question for consistency
-                   question: question.text || question.question || '',
-                   // Map passage text
-                   passageText: passage.passage || passage.text || passage.title || '',
-                   questionType: questionType.name
-                 });
-               });
-             }
+                           // For listening and reading, we want to group questions by passage
+              if (sectionId === 'listening' || sectionId === 'reading') {
+                // Create a single question object that contains all questions for this passage
+                allQuestions.push({
+                  id: passage.id,
+                  question: `Passage: ${passage.title}`,
+                  passageText: passage.text || passage.passage,
+                  passageTitle: passage.title,
+                  questions: passage.questions, // Keep all questions for this passage
+                  questionType: questionType.name,
+                  type: 'passage' // Mark as a passage type
+                });
+              } else {
+                // For other sections, process each question individually
+                passage.questions.forEach(question => {
+                  allQuestions.push({
+                    ...question,
+                    // Map text to question for consistency
+                    question: question.text || question.question || '',
+                    // Map passage text
+                    passageText: passage.passage || passage.text || passage.title || '',
+                    questionType: questionType.name
+                  });
+                });
+              }
            }
          });
        } else if (questionType.questions) {

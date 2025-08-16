@@ -185,16 +185,26 @@ const MockTest = () => {
       alert(`No questions available for ${currentSection} section. Please try again.`);
       return;
     }
+    // Clear answers for the current section to prevent binding issues
+    clearSectionAnswers(currentSection);
     setShowingIntroduction(false);
   };
 
   const handleAnswer = (section, questionId, answer) => {
+    console.log(`Setting answer for ${section}, question ${questionId}:`, answer);
     setAnswers((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
         [questionId]: answer,
       },
+    }));
+  };
+
+  const clearSectionAnswers = (section) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [section]: {}
     }));
   };
 
@@ -217,9 +227,12 @@ const MockTest = () => {
       // Move to next section
       const sectionIndex = sections.findIndex((s) => s.id === currentSection);
       if (sectionIndex < sections.length - 1) {
-        setCurrentSection(sections[sectionIndex + 1].id);
+        const nextSection = sections[sectionIndex + 1].id;
+        setCurrentSection(nextSection);
         setCurrentQuestion(0);
         setShowingIntroduction(true);
+        // Clear answers for the new section to prevent binding issues
+        clearSectionAnswers(nextSection);
         // Reset audio state for new section
         setPlayCount(0);
         setIsPlaying(false);
@@ -249,8 +262,11 @@ const MockTest = () => {
       // Move to previous section
       const sectionIndex = sections.findIndex((s) => s.id === currentSection);
       if (sectionIndex > 0) {
-        setCurrentSection(sections[sectionIndex - 1].id);
-        setCurrentQuestion(questions[sections[sectionIndex - 1].id].length - 1);
+        const prevSection = sections[sectionIndex - 1].id;
+        setCurrentSection(prevSection);
+        setCurrentQuestion(questions[prevSection].length - 1);
+        // Clear answers for the new section to prevent binding issues
+        clearSectionAnswers(prevSection);
         // Reset audio state for new section
         setPlayCount(0);
         setIsPlaying(false);
@@ -786,7 +802,7 @@ const MockTest = () => {
           <div className="space-y-6">
             <div className="bg-blue-50 p-6 rounded-lg">
               <h3 className="text-xl font-semibold mb-4">
-                Reading Question {question.id || 'Unknown'}
+                Reading Passage {currentQuestion + 1}
               </h3>
 
               <div className="space-y-4">
@@ -798,106 +814,218 @@ const MockTest = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-lg font-medium">{question.question || 'Question not available'}</h4>
-
-                  {question.type === 'multiple-choice' && question.options && (
-                    <div className="space-y-2">
-                      {question.options.map((option, index) => (
-                        <label
-                          key={index}
-                          className="flex items-center space-x-3 cursor-pointer"
-                        >
-                          <input
-                            type="radio"
-                            name={`reading-${question.id}`}
-                            value={index}
-                            checked={answers.reading[question.id] === index}
-                            onChange={(e) =>
-                              handleAnswer(
-                                'reading',
-                                question.id,
-                                parseInt(e.target.value)
-                              )
-                            }
-                            className="text-teal-600"
-                          />
-                          <span>{option}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-
-                  {question.type === 'true-false' && (
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name={`reading-${question.id}`}
-                          value="true"
-                          checked={answers.reading[question.id] === true}
-                          onChange={() =>
-                            handleAnswer('reading', question.id, true)
-                          }
-                          className="text-teal-600"
-                        />
-                        <span>True</span>
-                      </label>
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name={`reading-${question.id}`}
-                          value="false"
-                          checked={answers.reading[question.id] === false}
-                          onChange={() =>
-                            handleAnswer('reading', question.id, false)
-                          }
-                          className="text-teal-600"
-                        />
-                        <span>False</span>
-                      </label>
-                    </div>
-                  )}
-
-                  {question.type === 'fill-blank' && (
-                    <input
-                      type="text"
-                      value={answers.reading[question.id] || ''}
-                      onChange={(e) =>
-                        handleAnswer('reading', question.id, e.target.value)
-                      }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                      placeholder="Type your answer here..."
-                    />
-                  )}
-
-                  {question.type === 'matching' && question.options && (
-                    <div className="space-y-3">
-                      {question.options.map((option, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center space-x-4"
-                        >
-                          <span className="font-medium">
-                            {typeof option === 'object' && option.source ? option.source : `Option ${index + 1}`}:
-                          </span>
-                          <input
-                            type="text"
-                            value={
-                              answers.reading[`${question.id}-${index}`] || ''
-                            }
-                            onChange={(e) =>
-                              handleAnswer(
-                                'reading',
-                                `${question.id}-${index}`,
-                                e.target.value
-                              )
-                            }
-                            className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
-                            placeholder="Match with characteristic..."
-                          />
+                  <h4 className="text-lg font-medium">{question.passageTitle || question.question || 'Passage not available'}</h4>
+                  
+                  {/* Render all questions for this passage */}
+                  {question.type === 'passage' && question.questions && (
+                    <div className="space-y-6">
+                      {question.questions.map((subQuestion, subIndex) => (
+                        <div key={subQuestion.id} className="bg-gray-50 p-4 rounded-lg">
+                          <h5 className="font-semibold text-gray-800 mb-3">
+                            Question {subIndex + 1}: {subQuestion.text || subQuestion.question}
+                          </h5>
+                          
+                          {subQuestion.options ? (
+                            <div className="space-y-2">
+                              {subQuestion.options.map((option, optionIndex) => (
+                                <label
+                                  key={optionIndex}
+                                  className="flex items-center space-x-3 cursor-pointer"
+                                >
+                                  <input
+                                    type="radio"
+                                    name={`reading-${question.id}-${subQuestion.id}`}
+                                    value={optionIndex}
+                                    checked={answers.reading[`${question.id}-${subQuestion.id}`] === optionIndex}
+                                    onChange={(e) =>
+                                      handleAnswer(
+                                        'reading',
+                                        `${question.id}-${subQuestion.id}`,
+                                        parseInt(e.target.value)
+                                      )
+                                    }
+                                    className="text-teal-600"
+                                  />
+                                  <span>{option}</span>
+                                </label>
+                              ))}
+                            </div>
+                          ) : subQuestion.type === 'completion' || subQuestion.type === 'shortAnswer' ? (
+                            <input
+                              type="text"
+                              value={answers.reading[`${question.id}-${subQuestion.id}`] || ''}
+                              onChange={(e) =>
+                                handleAnswer('reading', `${question.id}-${subQuestion.id}`, e.target.value)
+                              }
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                              placeholder="Type your answer here..."
+                            />
+                          ) : subQuestion.type === 'true_false' || subQuestion.type === 'true-false' ? (
+                            <div className="space-y-2">
+                              <label className="flex items-center space-x-3 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name={`reading-${question.id}-${subQuestion.id}`}
+                                  value="true"
+                                  checked={answers.reading[`${question.id}-${subQuestion.id}`] === true}
+                                  onChange={() =>
+                                    handleAnswer('reading', `${question.id}-${subQuestion.id}`, true)
+                                  }
+                                  className="text-teal-600"
+                                />
+                                <span>True</span>
+                              </label>
+                              <label className="flex items-center space-x-3 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name={`reading-${question.id}-${subQuestion.id}`}
+                                  value="false"
+                                  checked={answers.reading[`${question.id}-${subQuestion.id}`] === false}
+                                  onChange={() =>
+                                    handleAnswer('reading', `${question.id}-${subQuestion.id}`, false)
+                                  }
+                                  className="text-teal-600"
+                                />
+                                <span>False</span>
+                              </label>
+                            </div>
+                          ) : subQuestion.type === 'matching' && subQuestion.options ? (
+                            <div className="space-y-3">
+                              {subQuestion.options.map((option, optionIndex) => (
+                                <div
+                                  key={optionIndex}
+                                  className="flex items-center space-x-4"
+                                >
+                                  <span className="font-medium">
+                                    {typeof option === 'object' && option.source ? option.source : `Option ${optionIndex + 1}`}:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={
+                                      answers.reading[`${question.id}-${subQuestion.id}-${optionIndex}`] || ''
+                                    }
+                                    onChange={(e) =>
+                                      handleAnswer(
+                                        'reading',
+                                        `${question.id}-${subQuestion.id}-${optionIndex}`,
+                                        e.target.value
+                                      )
+                                    }
+                                    className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
+                                    placeholder="Match with characteristic..."
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
                         </div>
                       ))}
                     </div>
+                  )}
+
+                  {/* Fallback for individual questions (if not passage type) */}
+                  {question.type !== 'passage' && (
+                    <>
+                      {question.type === 'multiple-choice' && question.options && (
+                        <div className="space-y-2">
+                          {question.options.map((option, index) => (
+                            <label
+                              key={index}
+                              className="flex items-center space-x-3 cursor-pointer"
+                            >
+                              <input
+                                type="radio"
+                                name={`reading-${question.id}`}
+                                value={index}
+                                checked={answers.reading[question.id] === index}
+                                onChange={(e) =>
+                                  handleAnswer(
+                                    'reading',
+                                    question.id,
+                                    parseInt(e.target.value)
+                                  )
+                                }
+                                className="text-teal-600"
+                              />
+                              <span>{option}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+
+                      {question.type === 'true-false' && (
+                        <div className="space-y-2">
+                          <label className="flex items-center space-x-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name={`reading-${question.id}`}
+                              value="true"
+                              checked={answers.reading[question.id] === true}
+                              onChange={() =>
+                                handleAnswer('reading', question.id, true)
+                              }
+                              className="text-teal-600"
+                            />
+                            <span>True</span>
+                          </label>
+                          <label className="flex items-center space-x-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name={`reading-${question.id}`}
+                              value="false"
+                              checked={answers.reading[question.id] === false}
+                              onChange={() =>
+                                handleAnswer('reading', question.id, false)
+                              }
+                              className="text-teal-600"
+                            />
+                            <span>False</span>
+                          </label>
+                        </div>
+                      )}
+
+                      {question.type === 'fill-blank' && (
+                        <input
+                          type="text"
+                          value={answers.reading[question.id] || ''}
+                          onChange={(e) =>
+                            handleAnswer('reading', question.id, e.target.value)
+                          }
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                          placeholder="Type your answer here..."
+                        />
+                      )}
+
+                      {question.type === 'matching' && question.options && (
+                        <div className="space-y-3">
+                          {question.options.map((option, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center space-x-4"
+                            >
+                              <span className="font-medium">
+                                {typeof option === 'object' && option.source ? option.source : `Option ${index + 1}`}:
+                              </span>
+                              <input
+                                type="text"
+                                value={
+                                  answers.reading[`${question.id}-${index}`] || ''
+                                }
+                                onChange={(e) =>
+                                  handleAnswer(
+                                    'reading',
+                                    `${question.id}-${index}`,
+                                    e.target.value
+                                  )
+                                }
+                                className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
+                                placeholder="Match with characteristic..."
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
