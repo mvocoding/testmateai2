@@ -270,30 +270,72 @@ export const generateStudyPlan = async (userData) => {
     // This would normally call the AI service
     // For now, return a basic study plan
     const studyPlan = {
-      summary: "Focus on improving all skills systematically",
+      summary: "You're on track to achieve your target score! Focus on consistent daily practice and targeted improvement in your weaker areas. Remember, small daily efforts lead to significant long-term results.",
       weeks: 8,
       recommendations: [
-        "Practice each skill daily",
-        "Focus on weak areas",
-        "Take regular mock tests",
-        "Review vocabulary regularly"
+        "Practice 2-3 exercises daily across all skills",
+        "Focus 60% of time on your weakest skill",
+        "Take a full mock test every 2 weeks",
+        "Review and learn 10 new vocabulary words daily"
       ],
       focus_areas: [
         {
-          skill: "All Skills",
-          reason: "Balanced preparation for comprehensive improvement"
+          skill: "Listening",
+          reason: "Improving listening comprehension will boost your overall score"
+        },
+        {
+          skill: "Reading", 
+          reason: "Strong reading skills help with time management and accuracy"
+        },
+        {
+          skill: "Writing",
+          reason: "Writing requires the most practice to see improvement"
+        },
+        {
+          skill: "Speaking",
+          reason: "Regular speaking practice builds confidence and fluency"
         }
       ],
       weekly_schedule: [
         {
           week: 1,
-          focus: "Foundation",
-          tasks: ["Grammar basics", "Essential vocabulary", "Test format overview"]
+          focus: "Foundation & Assessment",
+          tasks: [
+            "Complete 2 listening passages daily",
+            "Practice 3 reading exercises",
+            "Write 1 essay (Task 1 or 2)",
+            "Record 2 speaking responses"
+          ]
         },
         {
           week: 2,
-          focus: "Listening",
-          tasks: ["Note-taking skills", "Audio comprehension", "Question types"]
+          focus: "Listening & Reading",
+          tasks: [
+            "Practice note-taking with 3 listening passages",
+            "Complete 4 reading exercises with time limits",
+            "Review vocabulary from previous week",
+            "Take 1 mini mock test"
+          ]
+        },
+        {
+          week: 3,
+          focus: "Writing & Speaking",
+          tasks: [
+            "Write 2 essays (both Task 1 and 2)",
+            "Practice speaking with 4 different topics",
+            "Review grammar rules and common mistakes",
+            "Complete 2 listening exercises"
+          ]
+        },
+        {
+          week: 4,
+          focus: "Integrated Practice",
+          tasks: [
+            "Take 1 full mock test",
+            "Analyze mistakes and create improvement plan",
+            "Focus on weakest areas identified",
+            "Practice time management for all sections"
+          ]
         }
       ]
     };

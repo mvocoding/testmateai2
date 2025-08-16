@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDashboardData, getUser } from '../services/dataService';
+import {
+  getDashboardData,
+  getUser,
+  generateStudyPlan,
+} from '../services/dataService';
 
 const getSkillsData = (dashboardData) => [
   {
@@ -45,32 +49,12 @@ const getSkillsData = (dashboardData) => [
   },
 ];
 
-const achievements = [
-  {
-    name: 'First Steps',
-    desc: 'Complete your first speaking test',
-    icon: '🎯',
-    earned: true,
-  },
-  {
-    name: 'Listener',
-    desc: 'Complete 5 listening exercises',
-    icon: '👂',
-    earned: true,
-  },
-  {
-    name: 'Scholar',
-    desc: 'Study for 7 days in a row',
-    icon: '📚',
-    earned: false,
-  },
-  { name: 'Master', desc: 'Score 8.0+ on any test', icon: '🏆', earned: false },
-];
+// Removed achievements array
 
 const getRecentActivity = (dashboardData) => {
   if (!dashboardData?.recentActivities) return [];
-  
-  return dashboardData.recentActivities.map(activity => ({
+
+  return dashboardData.recentActivities.map((activity) => ({
     type: activity.practiceType || activity.type,
     action: activity.type === 'practice' ? 'Completed practice' : 'Activity',
     score: activity.score || 0,
@@ -83,6 +67,7 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
 
   useEffect(() => {
     const loadDashboardData = () => {
@@ -107,16 +92,26 @@ const Dashboard = () => {
   const currentLevel = user?.level || 1;
   const currentXP = user?.xp || 0;
   const totalXP = 100; // XP needed for next level
-  const studyStreak = 0; // TODO: Implement study streak tracking
-  const totalTime = dashboardData?.practiceStats?.total || 0;
-  const testsCompleted = dashboardData?.practiceStats?.total || 0;
 
   const xpPercent = (currentXP / totalXP) * 100;
 
-  // Function to reset data for testing (remove in production)
   const resetData = () => {
     localStorage.clear();
     window.location.reload();
+  };
+
+  const handleGenerateStudyPlan = async () => {
+    setGeneratingPlan(true);
+    try {
+      const plan = await generateStudyPlan(user);
+      if (plan) {
+        setUser({ ...user, studyPlan: plan });
+      }
+    } catch (error) {
+      console.error('Error generating study plan:', error);
+    } finally {
+      setGeneratingPlan(false);
+    }
   };
 
   return (
@@ -136,182 +131,217 @@ const Dashboard = () => {
             Reset Data (Testing)
           </button>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
-            {' '}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                Level Progress
-              </h2>
-              <div className="text-right">
-                <div className="text-3xl font-black text-teal-700">
-                  Level {currentLevel}
+            <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
+              {' '}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Level Progress
+                </h2>
+                <div className="text-right">
+                  <div className="text-3xl font-black text-teal-700">
+                    Level {currentLevel}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {currentXP} / {totalXP} XP
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  {currentXP} / {totalXP} XP
-                </div>
               </div>
-            </div>
-            <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="absolute left-0 top-0 h-4 bg-teal-500 transition-all duration-700"
-                style={{ width: `${xpPercent}%` }}
-              ></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 text-center">
-              <div className="text-3xl mb-2">🔥</div>
-              <div className="text-2xl font-bold text-gray-800">
-                {studyStreak}
-              </div>
-              <div className="text-sm text-gray-600">Day Streak</div>
-            </div>
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 text-center">
-              <div className="text-3xl mb-2">⏱️</div>
-              <div className="text-2xl font-bold text-gray-800">
-                {totalTime}h
-              </div>
-              <div className="text-sm text-gray-600">Study Time</div>
-            </div>
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 text-center">
-              <div className="text-3xl mb-2">📝</div>
-              <div className="text-2xl font-bold text-gray-800">
-                {testsCompleted}
-              </div>
-              <div className="text-sm text-gray-600">Tests Completed</div>
-            </div>
-          </div>
-          <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Recent Activity
-            </h2>
-            <div className="space-y-4">
-              {getRecentActivity(dashboardData).map((activity, index) => (
+              <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  key={index}
-                  className="flex items-center justify-between p-4 bg-white/50 rounded-xl"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-2xl">
-                      {activity.type === 'speaking'
-                        ? '🏰'
-                        : activity.type === 'listening'
-                        ? '🌲'
-                        : activity.type === 'writing'
-                        ? '⛰️'
-                        : '📚'}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-800">
-                        {activity.action}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {activity.time}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-gray-800">
-                      Band {activity.score}
-                    </div>
+                  className="absolute left-0 top-0 h-4 bg-teal-500 transition-all duration-700"
+                  style={{ width: `${xpPercent}%` }}
+                ></div>
+              </div>
+            </div>
+            {user?.studyPlan ? (
+              <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    📋 Your Study Plan
+                  </h2>
+                  <div className="text-sm text-gray-600">
+                    {user.studyPlan.weeks} weeks
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="space-y-8">
-          <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Continue Learning
-            </h2>
-            <div className="space-y-3">
-              {getSkillsData(dashboardData).map((skill, index) => (
-                <button
-                  key={skill.name}
-                  onClick={() => navigate(skill.path)}
-                  className="w-full group relative bg-white/60 hover:bg-white/80 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 border border-gray-300 hover:border-gray-400"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-10 h-10 bg-gradient-to-br ${skill.color} rounded-lg flex items-center justify-center text-white text-lg`}
-                      >
-                        {skill.icon}
-                      </div>
-                      <div className="text-left">
+
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 mb-6">
+                  <p className="text-gray-700 font-medium">
+                    {user.studyPlan.summary}
+                  </p>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                    Focus Areas
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {user.studyPlan.focus_areas?.map((area, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3">
                         <div className="font-semibold text-gray-800">
-                          {skill.name}
+                          {area.skill}
                         </div>
-                        <div className="text-xs text-gray-600">
-                          {skill.desc}
+                        <div className="text-sm text-gray-600">
+                          {area.reason}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                    This Week's Focus
+                  </h3>
+                  {user.studyPlan.weekly_schedule
+                    ?.slice(0, 2)
+                    .map((week, index) => (
+                      <div
+                        key={index}
+                        className="bg-white border border-gray-200 rounded-lg p-4 mb-3"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-gray-800">
+                            Week {week.week}: {week.focus}
+                          </h4>
+                        </div>
+                        <div className="space-y-1">
+                          {week.tasks?.slice(0, 3).map((task, taskIndex) => (
+                            <div
+                              key={taskIndex}
+                              className="flex items-center gap-2 text-sm text-gray-600"
+                            >
+                              <span className="text-blue-500">•</span>
+                              {task}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 text-center">
+                <div className="text-6xl mb-4">📋</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  Create Your Study Plan
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Get a personalized study plan based on your current level and
+                  target score
+                </p>
+                <button
+                  onClick={handleGenerateStudyPlan}
+                  disabled={generatingPlan}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {generatingPlan ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Generating Plan...
+                    </div>
+                  ) : (
+                    'Generate Study Plan'
+                  )}
+                </button>
+              </div>
+            )}
+            <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Recent Activity
+              </h2>
+              <div className="space-y-4">
+                {getRecentActivity(dashboardData).map((activity, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-white/50 rounded-xl"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">
+                        {activity.type === 'speaking'
+                          ? '🏰'
+                          : activity.type === 'listening'
+                          ? '🌲'
+                          : activity.type === 'writing'
+                          ? '⛰️'
+                          : '📚'}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-800">
+                          {activity.action}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {activity.time}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-bold text-gray-800">
-                        Band {skill.lastScore}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        {skill.progress}%
+                      <div className="font-bold text-gray-800">
+                        Band {activity.score}
                       </div>
                     </div>
                   </div>
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 bg-gradient-to-r ${skill.color} rounded-full transition-all duration-300`}
-                      style={{ width: `${skill.progress}%` }}
-                    ></div>
-                  </div>
-                </button>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-          <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Achievements
-            </h2>
-            <div className="space-y-3">
-              {achievements.map((achievement, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
-                    achievement.earned ? 'bg-white/60' : 'bg-gray-100/60'
-                  }`}
-                >
-                  <div
-                    className={`text-2xl ${
-                      achievement.earned ? 'opacity-100' : 'opacity-30'
-                    }`}
+          <div className="space-y-8">
+            <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Continue Learning
+              </h2>
+              <div className="space-y-3">
+                {getSkillsData(dashboardData).map((skill, index) => (
+                  <button
+                    key={skill.name}
+                    onClick={() => navigate(skill.path)}
+                    className="w-full group relative bg-white/60 hover:bg-white/80 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 border border-gray-300 hover:border-gray-400"
                   >
-                    {achievement.icon}
-                  </div>
-                  <div className="flex-1">
-                    <div
-                      className={`font-semibold ${
-                        achievement.earned ? 'text-gray-800' : 'text-gray-500'
-                      }`}
-                    >
-                      {achievement.name}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 bg-gradient-to-br ${skill.color} rounded-lg flex items-center justify-center text-white text-lg`}
+                        >
+                          {skill.icon}
+                        </div>
+                        <div className="text-left">
+                          <div className="font-semibold text-gray-800">
+                            {skill.name}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {skill.desc}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div
-                      className={`text-xs ${
-                        achievement.earned ? 'text-gray-600' : 'text-gray-400'
-                      }`}
-                    >
-                      {achievement.desc}
-                    </div>
-                  </div>
-                  {achievement.earned && (
-                    <div className="text-yellow-500 text-xl">✨</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            {user?.studyPlan && (
+              <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">
+                  📝 Study Recommendations
+                </h2>
+                <div className="space-y-3">
+                  {user.studyPlan.recommendations?.map(
+                    (recommendation, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-100"
+                      >
+                        <div className="text-blue-500 text-lg">💡</div>
+                        <div className="text-sm text-gray-700">
+                          {recommendation}
+                        </div>
+                      </div>
+                    )
                   )}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

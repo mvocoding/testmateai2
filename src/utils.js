@@ -79,12 +79,38 @@ Current/last band: ${currentScore}
 Target band: ${targetScore}
 Test date: ${testDate}
 
-Create a JSON study plan with:
-- summary: (short motivational summary)
-- weeks: (number of weeks to study)
-- recommendations: [list of actionable recommendations]
-- weekly_schedule: [{week: number, focus: string, tasks: [string]}]
-- focus_areas: [skills to focus on, with reason]`;
+Create a detailed, actionable study plan in JSON format with the following structure:
+
+{
+  "summary": "A motivational 2-3 sentence summary of the study plan",
+  "weeks": number_of_weeks_to_study,
+  "recommendations": [
+    "Specific, actionable recommendation 1",
+    "Specific, actionable recommendation 2",
+    "Specific, actionable recommendation 3",
+    "Specific, actionable recommendation 4"
+  ],
+  "focus_areas": [
+    {
+      "skill": "Listening/Reading/Writing/Speaking",
+      "reason": "Why this skill needs focus based on current vs target score"
+    }
+  ],
+  "weekly_schedule": [
+    {
+      "week": 1,
+      "focus": "Main focus area for this week",
+      "tasks": [
+        "Specific task 1 for this week",
+        "Specific task 2 for this week", 
+        "Specific task 3 for this week",
+        "Specific task 4 for this week"
+      ]
+    }
+  ]
+}
+
+Make the plan realistic and achievable. Include specific tasks like "Practice 2 listening passages daily", "Complete 3 reading exercises", "Write 2 essays per week", etc.`;
 
     const payload = {
       temperature: 0.4,
