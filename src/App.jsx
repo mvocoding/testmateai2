@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -19,6 +19,7 @@ import AskMeAnything from './pages/AskMeAnything';
 import MockTest from './pages/MockTest';
 import Review from './pages/Review';
 import { AskMeButton } from './components/AskMeButton';
+import { getUser } from './services/dataService';
 import './App.css';
 
 const skills = [
@@ -57,19 +58,66 @@ const utilityButtons = [
 
 function SkillSidebar() {
   const navigate = useNavigate();
-  const level = 3;
-  const xp = 245;
-  const totalXP = 500;
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const loadUserData = () => {
+      const userData = getUser();
+      console.log('Loading user data in sidebar:', userData);
+      setUser(userData);
+    };
+
+    loadUserData();
+
+    // Refresh user data when localStorage changes
+    const handleStorageChange = () => {
+      console.log('Storage changed, refreshing user data');
+      loadUserData();
+    };
+
+    const handleUserDataUpdate = () => {
+      console.log('User data updated event received, refreshing user data');
+      loadUserData();
+    };
+
+    // Poll for user data changes every 2 seconds as a fallback
+    const pollInterval = setInterval(() => {
+      const currentUser = getUser();
+      if (currentUser && (!user || currentUser.xp !== user.xp || currentUser.level !== user.level)) {
+        console.log('User data changed detected by polling, updating sidebar');
+        setUser(currentUser);
+      }
+    }, 2000);
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+      clearInterval(pollInterval);
+    };
+  }, [user]);
+
+  const level = user?.level || 1;
+  const xp = user?.xp || 0;
+  const totalXP = 100; // XP needed for next level
   const xpPercent = (xp / totalXP) * 100;
 
   const handleLogout = () => {
     navigate('/');
   };
 
+  const handleRefresh = () => {
+    const userData = getUser();
+    console.log('Manual refresh - user data:', userData);
+    setUser(userData);
+  };
+
   return (
     <aside className="h-screen w-56 bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl border-r border-white/50 flex flex-col items-center py-2 fixed left-0 top-0 z-40 shadow-2xl">
       <div className="mb-2  text-2xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent tracking-tight">
-        Minh Quoc Vo
+        {user?.name || 'Student'}
       </div>
 
       <div className="w-full p-2 ">
@@ -79,10 +127,10 @@ function SkillSidebar() {
           </span>
           <span
             onClick={handleLogout}
-            className="ml-auto inline-flex items-center gap-2 p-2 cursor-pointer rounded-lg bg-gradient-to-r from-red-400 to-pink-500 text-white text-sm font-medium hover:brightness-110 transition"
+            className="inline-flex items-center gap-2 p-2 cursor-pointer rounded-lg bg-gradient-to-r from-red-400 to-pink-500 text-white text-sm font-medium hover:brightness-110 transition"
           >
             🔚
-          </span>{' '}
+          </span>
         </div>
         <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
           <div

@@ -51,7 +51,13 @@ export const updateUser = (updates) => {
   try {
     const user = getUser();
     const updatedUser = { ...user, ...updates };
+    console.log('Updating user:', { current: user, updates, updated: updatedUser });
     localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
+    
+    // Dispatch custom event to notify components of user data update
+    console.log('Dispatching userDataUpdated event from updateUser');
+    window.dispatchEvent(new CustomEvent('userDataUpdated'));
+    
     return updatedUser;
   } catch (error) {
     console.error('Error updating user:', error);
@@ -67,6 +73,8 @@ export const addXP = (amount) => {
     const newXP = user.xp + amount;
     const newLevel = Math.floor(newXP / 100) + 1; // Level up every 100 XP
 
+    console.log('Adding XP:', { currentXP: user.xp, amount, newXP, newLevel });
+
     const updatedUser = {
       ...user,
       xp: newXP,
@@ -74,6 +82,11 @@ export const addXP = (amount) => {
     };
 
     localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
+    
+    // Dispatch custom event to notify components of user data update
+    console.log('Dispatching userDataUpdated event');
+    window.dispatchEvent(new CustomEvent('userDataUpdated'));
+    
     return updatedUser;
   } catch (error) {
     console.error('Error adding XP:', error);

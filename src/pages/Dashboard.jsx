@@ -121,9 +121,6 @@ const Dashboard = () => {
           <h1 className="text-4xl font-bold text-purple-700 mb-2">
             Welcome back, {user?.name || 'Student'}!
           </h1>
-          <p className="text-gray-600 text-lg">
-            Ready to continue your IELTS journey?
-          </p>
           <button
             onClick={resetData}
             className="mt-2 text-sm text-red-500 hover:text-red-700 underline"
