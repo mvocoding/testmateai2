@@ -44,9 +44,7 @@ const Reading = () => {
     { key: 'overview', label: 'Overview' },
     { key: 'summary', label: 'Passage Summary' },
     { key: 'analysis', label: 'Question Analysis' },
-    { key: 'strategies', label: 'Reading Strategies' },
     { key: 'vocabulary', label: 'Vocabulary' },
-    { key: 'tips', label: 'Improvement Tips' },
   ];
 
   const currentType = READING_PASSAGES[selectedLevel];
@@ -74,6 +72,14 @@ const Reading = () => {
     const percentage = (correctAnswers / currentQuestions.length) * 100;
     setScore(percentage);
     setShowResults(true);
+    
+    // Debug logging
+    console.log('Reading Submit Debug:', {
+      selectedPassage,
+      currentQuestions,
+      answers,
+      passageForAI: { text: selectedPassage.passage, title: selectedPassage.title }
+    });
     
     // Generate AI feedback
     setIsAnalyzing(true);
@@ -374,74 +380,28 @@ const Reading = () => {
                           </div>
                         )}
 
-                        {/* Reading Strategies Tab */}
-                        {activeTab === 'strategies' && (
-                          <div className="space-y-4">
-                            <div className="text-lg font-semibold text-green-800 mb-3">
-                              Reading Strategies
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {aiFeedback.reading_strategies?.map((strategy, idx) => (
-                                <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-green-600 text-lg">📖</span>
-                                    <span className="font-semibold text-green-800">Strategy {idx + 1}</span>
-                                  </div>
-                                  <div className="text-gray-700">{strategy}</div>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="bg-white rounded-lg p-4 border border-green-200">
-                              <h4 className="font-semibold text-green-800 mb-2">Skimming & Scanning Tips</h4>
-                              <ul className="list-disc ml-4 text-sm text-gray-700">
-                                {aiFeedback.skimming_scanning_tips?.map((tip, idx) => (
-                                  <li key={idx}>{tip}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        )}
+                                                 {/* Vocabulary Tab */}
+                         {activeTab === 'vocabulary' && (
+                           <div className="space-y-4">
+                             <div className="text-lg font-semibold text-green-800 mb-3">
+                               Important Vocabulary
+                             </div>
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               {aiFeedback.vocabulary_notes?.map((vocab, idx) => (
+                                 <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
+                                   <div className="font-semibold text-green-800 mb-1">
+                                     {vocab.word}
+                                   </div>
+                                   <div className="text-sm text-gray-700">
+                                     {vocab.definition}
+                                   </div>
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         )}
 
-                        {/* Vocabulary Tab */}
-                        {activeTab === 'vocabulary' && (
-                          <div className="space-y-4">
-                            <div className="text-lg font-semibold text-green-800 mb-3">
-                              Important Vocabulary
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {aiFeedback.vocabulary_notes?.map((vocab, idx) => (
-                                <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
-                                  <div className="font-semibold text-green-800 mb-1">
-                                    {vocab.word}
-                                  </div>
-                                  <div className="text-sm text-gray-700">
-                                    {vocab.definition}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Improvement Tips Tab */}
-                        {activeTab === 'tips' && (
-                          <div className="space-y-4">
-                            <div className="text-lg font-semibold text-green-800 mb-3">
-                              Personalized Improvement Tips
-                            </div>
-                            <div className="space-y-3">
-                              {aiFeedback.improvement_tips?.map((tip, idx) => (
-                                <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-green-600 text-lg">💡</span>
-                                    <span className="font-semibold text-green-800">Tip {idx + 1}</span>
-                                  </div>
-                                  <div className="text-gray-700">{tip}</div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                                                 
                       </div>
                     )}
 

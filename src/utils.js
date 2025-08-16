@@ -319,6 +319,19 @@ Return a JSON with:
 
 export const generateReadingFeedback = async (passage, questions, userAnswers) => {
   try {
+    // Debug logging
+    console.log('Reading Feedback Debug:', {
+      passage,
+      questions: questions.map((q, idx) => ({
+        index: idx,
+        text: q.text,
+        options: q.options,
+        correct: q.correct,
+        userAnswer: userAnswers[idx]
+      })),
+      userAnswers
+    });
+
     const headers = {
       'content-type': 'application/json',
       authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
