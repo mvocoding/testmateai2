@@ -37,7 +37,7 @@ const Listening = () => {
   useEffect(() => {
     const loadListeningData = async () => {
       try {
-        const data = await dataService.fetchPracticeQuestions('listening');
+        const data = await dataService.getPracticeQuestions('listening');
         setListeningData(data);
       } catch (error) {
         console.error('Error loading listening data:', error);

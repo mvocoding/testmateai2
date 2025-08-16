@@ -108,14 +108,16 @@ function SkillSidebar() {
               }`
             }
           >
-            <span className="font-semibold">{skill.name}</span>
-            {({ isActive }) =>
-              isActive && (
-                <div
-                  className={`absolute inset-0 bg-gradient-to-r ${skill.color} rounded-2xl opacity-20 blur-lg -z-10`}
-                ></div>
-              )
-            }
+            {({ isActive }) => (
+              <>
+                <span className="font-semibold">{skill.name}</span>
+                {isActive && (
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-r ${skill.color} rounded-2xl opacity-20 blur-lg -z-10`}
+                  ></div>
+                )}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -137,21 +139,23 @@ function SkillSidebar() {
               }`
             }
           >
-            <span
-              className={`text-lg transition-transform duration-300 group-hover:scale-110 ${({
-                isActive,
-              }) => (isActive ? 'animate-pulse' : '')}`}
-            >
-              {button.icon}
-            </span>
-            <span className="font-semibold">{button.name}</span>
-            {({ isActive }) =>
-              isActive && (
-                <div
-                  className={`absolute inset-0 bg-gradient-to-r ${button.color} rounded-2xl opacity-20 blur-lg -z-10`}
-                ></div>
-              )
-            }
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`text-lg transition-transform duration-300 group-hover:scale-110 ${
+                    isActive ? 'animate-pulse' : ''
+                  }`}
+                >
+                  {button.icon}
+                </span>
+                <span className="font-semibold">{button.name}</span>
+                {isActive && (
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-r ${button.color} rounded-2xl opacity-20 blur-lg -z-10`}
+                  ></div>
+                )}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
