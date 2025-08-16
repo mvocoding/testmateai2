@@ -16,17 +16,7 @@ const Review = () => {
   useEffect(() => {
     const loadVocabularyWords = () => {
       const vocabulary = getVocabulary();
-      if (vocabulary.length > 0) {
-        setVocabularyWords(vocabulary.map(v => v.word));
-      } else {
-        // Demo data for testing
-        setVocabularyWords([
-          'sophisticated', 'comprehensive', 'methodology', 'implementation', 'analysis',
-          'perspective', 'significant', 'consequently', 'furthermore', 'nevertheless',
-          'substantial', 'considerable', 'remarkable', 'essential', 'crucial',
-          'fundamental', 'integral', 'paramount', 'pivotal', 'indispensable'
-        ]);
-      }
+      setVocabularyWords(vocabulary.map(v => v.word));
     };
 
     loadVocabularyWords();
