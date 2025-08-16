@@ -169,6 +169,8 @@ const MockTest = () => {
     
     setIsTestStarted(true);
     setShowingIntroduction(true);
+    // Clear all answers when starting a new test
+    setAnswers({});
     // Reset audio state when starting test
     setPlayCount(0);
     setIsPlaying(false);
@@ -208,11 +210,39 @@ const MockTest = () => {
     }));
   };
 
+  const clearCurrentQuestionAnswers = () => {
+    if (!questions || !questions[currentSection]) return;
+    
+    const currentQuestions = questions[currentSection];
+    const currentQ = currentQuestions[currentQuestion];
+    
+    if (currentQ && currentQ.type === 'passage' && currentQ.questions) {
+      // For passage-type questions, clear all sub-question answers
+      const newAnswers = { ...answers };
+      currentQ.questions.forEach((_, subIndex) => {
+        const answerKey = `${currentQ.id}-${subIndex}`;
+        if (newAnswers[currentSection][answerKey] !== undefined) {
+          delete newAnswers[currentSection][answerKey];
+        }
+      });
+      setAnswers(newAnswers);
+    } else if (currentQ) {
+      // For individual questions, clear the specific question answer
+      const newAnswers = { ...answers };
+      if (newAnswers[currentSection][currentQ.id] !== undefined) {
+        delete newAnswers[currentSection][currentQ.id];
+      }
+      setAnswers(newAnswers);
+    }
+  };
+
   const nextQuestion = () => {
     if (!questions || !questions[currentSection]) return;
     
     const currentQuestions = questions[currentSection];
     if (currentQuestion < currentQuestions.length - 1) {
+      // Clear answers for the current question before moving to next
+      clearCurrentQuestionAnswers();
       setCurrentQuestion((prev) => prev + 1);
       // Reset audio state for new question
       if (currentSection === 'listening') {
@@ -248,6 +278,8 @@ const MockTest = () => {
     if (!questions) return;
     
     if (currentQuestion > 0) {
+      // Clear answers for the current question before moving to previous
+      clearCurrentQuestionAnswers();
       setCurrentQuestion((prev) => prev - 1);
       // Reset audio state for new question
       if (currentSection === 'listening') {
@@ -570,7 +602,7 @@ const MockTest = () => {
               {question.type === 'passage' && question.questions && (
                 <div className="space-y-6">
                   {question.questions.map((subQuestion, subIndex) => (
-                    <div key={subQuestion.id} className="bg-gray-50 p-4 rounded-lg">
+                    <div key={`${question.id}-${subIndex}`} className="bg-gray-50 p-4 rounded-lg">
                       <h5 className="font-semibold text-gray-800 mb-3">
                         Question {subIndex + 1}: {subQuestion.question}
                       </h5>
@@ -584,13 +616,13 @@ const MockTest = () => {
                             >
                               <input
                                 type="radio"
-                                name={`listening-${question.id}-${subQuestion.id}`}
+                                name={`listening-${question.id}-${subIndex}`}
                                 value={optionIndex}
-                                checked={answers.listening[`${question.id}-${subQuestion.id}`] === optionIndex}
+                                checked={answers.listening[`${question.id}-${subIndex}`] === optionIndex}
                                 onChange={(e) =>
                                   handleAnswer(
                                     'listening',
-                                    `${question.id}-${subQuestion.id}`,
+                                    `${question.id}-${subIndex}`,
                                     parseInt(e.target.value)
                                   )
                                 }
@@ -603,9 +635,9 @@ const MockTest = () => {
                       ) : subQuestion.type === 'completion' || subQuestion.type === 'shortAnswer' ? (
                         <input
                           type="text"
-                          value={answers.listening[`${question.id}-${subQuestion.id}`] || ''}
+                          value={answers.listening[`${question.id}-${subIndex}`] || ''}
                           onChange={(e) =>
-                            handleAnswer('listening', `${question.id}-${subQuestion.id}`, e.target.value)
+                            handleAnswer('listening', `${question.id}-${subIndex}`, e.target.value)
                           }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
                           placeholder="Type your answer here..."
@@ -615,11 +647,11 @@ const MockTest = () => {
                           <label className="flex items-center space-x-3 cursor-pointer">
                             <input
                               type="radio"
-                              name={`listening-${question.id}-${subQuestion.id}`}
+                              name={`listening-${question.id}-${subIndex}`}
                               value="true"
-                              checked={answers.listening[`${question.id}-${subQuestion.id}`] === true}
+                              checked={answers.listening[`${question.id}-${subIndex}`] === true}
                               onChange={() =>
-                                handleAnswer('listening', `${question.id}-${subQuestion.id}`, true)
+                                handleAnswer('listening', `${question.id}-${subIndex}`, true)
                               }
                               className="text-teal-600"
                             />
@@ -628,11 +660,11 @@ const MockTest = () => {
                           <label className="flex items-center space-x-3 cursor-pointer">
                             <input
                               type="radio"
-                              name={`listening-${question.id}-${subQuestion.id}`}
+                              name={`listening-${question.id}-${subIndex}`}
                               value="false"
-                              checked={answers.listening[`${question.id}-${subQuestion.id}`] === false}
+                              checked={answers.listening[`${question.id}-${subIndex}`] === false}
                               onChange={() =>
-                                handleAnswer('listening', `${question.id}-${subQuestion.id}`, false)
+                                handleAnswer('listening', `${question.id}-${subIndex}`, false)
                               }
                               className="text-teal-600"
                             />
@@ -820,7 +852,7 @@ const MockTest = () => {
                   {question.type === 'passage' && question.questions && (
                     <div className="space-y-6">
                       {question.questions.map((subQuestion, subIndex) => (
-                        <div key={subQuestion.id} className="bg-gray-50 p-4 rounded-lg">
+                        <div key={`${question.id}-${subIndex}`} className="bg-gray-50 p-4 rounded-lg">
                           <h5 className="font-semibold text-gray-800 mb-3">
                             Question {subIndex + 1}: {subQuestion.text || subQuestion.question}
                           </h5>
@@ -834,13 +866,13 @@ const MockTest = () => {
                                 >
                                   <input
                                     type="radio"
-                                    name={`reading-${question.id}-${subQuestion.id}`}
+                                    name={`reading-${question.id}-${subIndex}`}
                                     value={optionIndex}
-                                    checked={answers.reading[`${question.id}-${subQuestion.id}`] === optionIndex}
+                                    checked={answers.reading[`${question.id}-${subIndex}`] === optionIndex}
                                     onChange={(e) =>
                                       handleAnswer(
                                         'reading',
-                                        `${question.id}-${subQuestion.id}`,
+                                        `${question.id}-${subIndex}`,
                                         parseInt(e.target.value)
                                       )
                                     }
@@ -853,9 +885,9 @@ const MockTest = () => {
                           ) : subQuestion.type === 'completion' || subQuestion.type === 'shortAnswer' ? (
                             <input
                               type="text"
-                              value={answers.reading[`${question.id}-${subQuestion.id}`] || ''}
+                              value={answers.reading[`${question.id}-${subIndex}`] || ''}
                               onChange={(e) =>
-                                handleAnswer('reading', `${question.id}-${subQuestion.id}`, e.target.value)
+                                handleAnswer('reading', `${question.id}-${subIndex}`, e.target.value)
                               }
                               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
                               placeholder="Type your answer here..."
@@ -865,11 +897,11 @@ const MockTest = () => {
                               <label className="flex items-center space-x-3 cursor-pointer">
                                 <input
                                   type="radio"
-                                  name={`reading-${question.id}-${subQuestion.id}`}
+                                  name={`reading-${question.id}-${subIndex}`}
                                   value="true"
-                                  checked={answers.reading[`${question.id}-${subQuestion.id}`] === true}
+                                  checked={answers.reading[`${question.id}-${subIndex}`] === true}
                                   onChange={() =>
-                                    handleAnswer('reading', `${question.id}-${subQuestion.id}`, true)
+                                    handleAnswer('reading', `${question.id}-${subIndex}`, true)
                                   }
                                   className="text-teal-600"
                                 />
@@ -878,44 +910,16 @@ const MockTest = () => {
                               <label className="flex items-center space-x-3 cursor-pointer">
                                 <input
                                   type="radio"
-                                  name={`reading-${question.id}-${subQuestion.id}`}
+                                  name={`reading-${question.id}-${subIndex}`}
                                   value="false"
-                                  checked={answers.reading[`${question.id}-${subQuestion.id}`] === false}
+                                  checked={answers.reading[`${question.id}-${subIndex}`] === false}
                                   onChange={() =>
-                                    handleAnswer('reading', `${question.id}-${subQuestion.id}`, false)
+                                    handleAnswer('reading', `${question.id}-${subIndex}`, false)
                                   }
                                   className="text-teal-600"
                                 />
                                 <span>False</span>
                               </label>
-                            </div>
-                          ) : subQuestion.type === 'matching' && subQuestion.options ? (
-                            <div className="space-y-3">
-                              {subQuestion.options.map((option, optionIndex) => (
-                                <div
-                                  key={optionIndex}
-                                  className="flex items-center space-x-4"
-                                >
-                                  <span className="font-medium">
-                                    {typeof option === 'object' && option.source ? option.source : `Option ${optionIndex + 1}`}:
-                                  </span>
-                                  <input
-                                    type="text"
-                                    value={
-                                      answers.reading[`${question.id}-${subQuestion.id}-${optionIndex}`] || ''
-                                    }
-                                    onChange={(e) =>
-                                      handleAnswer(
-                                        'reading',
-                                        `${question.id}-${subQuestion.id}-${optionIndex}`,
-                                        e.target.value
-                                      )
-                                    }
-                                    className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
-                                    placeholder="Match with characteristic..."
-                                  />
-                                </div>
-                              ))}
                             </div>
                           ) : null}
                         </div>
@@ -996,35 +1000,7 @@ const MockTest = () => {
                         />
                       )}
 
-                      {question.type === 'matching' && question.options && (
-                        <div className="space-y-3">
-                          {question.options.map((option, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center space-x-4"
-                            >
-                              <span className="font-medium">
-                                {typeof option === 'object' && option.source ? option.source : `Option ${index + 1}`}:
-                              </span>
-                              <input
-                                type="text"
-                                value={
-                                  answers.reading[`${question.id}-${index}`] || ''
-                                }
-                                onChange={(e) =>
-                                  handleAnswer(
-                                    'reading',
-                                    `${question.id}-${index}`,
-                                    e.target.value
-                                  )
-                                }
-                                className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
-                                placeholder="Match with characteristic..."
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
+
                     </>
                   )}
                 </div>
@@ -1038,7 +1014,7 @@ const MockTest = () => {
           <div className="space-y-6">
             <div className="bg-green-50 p-6 rounded-lg">
               <h3 className="text-xl font-semibold mb-4">
-                Writing {question.type === 'task1' ? 'Task 1' : 'Task 2'}
+                Writing {question.type === 'task1' ? 'Task 1: Letter' : 'Task 2: Essay'}
               </h3>
               <h4 className="text-lg font-medium mb-4">{question.title || 'Writing Task'}</h4>
 
@@ -1048,9 +1024,11 @@ const MockTest = () => {
                   <p className="text-gray-700">{question.question || 'Question not available'}</p>
 
                   {question.type === 'task1' && (
-                    <div className="mt-4 p-3 bg-gray-100 rounded">
-                      <p className="text-sm text-gray-600">
-                        Chart data will be displayed here
+                    <div className="mt-4 p-3 bg-blue-50 rounded">
+                      <h6 className="font-medium text-blue-800 mb-2">Letter Writing Task</h6>
+                      <p className="text-sm text-blue-700">
+                        Write a formal or informal letter based on the situation described above. 
+                        Remember to include appropriate greetings, body paragraphs, and closing.
                       </p>
                     </div>
                   )}

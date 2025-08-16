@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import dataService from '../services/dataService';
-import { generateWritingFeedback, saveVocabularyWords, recordPracticeActivity } from '../utils';
+import {
+  generateWritingFeedback,
+  saveVocabularyWords,
+  recordPracticeActivity,
+} from '../utils';
 
 const Writing = () => {
   const [selectedTask, setSelectedTask] = useState('task1');
@@ -49,7 +53,7 @@ const Writing = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
-    
+
     // Generate AI feedback
     setIsAnalyzing(true);
     try {
@@ -62,9 +66,12 @@ const Writing = () => {
       // Validate feedback structure
       if (feedback && typeof feedback === 'object') {
         setAiFeedback(feedback);
-        
+
         // Save vocabulary words from the feedback
-        if (feedback.vocabulary_words && Array.isArray(feedback.vocabulary_words)) {
+        if (
+          feedback.vocabulary_words &&
+          Array.isArray(feedback.vocabulary_words)
+        ) {
           saveVocabularyWords(feedback.vocabulary_words);
         }
 
@@ -74,7 +81,7 @@ const Writing = () => {
         recordPracticeActivity('writing', score, band, {
           task: currentPrompts[currentPrompt],
           wordCount: wordCount,
-          feedback: feedback.overall_feedback
+          feedback: feedback.overall_feedback,
         });
       } else {
         console.error('Invalid feedback structure:', feedback);
@@ -127,163 +134,177 @@ const Writing = () => {
         </div>
       </div>
 
-      <div className="w-full bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12">
-        {!submitted ? (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div className="text-lg font-semibold text-gray-800 mb-2">
-              {currentPrompts[currentPrompt]}
-            </div>
-            <textarea
-              className="w-full min-h-[300px] rounded-2xl border border-gray-200 bg-gray-50 p-5 text-lg shadow focus:outline-none focus:ring-4 focus:ring-teal-200 focus:border-teal-400 transition-all resize-y placeholder-gray-400"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              placeholder="Write your answer here..."
-              required
-              style={{ resize: 'vertical' }}
-            />
-            <div className="flex gap-3 justify-center">
-              <button
-                type="submit"
-                className="bg-gradient-to-r from-teal-600 to-teal-400 hover:from-teal-700 hover:to-teal-500 text-white font-bold py-3 px-8 rounded-2xl shadow-lg text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-teal-200"
-              >
-                Submit
-              </button>
-              {currentPrompt < currentPrompts.length - 1 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentPrompt(currentPrompt + 1);
-                    setAnswer('');
-                    setSubmitted(false);
-                  }}
-                  className="bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-700 transition-colors"
-                >
-                  Next Prompt
-                </button>
-              )}
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-6">
-            {/* Submission Confirmation */}
-            <div className="text-center">
-              <div className="text-2xl font-bold text-teal-700 mb-4">
-                Answer Submitted! 📝
-              </div>
-              {isAnalyzing && (
-                <div className="text-purple-600 text-center font-semibold animate-pulse mb-4">
-                  Analyzing your essay...
+      <div className="flex gap-6 w-full">
+        <div className="flex-1">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+            {!submitted ? (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                <div className="text-lg font-semibold text-gray-800 mb-2">
+                  {currentPrompts[currentPrompt]}
                 </div>
-              )}
-            </div>
-
-            {/* AI Analysis Section */}
-            {aiFeedback && typeof aiFeedback === 'object' ? (
-              <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
-                <div className="flex mb-4 w-full overflow-x-auto border-b border-orange-200">
-                  {FEEDBACK_TABS.map((tab) => (
-                    <button
-                      key={tab.key}
-                      className={`flex-1 min-w-0 px-3 py-2 rounded-t-lg font-semibold border-b-2 transition-colors whitespace-nowrap text-sm ${
-                        activeTab === tab.key
-                          ? 'border-orange-600 bg-white text-orange-800'
-                          : 'border-transparent bg-orange-100 text-orange-600 hover:bg-orange-200'
-                      }`}
-                      onClick={() => setActiveTab(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+                <textarea
+                  className="w-full min-h-[300px] rounded-2xl border border-gray-200 bg-gray-50 p-5 text-lg shadow focus:outline-none focus:ring-4 focus:ring-teal-200 focus:border-teal-400 transition-all resize-y placeholder-gray-400"
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Write your answer here..."
+                  required
+                  style={{ resize: 'vertical' }}
+                />
+                <div className="flex gap-3 justify-center">
+                  <button
+                    type="submit"
+                    className="bg-gradient-to-r from-teal-600 to-teal-400 hover:from-teal-700 hover:to-teal-500 text-white font-bold py-3 px-8 rounded-2xl shadow-lg text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-teal-200"
+                  >
+                    Submit
+                  </button>
                 </div>
-
-
-
-                {/* Sample Answer Tab */}
-                {activeTab === 'sample_answer' && (
-                  <div className="space-y-4">
-                    <div className="text-lg font-semibold text-orange-800 mb-3">
-                      Sample Answer (Band 8-9)
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
-                      {typeof aiFeedback.sample_answer === 'string' ? aiFeedback.sample_answer : JSON.stringify(aiFeedback.sample_answer)}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      <strong>Note:</strong> This is a high-quality sample answer for reference. Compare it with your own work to identify areas for improvement.
-                    </div>
-                  </div>
-                )}
-
-                {/* Vocabulary Tab */}
-                {activeTab === 'vocabulary' && (
-                  <div className="space-y-4">
-                    <div className="text-lg font-semibold text-orange-800 mb-3">
-                      Vocabulary Words from Sample Answer
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-orange-200">
-                      <h4 className="font-semibold text-orange-800 mb-2">Important Words to Review</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {aiFeedback.vocabulary_words?.map((word, idx) => (
-                          <span key={idx} className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
-                            {typeof word === 'string' ? word : JSON.stringify(word)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Grammar Tab */}
-                {activeTab === 'grammar' && (
-                  <div className="space-y-4">
-                    <div className="text-lg font-semibold text-orange-800 mb-3">
-                      Grammar Analysis
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
-                      {typeof aiFeedback.grammatical_range_accuracy === 'string' ? aiFeedback.grammatical_range_accuracy : JSON.stringify(aiFeedback.grammatical_range_accuracy)}
-                    </div>
-                  </div>
-                )}
-
-              </div>
+              </form>
             ) : (
-              <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
-                <div className="text-center text-gray-600">
-                  <p>AI feedback is not available at the moment.</p>
-                  <p className="text-sm mt-2">Your essay has been submitted successfully.</p>
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-teal-700 mb-4">
+                    Answer Submitted! 📝
+                  </div>
+                  {isAnalyzing && (
+                    <div className="text-purple-600 text-center font-semibold animate-pulse mb-4">
+                      Analyzing your essay...
+                    </div>
+                  )}
+                </div>
+
+                {aiFeedback && typeof aiFeedback === 'object' ? (
+                  <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
+                    <div className="flex mb-4 w-full overflow-x-auto border-b border-orange-200">
+                      {FEEDBACK_TABS.map((tab) => (
+                        <button
+                          key={tab.key}
+                          className={`flex-1 min-w-0 px-3 py-2 rounded-t-lg font-semibold border-b-2 transition-colors whitespace-nowrap text-sm ${
+                            activeTab === tab.key
+                              ? 'border-orange-600 bg-white text-orange-800'
+                              : 'border-transparent bg-orange-100 text-orange-600 hover:bg-orange-200'
+                          }`}
+                          onClick={() => setActiveTab(tab.key)}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {activeTab === 'sample_answer' && (
+                      <div className="space-y-4">
+                        <div className="text-lg font-semibold text-orange-800 mb-3">
+                          Sample Answer (Band 8-9)
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
+                          {typeof aiFeedback.sample_answer === 'string'
+                            ? aiFeedback.sample_answer
+                            : JSON.stringify(aiFeedback.sample_answer)}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          <strong>Note:</strong> This is a high-quality sample
+                          answer for reference. Compare it with your own work to
+                          identify areas for improvement.
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'vocabulary' && (
+                      <div className="space-y-4">
+                        <div className="text-lg font-semibold text-orange-800 mb-3">
+                          Vocabulary Words from Sample Answer
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-orange-200">
+                          <h4 className="font-semibold text-orange-800 mb-2">
+                            Important Words to Review
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {aiFeedback.vocabulary_words?.map((word, idx) => (
+                              <span
+                                key={idx}
+                                className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium"
+                              >
+                                {typeof word === 'string'
+                                  ? word
+                                  : JSON.stringify(word)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'grammar' && (
+                      <div className="space-y-4">
+                        <div className="text-lg font-semibold text-orange-800 mb-3">
+                          Grammar Analysis
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
+                          {typeof aiFeedback.grammatical_range_accuracy ===
+                          'string'
+                            ? aiFeedback.grammatical_range_accuracy
+                            : JSON.stringify(
+                                aiFeedback.grammatical_range_accuracy
+                              )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
+                    <div className="text-center text-gray-600">
+                      <p>AI feedback is not available at the moment.</p>
+                      <p className="text-sm mt-2">
+                        Your essay has been submitted successfully.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={() => {
+                      setAnswer('');
+                      setSubmitted(false);
+                      setAiFeedback(null);
+                      setActiveTab('sample_answer');
+                    }}
+                    className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
+                  >
+                    Try Again
+                  </button>
                 </div>
               </div>
             )}
+          </div>
+        </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex gap-4 justify-center">
+        <div className="w-64 flex-shrink-0">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 flex flex-col gap-2 sticky top-24">
+            <div className="font-bold text-gray-700 mb-2 text-center">
+              Questions
+            </div>
+            {currentPrompts.map((prompt, idx) => (
               <button
+                key={idx}
+                type="button"
+                className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all duration-150 mb-1 text-sm ${
+                  currentPrompt === idx
+                    ? 'bg-teal-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-teal-100'
+                }`}
                 onClick={() => {
+                  setCurrentPrompt(idx);
                   setAnswer('');
                   setSubmitted(false);
                   setAiFeedback(null);
                   setActiveTab('sample_answer');
                 }}
-                className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
               >
-                Try Again
+                <div className="truncate">Question {idx + 1}</div>
               </button>
-              {currentPrompt < currentPrompts.length - 1 && (
-                <button
-                  onClick={() => {
-                    setCurrentPrompt(currentPrompt + 1);
-                    setAnswer('');
-                    setSubmitted(false);
-                    setAiFeedback(null);
-                    setActiveTab('sample_answer');
-                  }}
-                  className="bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors"
-                >
-                  Next Prompt
-                </button>
-              )}
-            </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -235,12 +235,6 @@ const Listening = () => {
            const question = questions[idx];
            const userAnswer = answers[question.id];
            
-           console.log(`Correcting feedback for question ${idx + 1}:`);
-           console.log(`  Question ID: ${question.id}`);
-           console.log(`  User answer: ${userAnswer}`);
-           console.log(`  Question options:`, question.options);
-           console.log(`  Correct answer index: ${question.correct}`);
-           
            // Get actual answer text
            let actualCorrectAnswer, actualStudentAnswer;
            if (question.options) {

@@ -28,9 +28,8 @@ const initializeData = () => {
     localStorage.setItem('testmate_vocabulary', JSON.stringify([]));
   }
 
-  if (!localStorage.getItem('testmate_mockdata')) {
-    localStorage.setItem('testmate_mockdata', JSON.stringify(mockData));
-  }
+  // Always reset mock data to ensure we have the latest version without matching questions
+  localStorage.setItem('testmate_mockdata', JSON.stringify(mockData));
 };
 
 initializeData();
@@ -199,6 +198,16 @@ export const getMockData = () => {
   }
 };
 
+export const resetMockData = () => {
+  try {
+    localStorage.removeItem('testmate_mockdata');
+    localStorage.setItem('testmate_mockdata', JSON.stringify(mockData));
+    console.log('Mock data reset successfully');
+  } catch (error) {
+    console.error('Error resetting mock data:', error);
+  }
+};
+
 export const getPracticeQuestions = (type) => {
   try {
     const data = getMockData();
@@ -297,8 +306,8 @@ const createFallbackQuestions = (sectionId) => {
       },
       {
         id: 2,
-        question: "Describe the chart showing student performance over time.",
-        title: "Student Performance Chart",
+        question: "You recently stayed at a hotel and had a problem with your room. Write a letter to the hotel manager explaining what happened and what you would like them to do about it.",
+        title: "Letter Writing",
         type: "task1",
         timeLimit: 20 * 60,
         wordLimit: "150-200 words"
@@ -389,7 +398,10 @@ export const fetchMockTestQuestions = (testId, sectionId) => {
      });
     
     console.log(`Total questions found for ${sectionId}:`, allQuestions.length);
-    let result = allQuestions.slice(0, 10); // Limit to 10 questions per section
+    
+    // For speaking, we want all parts (1, 2, 3) so we need more questions
+    const maxQuestions = sectionId === 'speaking' ? 15 : 10;
+    let result = allQuestions.slice(0, maxQuestions);
     
     // If no questions found, create some basic fallback questions
     if (result.length === 0) {

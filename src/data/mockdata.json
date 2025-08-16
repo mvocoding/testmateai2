@@ -221,31 +221,7 @@
           }
         ]
       },
-      "matching": {
-        "name": "Matching",
-        "description": "Match names with activities or information",
-        "passages": [
-          {
-            "id": 1,
-            "title": "Student Activities Meeting",
-            "text": "John is organizing the photography club, Mary leads the debate team, David runs the chess club, and Sarah manages the drama society. The photography club meets on Mondays, debate team on Wednesdays, chess club on Fridays, and drama society on Saturdays.",
-            "questions": [
-              {
-                "id": 1,
-                "question": "Match each person with their activity:",
-                "options": [
-                  "John - Photography club",
-                  "Mary - Debate team",
-                  "David - Chess club",
-                  "Sarah - Drama society"
-                ],
-                "correct": [0, 1, 2, 3],
-                "matching": true
-              }
-            ]
-          }
-        ]
-      },
+
       "sentenceCompletion": {
         "name": "Sentence Completion",
         "description": "Complete sentences with words from the audio",
@@ -426,29 +402,7 @@
           }
         ]
       },
-      "matching": {
-        "name": "Matching",
-        "description": "Match headings, information, or features",
-        "passages": [
-          {
-            "id": 1,
-            "title": "Ocean Ecosystems",
-            "passage": "The ocean contains diverse ecosystems that support a wide variety of marine life. Coral reefs are among the most productive ecosystems, providing habitat for thousands of species. Deep-sea vents support unique communities of organisms that thrive in extreme conditions. Mangrove forests protect coastlines and serve as nurseries for many fish species.",
-            "questions": [
-              {
-                "text": "Match each ecosystem with its characteristic:",
-                "options": [
-                  "Coral reefs - Most productive ecosystems",
-                  "Deep-sea vents - Extreme conditions",
-                  "Mangrove forests - Coastal protection"
-                ],
-                "correct": [0, 1, 2],
-                "type": "matching"
-              }
-            ]
-          }
-        ]
-      },
+
       "sentenceCompletion": {
         "name": "Sentence Completion",
         "description": "Complete sentences with words from the passage",
@@ -557,14 +511,14 @@
     },
     "writing": {
       "task1": {
-        "name": "Task 1: Academic/General",
-        "description": "Describe visual information (charts, graphs, processes)",
+        "name": "Task 1: Letter Writing",
+        "description": "Write a letter based on a given situation",
         "prompts": [
-          "The chart below shows the percentage of households in different income brackets in three countries. Summarize the information by selecting and reporting the main features.",
-          "The diagram illustrates the process of how coffee is produced. Summarize the information by selecting and reporting the main features.",
-          "The graph shows the average monthly temperatures in four cities. Summarize the information by selecting and reporting the main features.",
-          "The table shows the number of students enrolled in different courses at a university. Summarize the information by selecting and reporting the main features.",
-          "The map shows the development of a town over a 50-year period. Summarize the information by selecting and reporting the main features."
+          "You recently stayed at a hotel and had a problem with your room. Write a letter to the hotel manager explaining what happened and what you would like them to do about it.",
+          "You are planning to move to a new city and need to find accommodation. Write a letter to a local real estate agent asking for information about available apartments.",
+          "You have been invited to a friend's wedding but cannot attend. Write a letter to your friend explaining why you cannot come and wishing them well.",
+          "You recently bought a product online but it arrived damaged. Write a letter to the customer service department requesting a replacement or refund.",
+          "You want to apply for a job in another city. Write a letter to a friend asking for help with finding accommodation and information about the area."
         ]
       },
       "task2": {

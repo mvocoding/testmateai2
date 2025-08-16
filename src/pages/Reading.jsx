@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import dataService from '../services/dataService';
-import { generateReadingFeedback, saveVocabularyWords, recordPracticeActivity } from '../utils';
+import {
+  generateReadingFeedback,
+  saveVocabularyWords,
+  recordPracticeActivity,
+} from '../utils';
 
 const Reading = () => {
   const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
@@ -13,7 +17,6 @@ const Reading = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState('summary');
 
-  // Load reading data
   useEffect(() => {
     const loadReadingData = async () => {
       try {
@@ -67,8 +70,10 @@ const Reading = () => {
           correctAnswers++;
         }
       } else {
-        // For text input questions, check if answer matches (case-insensitive)
-        const userAnswer = (answers[index] || '').toString().toLowerCase().trim();
+        const userAnswer = (answers[index] || '')
+          .toString()
+          .toLowerCase()
+          .trim();
         const correctAnswer = question.correct.toString().toLowerCase().trim();
         if (userAnswer === correctAnswer) {
           correctAnswers++;
@@ -78,68 +83,74 @@ const Reading = () => {
     const percentage = (correctAnswers / currentQuestions.length) * 100;
     setScore(percentage);
     setShowResults(true);
-    
+
     // Debug logging
     console.log('Reading Submit Debug:', {
       selectedPassage,
       currentQuestions,
       answers,
-      passageForAI: { text: selectedPassage.passage, title: selectedPassage.title }
+      passageForAI: {
+        text: selectedPassage.passage,
+        title: selectedPassage.title,
+      },
     });
-    
-    // Generate AI feedback
+
     setIsAnalyzing(true);
     try {
-             const feedback = await generateReadingFeedback(
-         { text: selectedPassage.passage, title: selectedPassage.title },
-         currentQuestions,
-         answers
-       );
-             // Fix the AI feedback to use actual correct answers from our data
-       const correctedFeedback = {
-         ...feedback,
-         question_analysis: feedback.question_analysis?.map((analysis, idx) => {
-           const question = currentQuestions[idx];
-           const actualCorrectAnswer = question.options ? question.options[question.correct] : question.correct;
-           const actualStudentAnswer = question.options && answers[idx] !== undefined 
-             ? question.options[answers[idx]] 
-             : answers[idx] || 'No answer provided';
-           
-           // Determine if the answer is actually correct based on our data
-           const isActuallyCorrect = question.options 
-             ? answers[idx] === question.correct
-             : (answers[idx] || '').toString().toLowerCase().trim() === question.correct.toString().toLowerCase().trim();
-           
-           return {
-             ...analysis,
-             correct_answer: actualCorrectAnswer,
-             student_answer: actualStudentAnswer,
-             is_correct: isActuallyCorrect
-           };
-         }) || []
-       };
-       
-       setAiFeedback(correctedFeedback);
-      
-              // Save vocabulary words from the feedback
-        if (feedback.vocabulary_notes && Array.isArray(feedback.vocabulary_notes)) {
-          const words = feedback.vocabulary_notes.map(note => 
-            typeof note === 'string' ? note : note.word || ''
-          ).filter(word => word);
-          if (words.length > 0) {
-            saveVocabularyWords(words);
-          }
-        }
+      const feedback = await generateReadingFeedback(
+        { text: selectedPassage.passage, title: selectedPassage.title },
+        currentQuestions,
+        answers
+      );
+      const correctedFeedback = {
+        ...feedback,
+        question_analysis:
+          feedback.question_analysis?.map((analysis, idx) => {
+            const question = currentQuestions[idx];
+            const actualCorrectAnswer = question.options
+              ? question.options[question.correct]
+              : question.correct;
+            const actualStudentAnswer =
+              question.options && answers[idx] !== undefined
+                ? question.options[answers[idx]]
+                : answers[idx] || 'No answer provided';
 
-        // Record practice activity
-        const score = feedback.overall_score || 6.0;
-        const band = Math.round(score * 2) / 2; // Round to nearest 0.5
-        recordPracticeActivity('reading', score, band, {
-          passage: selectedPassage.title,
-          questionsAnswered: Object.keys(answers).length,
-          totalQuestions: currentQuestions.length,
-          feedback: feedback.overall_feedback
-        });
+            const isActuallyCorrect = question.options
+              ? answers[idx] === question.correct
+              : (answers[idx] || '').toString().toLowerCase().trim() ===
+                question.correct.toString().toLowerCase().trim();
+
+            return {
+              ...analysis,
+              correct_answer: actualCorrectAnswer,
+              student_answer: actualStudentAnswer,
+              is_correct: isActuallyCorrect,
+            };
+          }) || [],
+      };
+
+      setAiFeedback(correctedFeedback);
+
+      if (
+        feedback.vocabulary_notes &&
+        Array.isArray(feedback.vocabulary_notes)
+      ) {
+        const words = feedback.vocabulary_notes
+          .map((note) => (typeof note === 'string' ? note : note.word || ''))
+          .filter((word) => word);
+        if (words.length > 0) {
+          saveVocabularyWords(words);
+        }
+      }
+
+      const score = feedback.overall_score || 6.0;
+      const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+      recordPracticeActivity('reading', score, band, {
+        passage: selectedPassage.title,
+        questionsAnswered: Object.keys(answers).length,
+        totalQuestions: currentQuestions.length,
+        feedback: feedback.overall_feedback,
+      });
     } catch (error) {
       console.error('Error generating AI feedback:', error);
     } finally {
@@ -189,7 +200,6 @@ const Reading = () => {
       </div>
 
       <div className="mx-auto p-6">
-        {/* Question Type Selection */}
         <div className="mb-6">
           <div className="flex gap-3 flex-wrap">
             {Object.keys(READING_PASSAGES).map((level) => (
@@ -197,13 +207,13 @@ const Reading = () => {
                 key={level}
                 type="button"
                 onClick={() => {
-                                     setSelectedLevel(level);
-                   setCurrentPassage(0);
-                   setAnswers({});
-                   setShowResults(false);
-                   setScore(0);
-                   setAiFeedback(null);
-                   setActiveTab('summary');
+                  setSelectedLevel(level);
+                  setCurrentPassage(0);
+                  setAnswers({});
+                  setShowResults(false);
+                  setScore(0);
+                  setAiFeedback(null);
+                  setActiveTab('summary');
                 }}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                   selectedLevel === level
@@ -217,12 +227,9 @@ const Reading = () => {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="flex gap-6">
-          {/* Reading Passage and Questions */}
           <div className="flex-1">
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
-              {/* Passage */}
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
                   {selectedPassage.title}
@@ -234,7 +241,6 @@ const Reading = () => {
                 </div>
               </div>
 
-              {/* Questions */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 {currentQuestions.map((question, index) => (
                   <div key={index} className="bg-gray-50 p-6 rounded-xl">
@@ -275,41 +281,40 @@ const Reading = () => {
                       />
                     )}
 
-                                         {/* Show feedback if submitted */}
-                     {showResults && question.options && (
-                       <div className="mt-4">
-                         {answers[index] === question.correct ? (
-                           <div className="text-green-700 font-bold text-lg">
-                             Correct! 🎉
-                           </div>
-                         ) : (
-                           <div className="text-red-600 font-bold text-lg">
-                             Incorrect. The correct answer is:{' '}
-                             <span className="underline">
-                               {question.options[question.correct]}
-                             </span>
-                           </div>
-                         )}
-                       </div>
-                     )}
-                     
-                     {/* Show feedback for text input questions */}
-                     {showResults && !question.options && (
-                       <div className="mt-4">
-                         {answers[index]?.toString().toLowerCase().trim() === question.correct.toString().toLowerCase().trim() ? (
-                           <div className="text-green-700 font-bold text-lg">
-                             Correct! 🎉
-                           </div>
-                         ) : (
-                           <div className="text-red-600 font-bold text-lg">
-                             Incorrect. The correct answer is:{' '}
-                             <span className="underline">
-                               {question.correct}
-                             </span>
-                           </div>
-                         )}
-                       </div>
-                     )}
+                    {showResults && question.options && (
+                      <div className="mt-4">
+                        {answers[index] === question.correct ? (
+                          <div className="text-green-700 font-bold text-lg">
+                            Correct! 🎉
+                          </div>
+                        ) : (
+                          <div className="text-red-600 font-bold text-lg">
+                            Incorrect. The correct answer is:{' '}
+                            <span className="underline">
+                              {question.options[question.correct]}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {showResults && !question.options && (
+                      <div className="mt-4">
+                        {answers[index]?.toString().toLowerCase().trim() ===
+                        question.correct.toString().toLowerCase().trim() ? (
+                          <div className="text-green-700 font-bold text-lg">
+                            Correct! 🎉
+                          </div>
+                        ) : (
+                          <div className="text-red-600 font-bold text-lg">
+                            Incorrect. The correct answer is:{' '}
+                            <span className="underline">
+                              {question.correct}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
 
@@ -317,7 +322,9 @@ const Reading = () => {
                   <button
                     type="submit"
                     className="bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
-                    disabled={Object.keys(answers).length < currentQuestions.length}
+                    disabled={
+                      Object.keys(answers).length < currentQuestions.length
+                    }
                   >
                     Submit All
                   </button>
@@ -325,13 +332,14 @@ const Reading = () => {
 
                 {showResults && (
                   <div className="space-y-6">
-                    {/* Score and Navigation */}
                     <div className="bg-teal-50 p-6 rounded-xl">
                       <h3 className="text-xl font-bold text-teal-800 mb-2">
                         Your Score: {score.toFixed(1)}%
                       </h3>
                       <p className="text-teal-700">
-                        You got {Math.round((score / 100) * currentQuestions.length)} out of {currentQuestions.length} questions correct.
+                        You got{' '}
+                        {Math.round((score / 100) * currentQuestions.length)}{' '}
+                        out of {currentQuestions.length} questions correct.
                       </p>
                       {isAnalyzing && (
                         <div className="text-purple-600 text-center font-semibold animate-pulse mt-2">
@@ -340,7 +348,6 @@ const Reading = () => {
                       )}
                     </div>
 
-                    {/* AI Analysis Section */}
                     {aiFeedback && (
                       <div className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
                         <div className="flex mb-4 w-full overflow-x-auto border-b border-green-200">
@@ -360,9 +367,6 @@ const Reading = () => {
                           ))}
                         </div>
 
-                        
-
-                        {/* Passage Summary Tab */}
                         {activeTab === 'summary' && (
                           <div className="space-y-4">
                             <div className="text-lg font-semibold text-green-800 mb-3">
@@ -372,103 +376,134 @@ const Reading = () => {
                               {aiFeedback.passage_summary}
                             </div>
                             <div className="text-sm text-gray-600">
-                              <strong>Tip:</strong> Understanding the main idea helps with answering questions.
+                              <strong>Tip:</strong> Understanding the main idea
+                              helps with answering questions.
                             </div>
                           </div>
                         )}
 
-                        {/* Question Analysis Tab */}
                         {activeTab === 'analysis' && (
                           <div className="space-y-4">
                             <div className="text-lg font-semibold text-green-800 mb-3">
                               Detailed Question Analysis
                             </div>
-                            {aiFeedback.question_analysis?.map((analysis, idx) => (
-                              <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                                    analysis.is_correct 
-                                      ? 'bg-green-100 text-green-800' 
-                                      : 'bg-red-100 text-red-800'
-                                  }`}>
-                                    {analysis.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                                  </span>
-                                  <span className="font-semibold text-green-800">
-                                    Question {analysis.question_number}
-                                  </span>
+                            {aiFeedback.question_analysis?.map(
+                              (analysis, idx) => (
+                                <div
+                                  key={idx}
+                                  className="bg-white rounded-lg p-4 border border-green-200"
+                                >
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span
+                                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                                        analysis.is_correct
+                                          ? 'bg-green-100 text-green-800'
+                                          : 'bg-red-100 text-red-800'
+                                      }`}
+                                    >
+                                      {analysis.is_correct
+                                        ? '✓ Correct'
+                                        : '✗ Incorrect'}
+                                    </span>
+                                    <span className="font-semibold text-green-800">
+                                      Question {analysis.question_number}
+                                    </span>
+                                  </div>
+                                  <div className="text-sm text-gray-700 mb-2">
+                                    <strong>Question:</strong>{' '}
+                                    {analysis.question_text}
+                                  </div>
+                                  <div className="text-sm text-gray-700 mb-2">
+                                    <strong>Your Answer:</strong>{' '}
+                                    {currentQuestions[
+                                      analysis.question_number - 1
+                                    ]?.options
+                                      ? currentQuestions[
+                                          analysis.question_number - 1
+                                        ].options[analysis.student_answer] ||
+                                        analysis.student_answer
+                                      : analysis.student_answer}
+                                  </div>
+                                  <div className="text-sm text-gray-700 mb-2">
+                                    <strong>Correct Answer:</strong>{' '}
+                                    {currentQuestions[
+                                      analysis.question_number - 1
+                                    ]?.options
+                                      ? currentQuestions[
+                                          analysis.question_number - 1
+                                        ].options[analysis.correct_answer] ||
+                                        analysis.correct_answer
+                                      : analysis.correct_answer}
+                                  </div>
+                                  <div className="text-sm text-gray-700 mb-2">
+                                    <strong>Explanation:</strong>{' '}
+                                    {analysis.explanation}
+                                  </div>
+                                  <div className="text-sm text-gray-700 mb-2">
+                                    <strong>Reading Strategy:</strong>{' '}
+                                    {analysis.reading_strategy}
+                                  </div>
+                                  <div className="text-sm text-gray-700">
+                                    <strong>Key Vocabulary:</strong>{' '}
+                                    {analysis.key_vocabulary?.join(', ')}
+                                  </div>
                                 </div>
-                                <div className="text-sm text-gray-700 mb-2">
-                                  <strong>Question:</strong> {analysis.question_text}
-                                </div>
-                                                                 <div className="text-sm text-gray-700 mb-2">
-                                   <strong>Your Answer:</strong> {
-                                     currentQuestions[analysis.question_number - 1]?.options 
-                                       ? currentQuestions[analysis.question_number - 1].options[analysis.student_answer] || analysis.student_answer
-                                       : analysis.student_answer
-                                   }
-                                 </div>
-                                 <div className="text-sm text-gray-700 mb-2">
-                                   <strong>Correct Answer:</strong> {
-                                     currentQuestions[analysis.question_number - 1]?.options 
-                                       ? currentQuestions[analysis.question_number - 1].options[analysis.correct_answer] || analysis.correct_answer
-                                       : analysis.correct_answer
-                                   }
-                                 </div>
-                                <div className="text-sm text-gray-700 mb-2">
-                                  <strong>Explanation:</strong> {analysis.explanation}
-                                </div>
-                                <div className="text-sm text-gray-700 mb-2">
-                                  <strong>Reading Strategy:</strong> {analysis.reading_strategy}
-                                </div>
-                                <div className="text-sm text-gray-700">
-                                  <strong>Key Vocabulary:</strong> {analysis.key_vocabulary?.join(', ')}
-                                </div>
-                              </div>
-                            ))}
+                              )
+                            )}
                           </div>
                         )}
 
-                                                 {/* Vocabulary Tab */}
-                         {activeTab === 'vocabulary' && (
-                           <div className="space-y-4">
-                             <div className="text-lg font-semibold text-green-800 mb-3">
-                               Important Vocabulary
-                             </div>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                               {aiFeedback.vocabulary_notes?.map((vocab, idx) => {
-                                 // Handle different vocabulary data structures
-                                 let word, definition;
-                                 if (typeof vocab === 'string') {
-                                   word = vocab;
-                                   definition = 'Definition not available';
-                                 } else if (vocab && typeof vocab === 'object') {
-                                   word = vocab.word || vocab.mistake || 'Unknown word';
-                                   definition = vocab.definition || vocab.solution || 'Definition not available';
-                                 } else {
-                                   word = 'Unknown word';
-                                   definition = 'Definition not available';
-                                 }
-                                 
-                                 return (
-                                   <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
-                                     <div className="font-semibold text-green-800 mb-1">
-                                       {word}
-                                     </div>
-                                     <div className="text-sm text-gray-700">
-                                       {definition}
-                                     </div>
-                                   </div>
-                                 );
-                               })}
-                             </div>
-                           </div>
-                         )}
+                        {activeTab === 'vocabulary' && (
+                          <div className="space-y-4">
+                            <div className="text-lg font-semibold text-green-800 mb-3">
+                              Important Vocabulary
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {aiFeedback.vocabulary_notes?.map(
+                                (vocab, idx) => {
+                                  // Handle different vocabulary data structures
+                                  let word, definition;
+                                  if (typeof vocab === 'string') {
+                                    word = vocab;
+                                    definition = 'Definition not available';
+                                  } else if (
+                                    vocab &&
+                                    typeof vocab === 'object'
+                                  ) {
+                                    word =
+                                      vocab.word ||
+                                      vocab.mistake ||
+                                      'Unknown word';
+                                    definition =
+                                      vocab.definition ||
+                                      vocab.solution ||
+                                      'Definition not available';
+                                  } else {
+                                    word = 'Unknown word';
+                                    definition = 'Definition not available';
+                                  }
 
-                                                 
+                                  return (
+                                    <div
+                                      key={idx}
+                                      className="bg-white rounded-lg p-4 border border-green-200"
+                                    >
+                                      <div className="font-semibold text-green-800 mb-1">
+                                        {word}
+                                      </div>
+                                      <div className="text-sm text-gray-700">
+                                        {definition}
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* Navigation Buttons */}
                     <div className="flex gap-4">
                       <button
                         type="button"
@@ -493,7 +528,6 @@ const Reading = () => {
             </div>
           </div>
 
-          {/* Sidebar for passage navigation */}
           <div className="w-64 flex-shrink-0">
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 flex flex-col gap-2 sticky top-24">
               <div className="font-bold text-gray-700 mb-2 text-center">
@@ -509,12 +543,12 @@ const Reading = () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-teal-100'
                   }`}
                   onClick={() => {
-                                         setCurrentPassage(idx);
-                     setAnswers({});
-                     setShowResults(false);
-                     setScore(0);
-                     setAiFeedback(null);
-                     setActiveTab('summary');
+                    setCurrentPassage(idx);
+                    setAnswers({});
+                    setShowResults(false);
+                    setScore(0);
+                    setAiFeedback(null);
+                    setActiveTab('summary');
                   }}
                 >
                   {passage.title}
