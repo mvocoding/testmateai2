@@ -230,33 +230,175 @@ export const fetchMockTest = (testId) => {
   }
 };
 
+const createFallbackQuestions = (sectionId) => {
+  const fallbackQuestions = {
+    listening: [
+      {
+        id: 1,
+        question: "What is the main topic of the conversation?",
+        options: ["Weather", "Travel", "Food", "Sports"],
+        correct: 1,
+        type: "multiple-choice",
+        audio: null
+      },
+      {
+        id: 2,
+        question: "Where does the conversation take place?",
+        options: ["Restaurant", "Airport", "Hotel", "School"],
+        correct: 2,
+        type: "multiple-choice",
+        audio: null
+      }
+    ],
+    speaking: [
+      {
+        id: 1,
+        question: "Describe your hometown. What is it like?",
+        title: "Hometown Description",
+        part: 1,
+        type: "speaking",
+        preparationTime: 60
+      },
+      {
+        id: 2,
+        question: "Talk about a book you have read recently. What was it about?",
+        title: "Book Discussion",
+        part: 2,
+        type: "speaking",
+        preparationTime: 120
+      }
+    ],
+    reading: [
+      {
+        id: 1,
+        question: "What is the main idea of the passage?",
+        options: ["Technology", "Education", "Environment", "Health"],
+        correct: 1,
+        type: "multiple-choice",
+        passage: "This is a sample reading passage about education and its importance in modern society."
+      },
+      {
+        id: 2,
+        question: "According to the passage, what is the author's opinion?",
+        options: ["Positive", "Negative", "Neutral", "Unclear"],
+        correct: 0,
+        type: "multiple-choice",
+        passage: "The author presents a positive view of the topic discussed in the passage."
+      }
+    ],
+    writing: [
+      {
+        id: 1,
+        question: "Write an essay about the advantages and disadvantages of technology in education.",
+        title: "Technology in Education",
+        type: "task2",
+        timeLimit: 40 * 60,
+        wordLimit: "250-300 words"
+      },
+      {
+        id: 2,
+        question: "Describe the chart showing student performance over time.",
+        title: "Student Performance Chart",
+        type: "task1",
+        timeLimit: 20 * 60,
+        wordLimit: "150-200 words"
+      }
+    ]
+  };
+  
+  return fallbackQuestions[sectionId] || [];
+};
+
 export const fetchMockTestQuestions = (testId, sectionId) => {
   try {
+    console.log(`Fetching questions for test ${testId}, section ${sectionId}`);
     const data = getMockData();
+    console.log('Mock data structure:', Object.keys(data));
+    console.log('Practice questions structure:', Object.keys(data.practiceQuestions || {}));
+    
     const sectionData = data.practiceQuestions?.[sectionId];
+    console.log(`Section data for ${sectionId}:`, sectionData);
     
     if (!sectionData) {
+      console.log(`No section data found for ${sectionId}`);
       return [];
     }
     
-    const allQuestions = [];
-    Object.values(sectionData).forEach(questionType => {
-      if (questionType.passages) {
-        questionType.passages.forEach(passage => {
-          if (passage.questions) {
-            passage.questions.forEach(question => {
-              allQuestions.push({
-                ...question,
-                passage: passage,
-                questionType: questionType.name
-              });
-            });
-          }
-        });
-      }
-    });
+         const allQuestions = [];
+     Object.entries(sectionData).forEach(([questionTypeKey, questionType]) => {
+       console.log(`Processing question type: ${questionTypeKey}`, questionType);
+       
+       // Handle different question structures
+       if (questionType.passages) {
+         // Structure with passages (listening, reading)
+         questionType.passages.forEach(passage => {
+           console.log(`Processing passage:`, passage);
+           if (passage.questions) {
+             // For listening, we want to group questions by passage
+             if (sectionId === 'listening') {
+               // Create a single question object that contains all questions for this passage
+               allQuestions.push({
+                 id: passage.id,
+                 question: `Passage: ${passage.title}`,
+                 passageText: passage.text,
+                 passageTitle: passage.title,
+                 questions: passage.questions, // Keep all questions for this passage
+                 questionType: questionType.name,
+                 type: 'passage' // Mark as a passage type
+               });
+             } else {
+               // For other sections, process each question individually
+               passage.questions.forEach(question => {
+                 allQuestions.push({
+                   ...question,
+                   // Map text to question for consistency
+                   question: question.text || question.question || '',
+                   // Map passage text
+                   passageText: passage.passage || passage.text || passage.title || '',
+                   questionType: questionType.name
+                 });
+               });
+             }
+           }
+         });
+       } else if (questionType.questions) {
+         // Structure with direct questions (speaking part1, part2, part3)
+         questionType.questions.forEach((questionText, index) => {
+           allQuestions.push({
+             id: index + 1,
+             question: questionText,
+             title: questionType.name,
+             part: questionTypeKey.replace('part', ''),
+             type: 'speaking',
+             preparationTime: questionTypeKey === 'part2' ? 120 : 60
+           });
+         });
+       } else if (questionType.prompts) {
+         // Structure with prompts (writing task1, task2)
+         questionType.prompts.forEach((prompt, index) => {
+           allQuestions.push({
+             id: index + 1,
+             question: prompt,
+             title: questionType.name,
+             type: questionTypeKey,
+             timeLimit: questionTypeKey === 'task1' ? 20 * 60 : 40 * 60,
+             wordLimit: questionTypeKey === 'task1' ? '150-200 words' : '250-300 words'
+           });
+         });
+       }
+     });
     
-    return allQuestions.slice(0, 10); // Limit to 10 questions per section
+    console.log(`Total questions found for ${sectionId}:`, allQuestions.length);
+    let result = allQuestions.slice(0, 10); // Limit to 10 questions per section
+    
+    // If no questions found, create some basic fallback questions
+    if (result.length === 0) {
+      console.log(`No questions found for ${sectionId}, creating fallback questions`);
+      result = createFallbackQuestions(sectionId);
+    }
+    
+    console.log(`Returning ${result.length} questions for ${sectionId}`);
+    return result;
   } catch (error) {
     console.error('Error fetching mock test questions:', error);
     return [];

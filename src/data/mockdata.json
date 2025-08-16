@@ -191,7 +191,7 @@
           {
             "id": 1,
             "title": "University Campus Tour",
-            "text": "Welcome to our university campus. The main library is located in the center of campus, next to the student union building. The library is open from 8 AM to 10 PM on weekdays, and 9 AM to 6 PM on weekends. There are over 500,000 books and 50 study rooms available.",
+            "text": "Welcome to our university campus. The main library is located in the center of campus, next to the student union building. The library is open from 8 AM to 10 PM on weekdays, and 9 AM to 6 PM on weekends. There are over 500,000 books and 50 study rooms available. The cafeteria is open from 7 AM to 8 PM daily, and the gym facilities are available from 6 AM to 11 PM on weekdays and 8 AM to 10 PM on weekends.",
             "questions": [
               {
                 "id": 1,
@@ -204,6 +204,18 @@
                 "question": "How many books are available in the library?",
                 "options": ["400,000", "500,000", "600,000", "700,000"],
                 "correct": 1
+              },
+              {
+                "id": 3,
+                "question": "What time does the cafeteria close?",
+                "options": ["6 PM", "7 PM", "8 PM", "9 PM"],
+                "correct": 2
+              },
+              {
+                "id": 4,
+                "question": "When is the gym open on weekends?",
+                "options": ["6 AM to 10 PM", "7 AM to 9 PM", "8 AM to 10 PM", "9 AM to 11 PM"],
+                "correct": 2
               }
             ]
           }
@@ -241,7 +253,7 @@
           {
             "id": 1,
             "title": "Weather Forecast",
-            "text": "Today will be sunny with a high temperature of 25 degrees Celsius. There is a 20% chance of rain in the afternoon. The wind will be light, around 10 kilometers per hour.",
+            "text": "Today will be sunny with a high temperature of 25 degrees Celsius. There is a 20% chance of rain in the afternoon. The wind will be light, around 10 kilometers per hour. Tomorrow will be cloudy with temperatures reaching 18 degrees Celsius and a 60% chance of rain.",
             "questions": [
               {
                 "id": 1,
@@ -251,8 +263,20 @@
               },
               {
                 "id": 2,
-                "question": "There is a _____ percent chance of rain.",
+                "question": "There is a _____ percent chance of rain today.",
                 "answer": "20",
+                "type": "completion"
+              },
+              {
+                "id": 3,
+                "question": "The wind speed will be _____ kilometers per hour.",
+                "answer": "10",
+                "type": "completion"
+              },
+              {
+                "id": 4,
+                "question": "Tomorrow's temperature will reach _____ degrees Celsius.",
+                "answer": "18",
                 "type": "completion"
               }
             ]

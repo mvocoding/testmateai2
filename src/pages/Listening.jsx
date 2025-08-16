@@ -32,7 +32,7 @@ const Listening = () => {
     { key: 'vocabulary', label: 'Vocabulary' },
   ];
 
-  // Load listening data
+  // Load listening data and voices
   useEffect(() => {
     const loadListeningData = async () => {
       try {
@@ -44,6 +44,17 @@ const Listening = () => {
     };
 
     loadListeningData();
+    
+    // Load speech synthesis voices
+    const loadVoices = () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+      }
+    };
+    
+    loadVoices();
+    // Some browsers need a delay to load voices
+    setTimeout(loadVoices, 1000);
   }, []);
 
   useEffect(() => {
@@ -87,9 +98,19 @@ const Listening = () => {
       }
 
       const utterance = new SpeechSynthesisUtterance(passage.text);
-      utterance.rate = 0.9; // Slightly slower for clarity
-      utterance.pitch = 1;
+      utterance.rate = 0.85; // Slightly slower for better comprehension
+      utterance.pitch = 1.1; // Slightly higher pitch for clarity
       utterance.volume = 1;
+      
+      // Try to use a better voice if available
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.lang.includes('en') && 
+        (voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Premium'))
+      );
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
 
       utterance.onstart = () => {
         setIsPlaying(true);
@@ -368,26 +389,54 @@ const Listening = () => {
             </div>
           </div>
           <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={isPlaying ? stopListening : startListening}
-                disabled={isLoading || playCount >= MAX_PLAYS}
-                className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${
-                  isPlaying
-                    ? 'bg-red-500 hover:bg-red-600'
-                    : 'bg-teal-500 hover:bg-teal-600'
-                } ${
-                  isLoading || playCount >= MAX_PLAYS
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                }`}
-              >
-                <span role="img" aria-label="audio">
-                  {isPlaying ? '⏸️' : '▶️'}
-                </span>
-                {isLoading ? 'Loading...' : isPlaying ? 'Pause' : 'Play Audio'}
-              </button>
-
+            {/* Audio Player Section */}
+            <div className="w-full max-w-md bg-teal-50 rounded-xl p-6 border-2 border-teal-200">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-bold text-teal-800 mb-2">🎧 Audio Player</h3>
+                <p className="text-sm text-teal-600">Listen to the passage and answer the questions below</p>
+              </div>
+              
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={isPlaying ? stopListening : startListening}
+                    disabled={isLoading || playCount >= MAX_PLAYS}
+                    className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${
+                      isPlaying
+                        ? 'bg-red-500 hover:bg-red-600'
+                        : 'bg-teal-500 hover:bg-teal-600'
+                    } ${
+                      isLoading || playCount >= MAX_PLAYS
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    <span role="img" aria-label="audio">
+                      {isPlaying ? '⏸️' : '▶️'}
+                    </span>
+                    {isLoading ? 'Loading...' : isPlaying ? 'Pause' : 'Play Audio'}
+                  </button>
+                </div>
+                
+                {/* Play Count Display */}
+                <div className="text-sm text-teal-700">
+                  Plays remaining: {MAX_PLAYS - playCount} of {MAX_PLAYS}
+                </div>
+                
+                {/* Audio Status */}
+                {isPlaying && (
+                  <div className="flex items-center gap-2 text-teal-600">
+                    <div className="animate-pulse">🔊</div>
+                    <span className="text-sm font-medium">Playing audio...</span>
+                  </div>
+                )}
+                
+                {!isPlaying && playCount > 0 && (
+                  <div className="text-sm text-gray-600">
+                    Audio ready to play again
+                  </div>
+                )}
+              </div>
             </div>
             {/* Timer */}
             {isTimerActive && (
@@ -395,6 +444,7 @@ const Listening = () => {
                 Time remaining: {formatTime(timeRemaining)}
               </div>
             )}
+            
           </div>
           {!showResults ? (
             <form
