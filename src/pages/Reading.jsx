@@ -531,7 +531,7 @@ const Reading = () => {
           <div className="w-64 flex-shrink-0">
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 flex flex-col gap-2 sticky top-24">
               <div className="font-bold text-gray-700 mb-2 text-center">
-                {currentType.name} Passages
+                Questions
               </div>
               {currentPassages.map((passage, idx) => (
                 <button
@@ -551,7 +551,7 @@ const Reading = () => {
                     setActiveTab('summary');
                   }}
                 >
-                  {passage.title}
+                  Question {idx + 1}
                 </button>
               ))}
             </div>

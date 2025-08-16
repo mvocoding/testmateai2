@@ -30,6 +30,11 @@ const MockTest = () => {
     writing: []
   });
   
+  // Test completion and results states
+  const [isTestCompleted, setIsTestCompleted] = useState(false);
+  const [testResults, setTestResults] = useState(null);
+  const [showResults, setShowResults] = useState(false);
+  
   // Audio states for listening section
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +42,117 @@ const MockTest = () => {
   const [speechRef] = useState(useRef(null));
   
   const MAX_PLAYS = 2;
+
+  // Calculate scores for each section
+  const calculateSectionScore = (sectionId) => {
+    const sectionAnswers = answers[sectionId] || {};
+    const sectionQuestions = questions[sectionId] || [];
+    let correctAnswers = 0;
+    let totalQuestions = 0;
+
+    sectionQuestions.forEach((question, index) => {
+      if (question.type === 'passage' && question.questions) {
+        // For passage-type questions, check each sub-question
+        question.questions.forEach((subQuestion, subIndex) => {
+          totalQuestions++;
+          const answerKey = `${question.id}-${subIndex}`;
+          const userAnswer = sectionAnswers[answerKey];
+          
+          if (subQuestion.correct !== undefined) {
+            // Multiple choice or true/false
+            if (userAnswer === subQuestion.correct) {
+              correctAnswers++;
+            }
+          } else if (subQuestion.answer) {
+            // Short answer or completion
+            if (userAnswer && userAnswer.toString().toLowerCase().trim() === 
+                subQuestion.answer.toString().toLowerCase().trim()) {
+              correctAnswers++;
+            }
+          }
+        });
+      } else {
+        // For individual questions
+        totalQuestions++;
+        const userAnswer = sectionAnswers[question.id];
+        
+        if (question.correct !== undefined) {
+          if (userAnswer === question.correct) {
+            correctAnswers++;
+          }
+        } else if (question.answer) {
+          if (userAnswer && userAnswer.toString().toLowerCase().trim() === 
+              question.answer.toString().toLowerCase().trim()) {
+            correctAnswers++;
+          }
+        }
+      }
+    });
+
+    return totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+  };
+
+  // Calculate overall IELTS band score
+  const calculateOverallScore = () => {
+    const listeningScore = calculateSectionScore('listening');
+    const readingScore = calculateSectionScore('reading');
+    const writingScore = calculateSectionScore('writing');
+    const speakingScore = calculateSectionScore('speaking');
+
+    // Convert percentage to IELTS band score (simplified)
+    const convertToBandScore = (percentage) => {
+      if (percentage >= 90) return 9.0;
+      if (percentage >= 80) return 8.0;
+      if (percentage >= 70) return 7.0;
+      if (percentage >= 60) return 6.0;
+      if (percentage >= 50) return 5.0;
+      if (percentage >= 40) return 4.0;
+      if (percentage >= 30) return 3.0;
+      if (percentage >= 20) return 2.0;
+      return 1.0;
+    };
+
+    const listeningBand = convertToBandScore(listeningScore);
+    const readingBand = convertToBandScore(readingScore);
+    const writingBand = convertToBandScore(writingScore);
+    const speakingBand = convertToBandScore(speakingScore);
+
+    const overallBand = (listeningBand + readingBand + writingBand + speakingBand) / 4;
+
+    return {
+      listening: { percentage: listeningScore, band: listeningBand },
+      reading: { percentage: readingScore, band: readingBand },
+      writing: { percentage: writingScore, band: writingBand },
+      speaking: { percentage: speakingScore, band: speakingBand },
+      overall: { band: Math.round(overallBand * 2) / 2 } // Round to nearest 0.5
+    };
+  };
+
+  // Submit test and calculate results
+  const submitTest = () => {
+    const results = calculateOverallScore();
+    setTestResults(results);
+    setIsTestCompleted(true);
+    setShowResults(true);
+  };
+
+  // Generate feedback based on scores
+  const generateFeedback = (skill, score) => {
+    const band = score.band;
+    const percentage = score.percentage;
+    
+    if (band >= 8.0) {
+      return `Excellent performance in ${skill}! Your score of ${band.toFixed(1)} shows mastery of this skill.`;
+    } else if (band >= 7.0) {
+      return `Good performance in ${skill}. Your score of ${band.toFixed(1)} indicates strong proficiency.`;
+    } else if (band >= 6.0) {
+      return `Satisfactory performance in ${skill}. Your score of ${band.toFixed(1)} shows adequate proficiency.`;
+    } else if (band >= 5.0) {
+      return `Limited performance in ${skill}. Your score of ${band.toFixed(1)} suggests you need more practice.`;
+    } else {
+      return `Poor performance in ${skill}. Your score of ${band.toFixed(1)} indicates significant improvement needed.`;
+    }
+  };
 
   // Skill introductions
   const skillIntroductions = {
@@ -1014,7 +1130,7 @@ const MockTest = () => {
           <div className="space-y-6">
             <div className="bg-green-50 p-6 rounded-lg">
               <h3 className="text-xl font-semibold mb-4">
-                Writing {question.type === 'task1' ? 'Task 1: Letter' : 'Task 2: Essay'}
+                Writing {question.type === 'task1' ? 'Task 1: Letter Writing' : 'Task 2: Essay Writing'}
               </h3>
               <h4 className="text-lg font-medium mb-4">{question.title || 'Writing Task'}</h4>
 
@@ -1025,10 +1141,22 @@ const MockTest = () => {
 
                   {question.type === 'task1' && (
                     <div className="mt-4 p-3 bg-blue-50 rounded">
-                      <h6 className="font-medium text-blue-800 mb-2">Letter Writing Task</h6>
+                      <h6 className="font-medium text-blue-800 mb-2">Task 1: Letter Writing</h6>
                       <p className="text-sm text-blue-700">
                         Write a formal or informal letter based on the situation described above. 
                         Remember to include appropriate greetings, body paragraphs, and closing.
+                        <strong>Time: 20 minutes | Words: 150-200</strong>
+                      </p>
+                    </div>
+                  )}
+                  
+                  {question.type === 'task2' && (
+                    <div className="mt-4 p-3 bg-green-50 rounded">
+                      <h6 className="font-medium text-green-800 mb-2">Task 2: Essay Writing</h6>
+                      <p className="text-sm text-green-700">
+                        Write an essay responding to the given topic. Include an introduction, 
+                        body paragraphs with supporting arguments, and a conclusion.
+                        <strong>Time: 40 minutes | Words: 250-300</strong>
                       </p>
                     </div>
                   )}
@@ -1235,9 +1363,182 @@ const MockTest = () => {
       {/* Main content */}
       <div className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
-          {renderQuestion()}
+          {showResults ? (
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  🎉 Test Results
+                </h2>
+                <p className="text-gray-600">
+                  Here's how you performed in each section
+                </p>
+              </div>
 
-          <div className="flex justify-between mt-8">
+              {/* Overall Score */}
+              <div className="bg-gradient-to-r from-teal-500 to-blue-600 rounded-xl p-6 mb-8 text-white text-center">
+                <h3 className="text-2xl font-bold mb-2">Overall Band Score</h3>
+                <div className="text-5xl font-bold mb-2">
+                  {testResults?.overall.band.toFixed(1)}
+                </div>
+                <p className="text-teal-100">
+                  {testResults?.overall.band >= 7.0 ? 'Excellent!' : 
+                   testResults?.overall.band >= 6.0 ? 'Good!' : 
+                   testResults?.overall.band >= 5.0 ? 'Satisfactory' : 'Needs Improvement'}
+                </p>
+              </div>
+
+              {/* Individual Skills */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Listening */}
+                <div className="bg-white border border-gray-200 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-xl font-semibold text-gray-900 flex items-center">
+                      🎧 Listening
+                    </h4>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-teal-600">
+                        {testResults?.listening.band.toFixed(1)}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {testResults?.listening.percentage.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 text-sm">
+                    {generateFeedback('Listening', testResults?.listening)}
+                  </p>
+                </div>
+
+                {/* Reading */}
+                <div className="bg-white border border-gray-200 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-xl font-semibold text-gray-900 flex items-center">
+                      📖 Reading
+                    </h4>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-teal-600">
+                        {testResults?.reading.band.toFixed(1)}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {testResults?.reading.percentage.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 text-sm">
+                    {generateFeedback('Reading', testResults?.reading)}
+                  </p>
+                </div>
+
+                {/* Writing */}
+                <div className="bg-white border border-gray-200 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-xl font-semibold text-gray-900 flex items-center">
+                      ✍️ Writing
+                    </h4>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-teal-600">
+                        {testResults?.writing.band.toFixed(1)}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {testResults?.writing.percentage.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 text-sm">
+                    {generateFeedback('Writing', testResults?.writing)}
+                  </p>
+                </div>
+
+                {/* Speaking */}
+                <div className="bg-white border border-gray-200 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-xl font-semibold text-gray-900 flex items-center">
+                      🗣️ Speaking
+                    </h4>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-teal-600">
+                        {testResults?.speaking.band.toFixed(1)}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {testResults?.speaking.percentage.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 text-sm">
+                    {generateFeedback('Speaking', testResults?.speaking)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              <div className="bg-gray-50 rounded-xl p-6 mb-8">
+                <h4 className="text-xl font-semibold text-gray-900 mb-4">
+                  📋 Recommendations
+                </h4>
+                <div className="space-y-3">
+                  {testResults?.listening.band < 6.0 && (
+                    <p className="text-gray-700">
+                      • <strong>Listening:</strong> Practice with audio materials, focus on note-taking skills
+                    </p>
+                  )}
+                  {testResults?.reading.band < 6.0 && (
+                    <p className="text-gray-700">
+                      • <strong>Reading:</strong> Improve skimming and scanning techniques, expand vocabulary
+                    </p>
+                  )}
+                  {testResults?.writing.band < 6.0 && (
+                    <p className="text-gray-700">
+                      • <strong>Writing:</strong> Practice essay structure, work on grammar and coherence
+                    </p>
+                  )}
+                  {testResults?.speaking.band < 6.0 && (
+                    <p className="text-gray-700">
+                      • <strong>Speaking:</strong> Practice fluency, work on pronunciation and vocabulary
+                    </p>
+                  )}
+                  {testResults?.overall.band >= 6.0 && (
+                    <p className="text-green-700 font-semibold">
+                      • Great job! Consider taking more practice tests to maintain your performance.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/"
+                  className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 font-semibold text-center"
+                >
+                  Back to Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    setShowResults(false);
+                    setIsTestCompleted(false);
+                    setTestResults(null);
+                    setAnswers({
+                      listening: {},
+                      speaking: {},
+                      reading: {},
+                      writing: {},
+                    });
+                    setCurrentSection('listening');
+                    setCurrentQuestion(0);
+                    setIsTestStarted(false);
+                    setShowingIntroduction(true);
+                  }}
+                  className="bg-gray-600 text-white px-8 py-3 rounded-lg hover:bg-gray-700 font-semibold"
+                >
+                  Take Another Test
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {renderQuestion()}
+
+              <div className="flex justify-between mt-8">
             <button
               onClick={prevQuestion}
               disabled={
@@ -1250,19 +1551,30 @@ const MockTest = () => {
               Previous
             </button>
 
-            <button
-              onClick={nextQuestion}
-              disabled={
-                !questions ||
-                currentQuestion === questions[currentSection]?.length - 1 &&
-                sections.findIndex((s) => s.id === currentSection) ===
-                  sections.length - 1
-              }
-              className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
+            {currentQuestion === questions[currentSection]?.length - 1 &&
+             sections.findIndex((s) => s.id === currentSection) === sections.length - 1 ? (
+              <button
+                onClick={submitTest}
+                className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold"
+              >
+                Submit Test
+              </button>
+            ) : (
+              <button
+                onClick={nextQuestion}
+                disabled={
+                  !questions ||
+                  currentQuestion === questions[currentSection]?.length - 1 &&
+                  sections.findIndex((s) => s.id === currentSection) === sections.length - 1
+                }
+                className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            )}
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>

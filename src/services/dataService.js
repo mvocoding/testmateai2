@@ -384,23 +384,42 @@ export const fetchMockTestQuestions = (testId, sectionId) => {
          });
        } else if (questionType.prompts) {
          // Structure with prompts (writing task1, task2)
-         questionType.prompts.forEach((prompt, index) => {
-           allQuestions.push({
-             id: index + 1,
-             question: prompt,
-             title: questionType.name,
-             type: questionTypeKey,
-             timeLimit: questionTypeKey === 'task1' ? 20 * 60 : 40 * 60,
-             wordLimit: questionTypeKey === 'task1' ? '150-200 words' : '250-300 words'
+         // For writing, we only want 1 question per task (2 total)
+         if (sectionId === 'writing') {
+           // Take only the first prompt from each task
+           if (questionTypeKey === 'task1' || questionTypeKey === 'task2') {
+             const prompt = questionType.prompts[0]; // Only take the first prompt
+             allQuestions.push({
+               id: questionTypeKey === 'task1' ? 1 : 2,
+               question: prompt,
+               title: questionType.name,
+               type: questionTypeKey,
+               timeLimit: questionTypeKey === 'task1' ? 20 * 60 : 40 * 60,
+               wordLimit: questionTypeKey === 'task1' ? '150-200 words' : '250-300 words'
+             });
+           }
+         } else {
+           // For other sections, keep all prompts
+           questionType.prompts.forEach((prompt, index) => {
+             allQuestions.push({
+               id: index + 1,
+               question: prompt,
+               title: questionType.name,
+               type: questionTypeKey,
+               timeLimit: questionTypeKey === 'task1' ? 20 * 60 : 40 * 60,
+               wordLimit: questionTypeKey === 'task1' ? '150-200 words' : '250-300 words'
+             });
            });
-         });
+         }
        }
      });
     
     console.log(`Total questions found for ${sectionId}:`, allQuestions.length);
     
     // For speaking, we want all parts (1, 2, 3) so we need more questions
-    const maxQuestions = sectionId === 'speaking' ? 15 : 10;
+    // For writing, we only want 2 questions (Task 1 and Task 2)
+    const maxQuestions = sectionId === 'speaking' ? 15 : 
+                        sectionId === 'writing' ? 2 : 10;
     let result = allQuestions.slice(0, maxQuestions);
     
     // If no questions found, create some basic fallback questions
