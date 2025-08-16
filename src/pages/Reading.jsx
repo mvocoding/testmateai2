@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dataService from '../services/dataService';
+import { generateReadingFeedback } from '../utils';
 
 const Reading = () => {
   const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
@@ -8,6 +9,9 @@ const Reading = () => {
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
   const [readingData, setReadingData] = useState(null);
+  const [aiFeedback, setAiFeedback] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Load reading data
   useEffect(() => {
@@ -36,6 +40,15 @@ const Reading = () => {
 
   const READING_PASSAGES = readingData;
 
+  const FEEDBACK_TABS = [
+    { key: 'overview', label: 'Overview' },
+    { key: 'summary', label: 'Passage Summary' },
+    { key: 'analysis', label: 'Question Analysis' },
+    { key: 'strategies', label: 'Reading Strategies' },
+    { key: 'vocabulary', label: 'Vocabulary' },
+    { key: 'tips', label: 'Improvement Tips' },
+  ];
+
   const currentType = READING_PASSAGES[selectedLevel];
   const currentPassages = currentType.passages;
   const selectedPassage = currentPassages[currentPassage];
@@ -48,7 +61,7 @@ const Reading = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let correctAnswers = 0;
     currentQuestions.forEach((question, index) => {
@@ -61,12 +74,29 @@ const Reading = () => {
     const percentage = (correctAnswers / currentQuestions.length) * 100;
     setScore(percentage);
     setShowResults(true);
+    
+    // Generate AI feedback
+    setIsAnalyzing(true);
+    try {
+             const feedback = await generateReadingFeedback(
+         { text: selectedPassage.passage, title: selectedPassage.title },
+         currentQuestions,
+         answers
+       );
+      setAiFeedback(feedback);
+    } catch (error) {
+      console.error('Error generating AI feedback:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleTryAgain = () => {
     setAnswers({});
     setShowResults(false);
     setScore(0);
+    setAiFeedback(null);
+    setActiveTab('overview');
   };
 
   const nextPassage = () => {
@@ -75,6 +105,8 @@ const Reading = () => {
       setAnswers({});
       setShowResults(false);
       setScore(0);
+      setAiFeedback(null);
+      setActiveTab('overview');
     }
   };
 
@@ -84,6 +116,8 @@ const Reading = () => {
       setAnswers({});
       setShowResults(false);
       setScore(0);
+      setAiFeedback(null);
+      setActiveTab('overview');
     }
   };
 
@@ -105,12 +139,15 @@ const Reading = () => {
             {Object.keys(READING_PASSAGES).map((level) => (
               <button
                 key={level}
+                type="button"
                 onClick={() => {
                   setSelectedLevel(level);
                   setCurrentPassage(0);
                   setAnswers({});
                   setShowResults(false);
                   setScore(0);
+                  setAiFeedback(null);
+                  setActiveTab('overview');
                 }}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                   selectedLevel === level
@@ -213,7 +250,8 @@ const Reading = () => {
                 )}
 
                 {showResults && (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
+                    {/* Score and Navigation */}
                     <div className="bg-teal-50 p-6 rounded-xl">
                       <h3 className="text-xl font-bold text-teal-800 mb-2">
                         Your Score: {score.toFixed(1)}%
@@ -221,14 +259,211 @@ const Reading = () => {
                       <p className="text-teal-700">
                         You got {Math.round((score / 100) * currentQuestions.length)} out of {currentQuestions.length} questions correct.
                       </p>
+                      {isAnalyzing && (
+                        <div className="text-purple-600 text-center font-semibold animate-pulse mt-2">
+                          Analyzing your answers...
+                        </div>
+                      )}
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleTryAgain}
-                      className="bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
-                    >
-                      Try Again
-                    </button>
+
+                    {/* AI Analysis Section */}
+                    {aiFeedback && (
+                      <div className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
+                        <div className="flex mb-4 w-full overflow-x-auto border-b border-green-200">
+                          {FEEDBACK_TABS.map((tab) => (
+                            <button
+                              key={tab.key}
+                              type="button"
+                              className={`flex-1 min-w-0 px-3 py-2 rounded-t-lg font-semibold border-b-2 transition-colors whitespace-nowrap text-sm ${
+                                activeTab === tab.key
+                                  ? 'border-green-600 bg-white text-green-800'
+                                  : 'border-transparent bg-green-100 text-green-600 hover:bg-green-200'
+                              }`}
+                              onClick={() => setActiveTab(tab.key)}
+                            >
+                              {tab.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Overview Tab */}
+                        {activeTab === 'overview' && (
+                          <div className="space-y-4">
+                            <div className="text-lg font-semibold text-green-800">
+                              Overall Performance: Band {aiFeedback.overall_score}
+                            </div>
+                            <div className="text-gray-700">
+                              <strong>Feedback:</strong> {aiFeedback.overall_feedback}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="bg-white rounded-lg p-4 border border-green-200">
+                                <h4 className="font-semibold text-green-800 mb-2">Common Mistakes</h4>
+                                <ul className="list-disc ml-4 text-sm text-gray-700">
+                                  {aiFeedback.common_mistakes?.map((mistake, idx) => (
+                                    <li key={idx}>{mistake}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div className="bg-white rounded-lg p-4 border border-green-200">
+                                <h4 className="font-semibold text-green-800 mb-2">Key Strategies</h4>
+                                <ul className="list-disc ml-4 text-sm text-gray-700">
+                                  {aiFeedback.reading_strategies?.slice(0, 3).map((strategy, idx) => (
+                                    <li key={idx}>{strategy}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Passage Summary Tab */}
+                        {activeTab === 'summary' && (
+                          <div className="space-y-4">
+                            <div className="text-lg font-semibold text-green-800 mb-3">
+                              Passage Summary
+                            </div>
+                            <div className="bg-white rounded-lg p-4 border border-green-200 text-gray-700 leading-relaxed">
+                              {aiFeedback.passage_summary}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              <strong>Tip:</strong> Understanding the main idea helps with answering questions.
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Question Analysis Tab */}
+                        {activeTab === 'analysis' && (
+                          <div className="space-y-4">
+                            <div className="text-lg font-semibold text-green-800 mb-3">
+                              Detailed Question Analysis
+                            </div>
+                            {aiFeedback.question_analysis?.map((analysis, idx) => (
+                              <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                    analysis.is_correct 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {analysis.is_correct ? '✓ Correct' : '✗ Incorrect'}
+                                  </span>
+                                  <span className="font-semibold text-green-800">
+                                    Question {analysis.question_number}
+                                  </span>
+                                </div>
+                                <div className="text-sm text-gray-700 mb-2">
+                                  <strong>Question:</strong> {analysis.question_text}
+                                </div>
+                                <div className="text-sm text-gray-700 mb-2">
+                                  <strong>Your Answer:</strong> {analysis.student_answer}
+                                </div>
+                                <div className="text-sm text-gray-700 mb-2">
+                                  <strong>Correct Answer:</strong> {analysis.correct_answer}
+                                </div>
+                                <div className="text-sm text-gray-700 mb-2">
+                                  <strong>Explanation:</strong> {analysis.explanation}
+                                </div>
+                                <div className="text-sm text-gray-700 mb-2">
+                                  <strong>Reading Strategy:</strong> {analysis.reading_strategy}
+                                </div>
+                                <div className="text-sm text-gray-700">
+                                  <strong>Key Vocabulary:</strong> {analysis.key_vocabulary?.join(', ')}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Reading Strategies Tab */}
+                        {activeTab === 'strategies' && (
+                          <div className="space-y-4">
+                            <div className="text-lg font-semibold text-green-800 mb-3">
+                              Reading Strategies
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {aiFeedback.reading_strategies?.map((strategy, idx) => (
+                                <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-green-600 text-lg">📖</span>
+                                    <span className="font-semibold text-green-800">Strategy {idx + 1}</span>
+                                  </div>
+                                  <div className="text-gray-700">{strategy}</div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="bg-white rounded-lg p-4 border border-green-200">
+                              <h4 className="font-semibold text-green-800 mb-2">Skimming & Scanning Tips</h4>
+                              <ul className="list-disc ml-4 text-sm text-gray-700">
+                                {aiFeedback.skimming_scanning_tips?.map((tip, idx) => (
+                                  <li key={idx}>{tip}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Vocabulary Tab */}
+                        {activeTab === 'vocabulary' && (
+                          <div className="space-y-4">
+                            <div className="text-lg font-semibold text-green-800 mb-3">
+                              Important Vocabulary
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {aiFeedback.vocabulary_notes?.map((vocab, idx) => (
+                                <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
+                                  <div className="font-semibold text-green-800 mb-1">
+                                    {vocab.word}
+                                  </div>
+                                  <div className="text-sm text-gray-700">
+                                    {vocab.definition}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Improvement Tips Tab */}
+                        {activeTab === 'tips' && (
+                          <div className="space-y-4">
+                            <div className="text-lg font-semibold text-green-800 mb-3">
+                              Personalized Improvement Tips
+                            </div>
+                            <div className="space-y-3">
+                              {aiFeedback.improvement_tips?.map((tip, idx) => (
+                                <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-green-600 text-lg">💡</span>
+                                    <span className="font-semibold text-green-800">Tip {idx + 1}</span>
+                                  </div>
+                                  <div className="text-gray-700">{tip}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Navigation Buttons */}
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={handleTryAgain}
+                        className="bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
+                      >
+                        Try Again
+                      </button>
+                      {currentPassage < currentPassages.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={nextPassage}
+                          className="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                        >
+                          Next Passage
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </form>
@@ -244,6 +479,7 @@ const Reading = () => {
               {currentPassages.map((passage, idx) => (
                 <button
                   key={idx}
+                  type="button"
                   className={`w-full text-left px-4 py-2 rounded-lg font-semibold transition-all duration-150 mb-1 ${
                     currentPassage === idx
                       ? 'bg-teal-600 text-white'
@@ -254,6 +490,8 @@ const Reading = () => {
                     setAnswers({});
                     setShowResults(false);
                     setScore(0);
+                    setAiFeedback(null);
+                    setActiveTab('overview');
                   }}
                 >
                   {passage.title}

@@ -27,14 +27,117 @@ class DataService {
     return this.data.mockTests.find(test => test.id === id);
   }
 
-  getMockTestQuestions(testId, section) {
-    const test = this.getMockTestById(testId);
-    return test ? test.questions[section] : [];
-  }
-
   getMockTestSections(testId) {
     const test = this.getMockTestById(testId);
     return test ? test.sections : [];
+  }
+
+  // Generate random questions for mock tests from practice questions
+  generateMockTestQuestions(testId, section) {
+    const test = this.getMockTestById(testId);
+    if (!test) return [];
+
+    const sectionConfig = test.sections.find(s => s.id === section);
+    if (!sectionConfig) return [];
+
+    const questionCount = sectionConfig.questions;
+    const practiceQuestions = this.getPracticeQuestions(section);
+    
+    if (!practiceQuestions) return [];
+
+    // Collect all available questions from practice data
+    let allQuestions = [];
+    
+    if (section === 'listening') {
+      // For listening, collect questions from all categories
+      Object.keys(practiceQuestions).forEach(category => {
+        const categoryData = practiceQuestions[category];
+        if (categoryData.passages) {
+          categoryData.passages.forEach(passage => {
+            if (passage.questions) {
+              passage.questions.forEach(question => {
+                allQuestions.push({
+                  ...question,
+                  category,
+                  passageTitle: passage.title,
+                  passageText: passage.text,
+                  type: category
+                });
+              });
+            }
+          });
+        }
+      });
+    } else if (section === 'reading') {
+      // For reading, collect questions from all categories
+      Object.keys(practiceQuestions).forEach(category => {
+        const categoryData = practiceQuestions[category];
+        if (categoryData.passages) {
+          categoryData.passages.forEach(passage => {
+            if (passage.questions) {
+              passage.questions.forEach(question => {
+                allQuestions.push({
+                  ...question,
+                  category,
+                  passageTitle: passage.title,
+                  passage: passage.passage,
+                  type: category
+                });
+              });
+            }
+          });
+        }
+      });
+    } else if (section === 'speaking') {
+      // For speaking, collect questions from all parts
+      Object.keys(practiceQuestions).forEach(part => {
+        const partData = practiceQuestions[part];
+        if (partData.questions) {
+          partData.questions.forEach((question, index) => {
+            allQuestions.push({
+              id: index + 1,
+              part: parseInt(part.replace('part', '')),
+              title: partData.name,
+              question: question,
+              timeLimit: part === 'part1' ? 120 : part === 'part2' ? 180 : 240,
+              preparationTime: part === 'part2' ? 60 : 0,
+              type: part
+            });
+          });
+        }
+      });
+    } else if (section === 'writing') {
+      // For writing, collect prompts from both tasks
+      Object.keys(practiceQuestions).forEach(task => {
+        const taskData = practiceQuestions[task];
+        if (taskData.prompts) {
+          taskData.prompts.forEach((prompt, index) => {
+            allQuestions.push({
+              id: index + 1,
+              type: task,
+              title: taskData.name,
+              question: prompt,
+              timeLimit: task === 'task1' ? 1200 : 2400,
+              wordLimit: task === 'task1' ? '150-200 words' : '250-300 words'
+            });
+          });
+        }
+      });
+    }
+
+    // Shuffle and select random questions
+    const shuffled = this.shuffleArray([...allQuestions]);
+    return shuffled.slice(0, questionCount);
+  }
+
+  // Helper method to shuffle array
+  shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
   }
 
   // Practice questions related methods
@@ -186,6 +289,15 @@ class DataService {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(this.getMockTestById(testId));
+      }, 100);
+    });
+  }
+
+  async fetchMockTestQuestions(testId, section) {
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(this.generateMockTestQuestions(testId, section));
       }, 100);
     });
   }

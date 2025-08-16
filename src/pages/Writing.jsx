@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dataService from '../services/dataService';
+import { generateWritingFeedback } from '../utils';
 
 const Writing = () => {
   const [selectedTask, setSelectedTask] = useState('task1');
@@ -7,6 +8,9 @@ const Writing = () => {
   const [answer, setAnswer] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [writingData, setWritingData] = useState(null);
+  const [aiFeedback, setAiFeedback] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Load writing data
   useEffect(() => {
@@ -36,9 +40,35 @@ const Writing = () => {
   const WRITING_PARTS = writingData;
   const currentPrompts = WRITING_PARTS[selectedTask].prompts;
 
-  const handleSubmit = (e) => {
+  const FEEDBACK_TABS = [
+    { key: 'overview', label: 'Overview' },
+    { key: 'task_achievement', label: 'Task Achievement' },
+    { key: 'coherence', label: 'Coherence & Cohesion' },
+    { key: 'vocabulary', label: 'Vocabulary' },
+    { key: 'grammar', label: 'Grammar' },
+    { key: 'corrections', label: 'Corrections' },
+    { key: 'tips', label: 'Improvement Tips' },
+  ];
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
+    
+    // Generate AI feedback
+    setIsAnalyzing(true);
+    try {
+      const wordCount = answer.trim().split(/\s+/).length;
+      const feedback = await generateWritingFeedback(
+        currentPrompts[currentPrompt],
+        answer,
+        wordCount
+      );
+      setAiFeedback(feedback);
+    } catch (error) {
+      console.error('Error generating AI feedback:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -59,6 +89,8 @@ const Writing = () => {
                   setCurrentPrompt(0);
                   setAnswer('');
                   setSubmitted(false);
+                  setAiFeedback(null);
+                  setActiveTab('overview');
                 }}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                   selectedTask === key
@@ -115,32 +147,219 @@ const Writing = () => {
             </div>
           </form>
         ) : (
-          <div className="text-center">
-            <div className="text-2xl font-bold text-teal-700 mb-4">
-              Answer Submitted! 📝
+          <div className="space-y-6">
+            {/* Submission Confirmation */}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-teal-700 mb-4">
+                Answer Submitted! 📝
+              </div>
+              {isAnalyzing && (
+                <div className="text-purple-600 text-center font-semibold animate-pulse mb-4">
+                  Analyzing your essay...
+                </div>
+              )}
             </div>
-            <p className="text-gray-600 mb-6">
-              Your answer has been submitted. Review your work and consider the following:
-            </p>
-            <div className="bg-teal-50 p-6 rounded-xl text-left">
-              <h3 className="font-semibold text-teal-800 mb-3">Writing Checklist:</h3>
-              <ul className="space-y-2 text-sm text-teal-700">
-                <li>• Did you address all parts of the question?</li>
-                <li>• Is your answer well-structured with clear paragraphs?</li>
-                <li>• Did you use appropriate vocabulary and grammar?</li>
-                <li>• Is your answer within the word limit?</li>
-                <li>• Did you proofread for spelling and punctuation?</li>
-              </ul>
+
+            {/* AI Analysis Section */}
+            {aiFeedback && (
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
+                <div className="flex mb-4 w-full overflow-x-auto border-b border-orange-200">
+                  {FEEDBACK_TABS.map((tab) => (
+                    <button
+                      key={tab.key}
+                      className={`flex-1 min-w-0 px-3 py-2 rounded-t-lg font-semibold border-b-2 transition-colors whitespace-nowrap text-sm ${
+                        activeTab === tab.key
+                          ? 'border-orange-600 bg-white text-orange-800'
+                          : 'border-transparent bg-orange-100 text-orange-600 hover:bg-orange-200'
+                      }`}
+                      onClick={() => setActiveTab(tab.key)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Overview Tab */}
+                {activeTab === 'overview' && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-semibold text-orange-800">
+                      Overall Performance: Band {aiFeedback.overall_score}
+                    </div>
+                    <div className="text-gray-700">
+                      <strong>Feedback:</strong> {aiFeedback.overall_feedback}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-white rounded-lg p-4 border border-orange-200">
+                        <h4 className="font-semibold text-orange-800 mb-2">Strengths</h4>
+                        <ul className="list-disc ml-4 text-sm text-gray-700">
+                          {aiFeedback.detailed_analysis?.strengths?.map((strength, idx) => (
+                            <li key={idx}>{strength}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="bg-white rounded-lg p-4 border border-orange-200">
+                        <h4 className="font-semibold text-orange-800 mb-2">Areas for Improvement</h4>
+                        <ul className="list-disc ml-4 text-sm text-gray-700">
+                          {aiFeedback.detailed_analysis?.weaknesses?.map((weakness, idx) => (
+                            <li key={idx}>{weakness}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Task Achievement Tab */}
+                {activeTab === 'task_achievement' && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-semibold text-orange-800 mb-3">
+                      Task Achievement Analysis
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
+                      {aiFeedback.task_achievement}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <strong>Tip:</strong> Make sure you address all parts of the question thoroughly.
+                    </div>
+                  </div>
+                )}
+
+                {/* Coherence & Cohesion Tab */}
+                {activeTab === 'coherence' && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-semibold text-orange-800 mb-3">
+                      Coherence & Cohesion Analysis
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
+                      {aiFeedback.coherence_cohesion}
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-orange-200">
+                      <h4 className="font-semibold text-orange-800 mb-2">Structure Analysis</h4>
+                      <div className="text-sm text-gray-700">
+                        {aiFeedback.structure_analysis}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Vocabulary Tab */}
+                {activeTab === 'vocabulary' && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-semibold text-orange-800 mb-3">
+                      Vocabulary Analysis
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
+                      {aiFeedback.lexical_resource}
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-orange-200">
+                      <h4 className="font-semibold text-orange-800 mb-2">Vocabulary Improvements</h4>
+                      <div className="space-y-2">
+                        {aiFeedback.vocabulary_improvements?.map((improvement, idx) => (
+                          <div key={idx} className="text-sm text-gray-700 p-2 bg-gray-50 rounded">
+                            <strong>Original:</strong> {improvement.original} → <strong>Suggested:</strong> {improvement.suggested}
+                            <br />
+                            <span className="text-gray-600">{improvement.reason}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Grammar Tab */}
+                {activeTab === 'grammar' && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-semibold text-orange-800 mb-3">
+                      Grammar Analysis
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-orange-200 text-gray-700 leading-relaxed">
+                      {aiFeedback.grammatical_range_accuracy}
+                    </div>
+                  </div>
+                )}
+
+                {/* Corrections Tab */}
+                {activeTab === 'corrections' && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-semibold text-orange-800 mb-3">
+                      Grammar Corrections
+                    </div>
+                    <div className="space-y-3">
+                      {aiFeedback.grammar_corrections?.map((correction, idx) => (
+                        <div key={idx} className="bg-white rounded-lg p-4 border border-orange-200">
+                          <div className="text-sm text-gray-700 mb-2">
+                            <strong>Original:</strong> {correction.original}
+                          </div>
+                          <div className="text-sm text-gray-700 mb-2">
+                            <strong>Corrected:</strong> {correction.corrected}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            <strong>Explanation:</strong> {correction.explanation}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Improvement Tips Tab */}
+                {activeTab === 'tips' && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-semibold text-orange-800 mb-3">
+                      Personalized Improvement Tips
+                    </div>
+                    <div className="space-y-3">
+                      {aiFeedback.improvement_tips?.map((tip, idx) => (
+                        <div key={idx} className="bg-white rounded-lg p-4 border border-orange-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-orange-600 text-lg">💡</span>
+                            <span className="font-semibold text-orange-800">Tip {idx + 1}</span>
+                          </div>
+                          <div className="text-gray-700">{tip}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-orange-200">
+                      <h4 className="font-semibold text-orange-800 mb-2">Suggestions</h4>
+                      <ul className="list-disc ml-4 text-sm text-gray-700">
+                        {aiFeedback.detailed_analysis?.suggestions?.map((suggestion, idx) => (
+                          <li key={idx}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => {
+                  setAnswer('');
+                  setSubmitted(false);
+                  setAiFeedback(null);
+                  setActiveTab('overview');
+                }}
+                className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
+              >
+                Try Again
+              </button>
+              {currentPrompt < currentPrompts.length - 1 && (
+                <button
+                  onClick={() => {
+                    setCurrentPrompt(currentPrompt + 1);
+                    setAnswer('');
+                    setSubmitted(false);
+                    setAiFeedback(null);
+                    setActiveTab('overview');
+                  }}
+                  className="bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors"
+                >
+                  Next Prompt
+                </button>
+              )}
             </div>
-            <button
-              onClick={() => {
-                setAnswer('');
-                setSubmitted(false);
-              }}
-              className="mt-6 bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
-            >
-              Try Again
-            </button>
           </div>
         )}
       </div>

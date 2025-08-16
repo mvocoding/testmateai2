@@ -21,16 +21,20 @@ const MockTest = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioRef] = useState(useRef(null));
   const [recognitionRef] = useState(useRef(null));
-  const [testData, setTestData] = useState(null);
   const [sections, setSections] = useState([]);
+  const [questions, setQuestions] = useState({
+    listening: [],
+    speaking: [],
+    reading: [],
+    writing: []
+  });
 
-    // Load mock test data
+  // Load mock test data and generate random questions
   useEffect(() => {
     const loadTestData = async () => {
       try {
         const mockTest = await dataService.fetchMockTest(1); // Load first mock test
         if (mockTest) {
-          setTestData(mockTest.questions);
           setSections(mockTest.sections);
           
           // Update time remaining based on loaded sections
@@ -40,6 +44,14 @@ const MockTest = () => {
             newTimeRemaining[section.id] = minutes * 60;
           });
           setTimeRemaining(newTimeRemaining);
+
+          // Generate random questions for each section
+          const generatedQuestions = {};
+          for (const section of mockTest.sections) {
+            const sectionQuestions = await dataService.fetchMockTestQuestions(1, section.id);
+            generatedQuestions[section.id] = sectionQuestions;
+          }
+          setQuestions(generatedQuestions);
         }
       } catch (error) {
         console.error('Error loading mock test data:', error);
@@ -77,9 +89,9 @@ const MockTest = () => {
   };
 
   const nextQuestion = () => {
-    if (!testData || !testData[currentSection]) return;
+    if (!questions || !questions[currentSection]) return;
     
-    const currentQuestions = testData[currentSection];
+    const currentQuestions = questions[currentSection];
     if (currentQuestion < currentQuestions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
     } else {
@@ -93,7 +105,7 @@ const MockTest = () => {
   };
 
   const prevQuestion = () => {
-    if (!testData) return;
+    if (!questions) return;
     
     if (currentQuestion > 0) {
       setCurrentQuestion((prev) => prev - 1);
@@ -102,7 +114,7 @@ const MockTest = () => {
       const sectionIndex = sections.findIndex((s) => s.id === currentSection);
       if (sectionIndex > 0) {
         setCurrentSection(sections[sectionIndex - 1].id);
-        setCurrentQuestion(testData[sections[sectionIndex - 1].id].length - 1);
+        setCurrentQuestion(questions[sections[sectionIndex - 1].id].length - 1);
       }
     }
   };
@@ -126,10 +138,10 @@ const MockTest = () => {
     recognition.onend = () => setIsRecording(false);
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      if (testData && testData.speaking && testData.speaking[currentQuestion]) {
+      if (questions && questions.speaking && questions.speaking[currentQuestion]) {
         handleAnswer(
           'speaking',
-          testData.speaking[currentQuestion].id,
+          questions.speaking[currentQuestion].id,
           transcript
         );
       }
@@ -154,11 +166,11 @@ const MockTest = () => {
   };
 
   const renderQuestion = () => {
-    if (!testData || !testData[currentSection]) {
+    if (!questions || !questions[currentSection]) {
       return <div className="text-center py-8">Loading questions...</div>;
     }
     
-    const currentQuestions = testData[currentSection];
+    const currentQuestions = questions[currentSection];
     const question = currentQuestions[currentQuestion];
 
     switch (currentSection) {
@@ -618,7 +630,7 @@ const MockTest = () => {
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-600">
               {sections.find((s) => s.id === currentSection)?.name} - Question{' '}
-              {currentQuestion + 1} of {testData[currentSection].length}
+              {currentQuestion + 1} of {questions[currentSection]?.length || 0}
             </div>
             <div className="bg-red-100 text-red-800 px-3 py-1 rounded-lg font-medium">
               {formatTime(timeRemaining[currentSection])}
@@ -661,7 +673,7 @@ const MockTest = () => {
               <button
                 onClick={prevQuestion}
                 disabled={
-                  !testData ||
+                  !questions ||
                   currentQuestion === 0 &&
                   sections.findIndex((s) => s.id === currentSection) === 0
                 }
@@ -673,8 +685,8 @@ const MockTest = () => {
               <button
                 onClick={nextQuestion}
                 disabled={
-                  !testData ||
-                  currentQuestion === testData[currentSection].length - 1 &&
+                  !questions ||
+                  currentQuestion === questions[currentSection]?.length - 1 &&
                   sections.findIndex((s) => s.id === currentSection) ===
                     sections.length - 1
                 }
