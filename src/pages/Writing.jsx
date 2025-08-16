@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dataService from '../services/dataService';
-import { generateWritingFeedback } from '../utils';
+import { generateWritingFeedback, saveVocabularyWords } from '../utils';
 
 const Writing = () => {
   const [selectedTask, setSelectedTask] = useState('task1');
@@ -63,6 +63,11 @@ const Writing = () => {
       // Validate feedback structure
       if (feedback && typeof feedback === 'object') {
         setAiFeedback(feedback);
+        
+        // Save vocabulary words from the feedback
+        if (feedback.vocabulary_words && Array.isArray(feedback.vocabulary_words)) {
+          saveVocabularyWords(feedback.vocabulary_words);
+        }
       } else {
         console.error('Invalid feedback structure:', feedback);
         setAiFeedback(null);

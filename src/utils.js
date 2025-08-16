@@ -540,4 +540,119 @@ Return a JSON with:
       ]
     };
   }
-}; 
+};
+
+export const generateVocabularyQuiz = async (vocabularyWords) => {
+  try {
+    const headers = {
+      'content-type': 'application/json',
+      authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
+      'user-agent':
+        'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
+    };
+
+    const prompt = `You are an IELTS vocabulary quiz generator.
+Create a multiple-choice quiz based on these vocabulary words: ${vocabularyWords.join(', ')}
+
+Generate 10 questions (or fewer if there are less than 10 words) with 4 options each (A, B, C, D).
+Each question should test understanding of the word's meaning, usage, or context.
+
+Return a JSON with:
+- questions: [{
+    word: string,
+    question: string,
+    options: [string, string, string, string],
+    correct_answer: string,
+    explanation: string
+  }]`;
+
+    const payload = {
+      temperature: 0.4,
+      messages: [
+        {
+          role: 'system',
+          content: [
+            {
+              type: 'text',
+              text: 'You are an IELTS vocabulary quiz generator. Create engaging multiple-choice questions in JSON format.',
+            },
+          ],
+        },
+        { role: 'user', content: [{ type: 'text', text: prompt }] },
+      ],
+      model: 'vertex_ai/gemini-2.0-flash-001',
+      response_format: { type: 'json_object' },
+    };
+
+    const response = await fetch(process.env.REACT_APP_API_URL, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error('API request failed');
+    }
+
+    const data = await response.json();
+    const rawContent = data.choices[0].message.content;
+    const quiz = JSON.parse(rawContent);
+    
+    return quiz;
+  } catch (error) {
+    console.error('Error generating vocabulary quiz:', error);
+    // Return demo quiz
+    return {
+      questions: vocabularyWords.slice(0, Math.min(10, vocabularyWords.length)).map((word, index) => ({
+        word: word,
+        question: `What is the meaning of "${word}"?`,
+        options: [
+          `Definition ${index + 1}A`,
+          `Definition ${index + 1}B`,
+          `Definition ${index + 1}C`,
+          `Definition ${index + 1}D`
+        ],
+        correct_answer: `Definition ${index + 1}A`,
+        explanation: `This is a demo explanation for the word "${word}".`
+      }))
+    };
+  }
+};
+
+// Function to save vocabulary words from test results
+export const saveVocabularyWords = (words) => {
+  try {
+    const existingWords = localStorage.getItem('vocabularyWords');
+    let allWords = [];
+    
+    if (existingWords) {
+      allWords = JSON.parse(existingWords);
+    }
+    
+    // Add new words (avoid duplicates)
+    const newWords = words.filter(word => !allWords.includes(word));
+    allWords = [...allWords, ...newWords];
+    
+    // Keep only the last 50 words to avoid overwhelming the user
+    if (allWords.length > 50) {
+      allWords = allWords.slice(-50);
+    }
+    
+    localStorage.setItem('vocabularyWords', JSON.stringify(allWords));
+    return allWords;
+  } catch (error) {
+    console.error('Error saving vocabulary words:', error);
+    return [];
+  }
+};
+
+// Function to get vocabulary words from localStorage
+export const getVocabularyWords = () => {
+  try {
+    const words = localStorage.getItem('vocabularyWords');
+    return words ? JSON.parse(words) : [];
+  } catch (error) {
+    console.error('Error getting vocabulary words:', error);
+    return [];
+  }
+};

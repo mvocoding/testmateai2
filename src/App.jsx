@@ -17,6 +17,7 @@ import Dashboard from './pages/Dashboard';
 import StudyPlan from './pages/StudyPlan';
 import AskMeAnything from './pages/AskMeAnything';
 import MockTest from './pages/MockTest';
+import Review from './pages/Review';
 import { AskMeButton } from './components/AskMeButton';
 import './App.css';
 
@@ -169,6 +170,7 @@ function AppLayout() {
     '/study-plan',
     '/ask-me',
     '/mocktest',
+    '/review',
   ].some((path) => location.pathname.startsWith(path));
   return (
     <div className="flex min-h-screen min-w-full bg-gray-50">
@@ -185,6 +187,7 @@ function AppLayout() {
           <Route path="/ask-me" element={<AskMeAnything />} />
           <Route path="/mocktest" element={<MockTest />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/review" element={<Review />} />
         </Routes>
       </main>
     </div>

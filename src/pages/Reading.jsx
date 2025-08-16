@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dataService from '../services/dataService';
-import { generateReadingFeedback } from '../utils';
+import { generateReadingFeedback, saveVocabularyWords } from '../utils';
 
 const Reading = () => {
   const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
@@ -90,6 +90,16 @@ const Reading = () => {
          answers
        );
       setAiFeedback(feedback);
+      
+      // Save vocabulary words from the feedback
+      if (feedback.vocabulary_notes && Array.isArray(feedback.vocabulary_notes)) {
+        const words = feedback.vocabulary_notes.map(note => 
+          typeof note === 'string' ? note : note.word || ''
+        ).filter(word => word);
+        if (words.length > 0) {
+          saveVocabularyWords(words);
+        }
+      }
     } catch (error) {
       console.error('Error generating AI feedback:', error);
     } finally {

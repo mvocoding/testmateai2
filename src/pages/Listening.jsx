@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import dataService from '../services/dataService';
-import { generateListeningFeedback } from '../utils';
+import { generateListeningFeedback, saveVocabularyWords } from '../utils';
 
 const Listening = () => {
   const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
@@ -177,6 +177,16 @@ const Listening = () => {
       // Validate feedback structure
       if (feedback && typeof feedback === 'object') {
         setAiFeedback(feedback);
+        
+        // Save vocabulary words from the feedback
+        if (feedback.vocabulary_notes && Array.isArray(feedback.vocabulary_notes)) {
+          const words = feedback.vocabulary_notes.map(note => 
+            typeof note === 'string' ? note : note.word || ''
+          ).filter(word => word);
+          if (words.length > 0) {
+            saveVocabularyWords(words);
+          }
+        }
       } else {
         console.error('Invalid feedback structure:', feedback);
         setAiFeedback(null);
