@@ -19,7 +19,7 @@ const SpeakingTest = () => {
   useEffect(() => {
     const loadSpeakingData = async () => {
       try {
-        const data = await dataService.fetchPracticeQuestions('speaking');
+        const data = await dataService.getPracticeQuestions('speaking');
         setSpeakingData(data);
       } catch (error) {
         console.error('Error loading speaking data:', error);
