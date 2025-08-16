@@ -14,7 +14,7 @@ import Listening from './pages/Listening';
 import Reading from './pages/Reading';
 import Writing from './pages/Writing';
 import Dashboard from './pages/Dashboard';
-import StudyPlan from './pages/StudyPlan';
+// import StudyPlan from './pages/StudyPlan';
 import AskMeAnything from './pages/AskMeAnything';
 import MockTest from './pages/MockTest';
 import Review from './pages/Review';
@@ -97,7 +97,7 @@ function SkillSidebar() {
       window.removeEventListener('userDataUpdated', handleUserDataUpdate);
       clearInterval(pollInterval);
     };
-  }, []); // Remove user from dependency array to prevent infinite loop
+  }, [user]); // Include user in dependency array
 
   const level = user?.level || 1;
   const xp = user?.xp || 0;
@@ -108,11 +108,11 @@ function SkillSidebar() {
     navigate('/');
   };
 
-  const handleRefresh = () => {
-    const userData = getUser();
-    console.log('Manual refresh - user data:', userData);
-    setUser(userData);
-  };
+  // const handleRefresh = () => {
+  //   const userData = getUser();
+  //   console.log('Manual refresh - user data:', userData);
+  //   setUser(userData);
+  // };
 
   return (
     <aside className="h-screen w-56 bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl border-r border-white/50 flex flex-col items-center py-2 fixed left-0 top-0 z-40 shadow-2xl">

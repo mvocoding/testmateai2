@@ -66,7 +66,7 @@ const Listening = () => {
       handleSubmit();
     }
     return () => clearTimeout(timerRef.current);
-  }, [timeRemaining, isTimerActive]);
+  }, [timeRemaining, isTimerActive, handleSubmit]);
 
   if (!listeningData) {
     return (

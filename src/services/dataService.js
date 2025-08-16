@@ -518,7 +518,7 @@ export const resetAllData = () => {
   initializeData();
 };
 
-export default {
+const dataService = {
   getUser,
   updateUser,
   addXP,
@@ -537,3 +537,5 @@ export default {
   generateStudyPlan,
   resetAllData
 };
+
+export default dataService;

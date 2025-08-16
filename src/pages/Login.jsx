@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const level = 'Guest';
+// const level = 'Guest';
 
 const Login = () => {
   const [step, setStep] = useState('email'); // 'email' or 'otp'
@@ -113,7 +113,7 @@ const Login = () => {
               <p className="text-gray-700">
                 {step === 'email'
                   ? 'Sign in to continue your IELTS adventure!'
-                  : `We\'ve sent a 6-digit code to ${email}`}
+                  : `We've sent a 6-digit code to ${email}`}
               </p>
             </div>
             {step === 'email' ? (

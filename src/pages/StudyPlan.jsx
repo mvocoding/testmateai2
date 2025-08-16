@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateStudyPlan } from '../utils';
+// import { generateStudyPlan } from '../utils';
 
 const StudyPlan = () => {
   const [formData, setFormData] = useState({

@@ -20,8 +20,8 @@ const MockTest = () => {
   const [isTestStarted, setIsTestStarted] = useState(false);
   const [showingIntroduction, setShowingIntroduction] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [audioRef] = useState(useRef(null));
-  const [recognitionRef] = useState(useRef(null));
+  // const [audioRef] = useState(useRef(null));
+  // const [recognitionRef] = useState(useRef(null));
   const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState({
     listening: [],
@@ -31,7 +31,7 @@ const MockTest = () => {
   });
   
   // Test completion and results states
-  const [isTestCompleted, setIsTestCompleted] = useState(false);
+  // const [isTestCompleted, setIsTestCompleted] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [showResults, setShowResults] = useState(false);
   
@@ -139,7 +139,7 @@ const MockTest = () => {
   // Generate feedback based on scores
   const generateFeedback = (skill, score) => {
     const band = score.band;
-    const percentage = score.percentage;
+    // const percentage = score.percentage;
     
     if (band >= 8.0) {
       return `Excellent performance in ${skill}! Your score of ${band.toFixed(1)} shows mastery of this skill.`;
@@ -1543,16 +1543,16 @@ const MockTest = () => {
               onClick={prevQuestion}
               disabled={
                 !questions ||
-                currentQuestion === 0 &&
-                sections.findIndex((s) => s.id === currentSection) === 0
+                (currentQuestion === 0 &&
+                sections.findIndex((s) => s.id === currentSection) === 0)
               }
               className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
 
-            {currentQuestion === questions[currentSection]?.length - 1 &&
-             sections.findIndex((s) => s.id === currentSection) === sections.length - 1 ? (
+            {(currentQuestion === questions[currentSection]?.length - 1 &&
+             sections.findIndex((s) => s.id === currentSection) === sections.length - 1) ? (
               <button
                 onClick={submitTest}
                 className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold"
@@ -1564,8 +1564,8 @@ const MockTest = () => {
                 onClick={nextQuestion}
                 disabled={
                   !questions ||
-                  currentQuestion === questions[currentSection]?.length - 1 &&
-                  sections.findIndex((s) => s.id === currentSection) === sections.length - 1
+                  (currentQuestion === questions[currentSection]?.length - 1 &&
+                  sections.findIndex((s) => s.id === currentSection) === sections.length - 1)
                 }
                 className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >

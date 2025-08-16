@@ -177,16 +177,16 @@ const Reading = () => {
     }
   };
 
-  const prevPassage = () => {
-    if (currentPassage > 0) {
-      setCurrentPassage(currentPassage - 1);
-      setAnswers({});
-      setShowResults(false);
-      setScore(0);
-      setAiFeedback(null);
-      setActiveTab('summary');
-    }
-  };
+  // const prevPassage = () => {
+  //   if (currentPassage > 0) {
+  //     setCurrentPassage(currentPassage - 1);
+  //     setAnswers({});
+  //     setShowResults(false);
+  //     setScore(0);
+  //     setAiFeedback(null);
+  //     setActiveTab('summary');
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-gray-50">

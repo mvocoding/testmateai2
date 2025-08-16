@@ -11,7 +11,7 @@ const SpeakingTest = () => {
   const [level, setLevel] = useState(1);
   const [isListening, setIsListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showLevelUp, setShowLevelUp] = useState(false);
+  // const [showLevelUp, setShowLevelUp] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [speakingData, setSpeakingData] = useState(null);
 
@@ -116,7 +116,7 @@ const FEEDBACK_TABS = [
     }
   }
 
-  const xpPercent = Math.min(100, (xp / XP_TO_LEVEL_UP) * 100);
+  // const xpPercent = Math.min(100, (xp / XP_TO_LEVEL_UP) * 100);
 
   return (
     <div className="bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">

@@ -6,14 +6,14 @@ const AskMeAnything = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [studyPlanData, setStudyPlanData] = useState({
-    currentScore: '',
-    targetScore: '',
-    testDate: '',
-    hasPreviousTest: false,
-    lastTestScore: '',
-  });
-  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  // const [studyPlanData, setStudyPlanData] = useState({
+  //   currentScore: '',
+  //   targetScore: '',
+  //   testDate: '',
+  //   hasPreviousTest: false,
+  //   lastTestScore: '',
+  // });
+  // const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isContinuousRecording, setIsContinuousRecording] = useState(false);
@@ -252,7 +252,7 @@ const AskMeAnything = () => {
         voiceRecognitionRef.current = null;
       }
     };
-  }, []);
+  }, [startContinuousVoiceChat]);
 
   // Override handleSendMessage to optionally take input and voice flag
   const handleSendMessage = async (overrideInput, isVoice = false) => {
@@ -475,7 +475,7 @@ Never respond with plain text or any other format.`;
         }
         
         // Extract date (look for date patterns)
-        const dateMatch = text.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|(\d{4}-\d{2}-\d{2})/);
+        const dateMatch = text.match(/(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})|(\d{4}-\d{2}-\d{2})/);
         if (dateMatch && !data.testDate) {
           data.testDate = dateMatch[0];
         }
