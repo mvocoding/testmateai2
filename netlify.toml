@@ -1,0 +1,18 @@
+[build]
+  base = "testmate"
+  publish = "build"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[dev]
+  base = "testmate"
+  command = "npm start"
+  port = 3000
+  publish = "build"
