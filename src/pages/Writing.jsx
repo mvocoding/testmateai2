@@ -10,7 +10,7 @@ const Writing = () => {
   const [writingData, setWritingData] = useState(null);
   const [aiFeedback, setAiFeedback] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('sample_answer');
 
   // Load writing data
   useEffect(() => {
@@ -41,7 +41,6 @@ const Writing = () => {
   const currentPrompts = WRITING_PARTS[selectedTask].prompts;
 
   const FEEDBACK_TABS = [
-    { key: 'overview', label: 'Overview' },
     { key: 'sample_answer', label: 'Sample Answer' },
     { key: 'vocabulary', label: 'Vocabulary' },
     { key: 'grammar', label: 'Grammar' },
@@ -108,7 +107,7 @@ const Writing = () => {
                   setAnswer('');
                   setSubmitted(false);
                   setAiFeedback(null);
-                  setActiveTab('overview');
+                  setActiveTab('sample_answer');
                 }}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                   selectedTask === key
@@ -197,35 +196,7 @@ const Writing = () => {
                   ))}
                 </div>
 
-                {/* Overview Tab */}
-                {activeTab === 'overview' && (
-                  <div className="space-y-4">
-                    <div className="text-lg font-semibold text-orange-800">
-                      Overall Performance: Band {typeof aiFeedback.overall_score === 'number' ? aiFeedback.overall_score : 'N/A'}
-                    </div>
-                    <div className="text-gray-700">
-                      <strong>Feedback:</strong> {typeof aiFeedback.overall_feedback === 'string' ? aiFeedback.overall_feedback : JSON.stringify(aiFeedback.overall_feedback)}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-white rounded-lg p-4 border border-orange-200">
-                        <h4 className="font-semibold text-orange-800 mb-2">Strengths</h4>
-                        <ul className="list-disc ml-4 text-sm text-gray-700">
-                          {aiFeedback.detailed_analysis?.strengths?.map((strength, idx) => (
-                            <li key={idx}>{typeof strength === 'string' ? strength : JSON.stringify(strength)}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="bg-white rounded-lg p-4 border border-orange-200">
-                        <h4 className="font-semibold text-orange-800 mb-2">Areas for Improvement</h4>
-                        <ul className="list-disc ml-4 text-sm text-gray-700">
-                          {aiFeedback.detailed_analysis?.weaknesses?.map((weakness, idx) => (
-                            <li key={idx}>{typeof weakness === 'string' ? weakness : JSON.stringify(weakness)}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
+
 
                 {/* Sample Answer Tab */}
                 {activeTab === 'sample_answer' && (
@@ -290,7 +261,7 @@ const Writing = () => {
                   setAnswer('');
                   setSubmitted(false);
                   setAiFeedback(null);
-                  setActiveTab('overview');
+                  setActiveTab('sample_answer');
                 }}
                 className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
               >
@@ -303,7 +274,7 @@ const Writing = () => {
                     setAnswer('');
                     setSubmitted(false);
                     setAiFeedback(null);
-                    setActiveTab('overview');
+                    setActiveTab('sample_answer');
                   }}
                   className="bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors"
                 >

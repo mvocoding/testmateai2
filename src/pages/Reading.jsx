@@ -11,7 +11,7 @@ const Reading = () => {
   const [readingData, setReadingData] = useState(null);
   const [aiFeedback, setAiFeedback] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('summary');
 
   // Load reading data
   useEffect(() => {
@@ -41,7 +41,6 @@ const Reading = () => {
   const READING_PASSAGES = readingData;
 
   const FEEDBACK_TABS = [
-    { key: 'overview', label: 'Overview' },
     { key: 'summary', label: 'Passage Summary' },
     { key: 'analysis', label: 'Question Analysis' },
     { key: 'vocabulary', label: 'Vocabulary' },
@@ -153,7 +152,7 @@ const Reading = () => {
     setShowResults(false);
     setScore(0);
     setAiFeedback(null);
-    setActiveTab('overview');
+    setActiveTab('summary');
   };
 
   const nextPassage = () => {
@@ -163,7 +162,7 @@ const Reading = () => {
       setShowResults(false);
       setScore(0);
       setAiFeedback(null);
-      setActiveTab('overview');
+      setActiveTab('summary');
     }
   };
 
@@ -174,7 +173,7 @@ const Reading = () => {
       setShowResults(false);
       setScore(0);
       setAiFeedback(null);
-      setActiveTab('overview');
+      setActiveTab('summary');
     }
   };
 
@@ -198,13 +197,13 @@ const Reading = () => {
                 key={level}
                 type="button"
                 onClick={() => {
-                  setSelectedLevel(level);
-                  setCurrentPassage(0);
-                  setAnswers({});
-                  setShowResults(false);
-                  setScore(0);
-                  setAiFeedback(null);
-                  setActiveTab('overview');
+                                     setSelectedLevel(level);
+                   setCurrentPassage(0);
+                   setAnswers({});
+                   setShowResults(false);
+                   setScore(0);
+                   setAiFeedback(null);
+                   setActiveTab('summary');
                 }}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                   selectedLevel === level
@@ -361,35 +360,7 @@ const Reading = () => {
                           ))}
                         </div>
 
-                        {/* Overview Tab */}
-                        {activeTab === 'overview' && (
-                          <div className="space-y-4">
-                            <div className="text-lg font-semibold text-green-800">
-                              Overall Performance: Band {aiFeedback.overall_score}
-                            </div>
-                            <div className="text-gray-700">
-                              <strong>Feedback:</strong> {aiFeedback.overall_feedback}
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="bg-white rounded-lg p-4 border border-green-200">
-                                <h4 className="font-semibold text-green-800 mb-2">Common Mistakes</h4>
-                                <ul className="list-disc ml-4 text-sm text-gray-700">
-                                  {aiFeedback.common_mistakes?.map((mistake, idx) => (
-                                    <li key={idx}>{mistake}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                              <div className="bg-white rounded-lg p-4 border border-green-200">
-                                <h4 className="font-semibold text-green-800 mb-2">Key Strategies</h4>
-                                <ul className="list-disc ml-4 text-sm text-gray-700">
-                                  {aiFeedback.reading_strategies?.slice(0, 3).map((strategy, idx) => (
-                                    <li key={idx}>{strategy}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                        
 
                         {/* Passage Summary Tab */}
                         {activeTab === 'summary' && (
@@ -538,12 +509,12 @@ const Reading = () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-teal-100'
                   }`}
                   onClick={() => {
-                    setCurrentPassage(idx);
-                    setAnswers({});
-                    setShowResults(false);
-                    setScore(0);
-                    setAiFeedback(null);
-                    setActiveTab('overview');
+                                         setCurrentPassage(idx);
+                     setAnswers({});
+                     setShowResults(false);
+                     setScore(0);
+                     setAiFeedback(null);
+                     setActiveTab('summary');
                   }}
                 >
                   {passage.title}

@@ -11,7 +11,7 @@ const Listening = () => {
   const [listeningData, setListeningData] = useState(null);
   const [aiFeedback, setAiFeedback] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('transcription');
   
   // Removed currentQuestion state to show all questions at once
   const [isPlaying, setIsPlaying] = useState(false);
@@ -27,7 +27,6 @@ const Listening = () => {
   const TIME_LIMIT = 300; // 5 minutes per passage
 
   const FEEDBACK_TABS = [
-    { key: 'overview', label: 'Overview' },
     { key: 'transcription', label: 'Transcription' },
     { key: 'analysis', label: 'Question Analysis' },
     { key: 'vocabulary', label: 'Vocabulary' },
@@ -248,7 +247,7 @@ const Listening = () => {
       setAnswers({});
       setShowResults(false);
       setAiFeedback(null);
-      setActiveTab('overview');
+      setActiveTab('transcription');
       setPlayCount(0);
       setTimeRemaining(0);
       setIsTimerActive(false);
@@ -283,16 +282,16 @@ const Listening = () => {
               <button
                 key={key}
                 onClick={() => {
-                  setSelectedLevel(key);
-                  setCurrentPassage(0);
-                  // Removed setCurrentQuestion(0) since all questions are shown at once
-                  setAnswers({});
-                  setShowResults(false);
-                  setAiFeedback(null);
-                  setActiveTab('overview');
-                  setPlayCount(0);
-                  setTimeRemaining(0);
-                  setIsTimerActive(false);
+                                     setSelectedLevel(key);
+                   setCurrentPassage(0);
+                   // Removed setCurrentQuestion(0) since all questions are shown at once
+                   setAnswers({});
+                   setShowResults(false);
+                   setAiFeedback(null);
+                   setActiveTab('transcription');
+                   setPlayCount(0);
+                   setTimeRemaining(0);
+                   setIsTimerActive(false);
                 }}
                 className={`px-4 py-3 rounded-xl font-semibold transition-all duration-200 text-sm ${
                   selectedLevel === key
@@ -454,25 +453,7 @@ const Listening = () => {
                     ))}
                   </div>
 
-                  {/* Overview Tab */}
-                  {activeTab === 'overview' && (
-                    <div className="space-y-4">
-                      <div className="text-lg font-semibold text-blue-800">
-                        Overall Performance: Band {typeof aiFeedback.overall_score === 'number' ? aiFeedback.overall_score : 'N/A'}
-                      </div>
-                      <div className="text-gray-700">
-                        <strong>Feedback:</strong> {typeof aiFeedback.overall_feedback === 'string' ? aiFeedback.overall_feedback : JSON.stringify(aiFeedback.overall_feedback)}
-                      </div>
-                                             <div className="bg-white rounded-lg p-4 border border-blue-200">
-                         <h4 className="font-semibold text-blue-800 mb-2">Common Mistakes</h4>
-                         <ul className="list-disc ml-4 text-sm text-gray-700">
-                           {aiFeedback.common_mistakes?.map((mistake, idx) => (
-                             <li key={idx}>{typeof mistake === 'string' ? mistake : JSON.stringify(mistake)}</li>
-                           ))}
-                         </ul>
-                       </div>
-                    </div>
-                  )}
+                  
 
                   {/* Transcription Tab */}
                   {activeTab === 'transcription' && (
@@ -606,17 +587,17 @@ const Listening = () => {
               <button
                 key={p.id}
                 onClick={() => {
-                  setCurrentPassage(idx);
-                  setAnswers({});
-                  setShowResults(false);
-                  setAiFeedback(null);
-                  setActiveTab('overview');
-                  setPlayCount(0);
-                  setTimeRemaining(0);
-                  setIsTimerActive(false);
-                  if (speechRef.current) {
-                    window.speechSynthesis.cancel();
-                  }
+                                     setCurrentPassage(idx);
+                   setAnswers({});
+                   setShowResults(false);
+                   setAiFeedback(null);
+                   setActiveTab('transcription');
+                   setPlayCount(0);
+                   setTimeRemaining(0);
+                   setIsTimerActive(false);
+                   if (speechRef.current) {
+                     window.speechSynthesis.cancel();
+                   }
                 }}
                 className={`w-full text-left px-4 py-2 rounded-lg font-semibold transition-all duration-150 mb-1 ${
                   currentPassage === idx
