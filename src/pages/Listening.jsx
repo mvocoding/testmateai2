@@ -30,9 +30,7 @@ const Listening = () => {
     { key: 'overview', label: 'Overview' },
     { key: 'transcription', label: 'Transcription' },
     { key: 'analysis', label: 'Question Analysis' },
-    { key: 'strategies', label: 'Strategies' },
     { key: 'vocabulary', label: 'Vocabulary' },
-    { key: 'tips', label: 'Improvement Tips' },
   ];
 
   // Load listening data
@@ -176,9 +174,16 @@ const Listening = () => {
         questions,
         answers
       );
-      setAiFeedback(feedback);
+      // Validate feedback structure
+      if (feedback && typeof feedback === 'object') {
+        setAiFeedback(feedback);
+      } else {
+        console.error('Invalid feedback structure:', feedback);
+        setAiFeedback(null);
+      }
     } catch (error) {
       console.error('Error generating AI feedback:', error);
+      setAiFeedback(null);
     } finally {
       setIsAnalyzing(false);
     }
@@ -378,7 +383,7 @@ const Listening = () => {
               </div>
 
               {/* AI Analysis Section */}
-              {aiFeedback && (
+              {aiFeedback && typeof aiFeedback === 'object' ? (
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
                   <div className="flex mb-4 w-full overflow-x-auto border-b border-blue-200">
                     {FEEDBACK_TABS.map((tab) => (
@@ -400,29 +405,19 @@ const Listening = () => {
                   {activeTab === 'overview' && (
                     <div className="space-y-4">
                       <div className="text-lg font-semibold text-blue-800">
-                        Overall Performance: Band {aiFeedback.overall_score}
+                        Overall Performance: Band {typeof aiFeedback.overall_score === 'number' ? aiFeedback.overall_score : 'N/A'}
                       </div>
                       <div className="text-gray-700">
-                        <strong>Feedback:</strong> {aiFeedback.overall_feedback}
+                        <strong>Feedback:</strong> {typeof aiFeedback.overall_feedback === 'string' ? aiFeedback.overall_feedback : JSON.stringify(aiFeedback.overall_feedback)}
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-white rounded-lg p-4 border border-blue-200">
-                          <h4 className="font-semibold text-blue-800 mb-2">Common Mistakes</h4>
-                          <ul className="list-disc ml-4 text-sm text-gray-700">
-                            {aiFeedback.common_mistakes?.map((mistake, idx) => (
-                              <li key={idx}>{mistake}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 border border-blue-200">
-                          <h4 className="font-semibold text-blue-800 mb-2">Key Strategies</h4>
-                          <ul className="list-disc ml-4 text-sm text-gray-700">
-                            {aiFeedback.listening_strategies?.slice(0, 3).map((strategy, idx) => (
-                              <li key={idx}>{strategy}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
+                                             <div className="bg-white rounded-lg p-4 border border-blue-200">
+                         <h4 className="font-semibold text-blue-800 mb-2">Common Mistakes</h4>
+                         <ul className="list-disc ml-4 text-sm text-gray-700">
+                           {aiFeedback.common_mistakes?.map((mistake, idx) => (
+                             <li key={idx}>{typeof mistake === 'string' ? mistake : JSON.stringify(mistake)}</li>
+                           ))}
+                         </ul>
+                       </div>
                     </div>
                   )}
 
@@ -433,7 +428,7 @@ const Listening = () => {
                         Full Passage Transcription
                       </div>
                       <div className="bg-white rounded-lg p-4 border border-blue-200 text-gray-700 leading-relaxed">
-                        {aiFeedback.transcription}
+                        {typeof aiFeedback.transcription === 'string' ? aiFeedback.transcription : JSON.stringify(aiFeedback.transcription)}
                       </div>
                       <div className="text-sm text-gray-600">
                         <strong>Tip:</strong> Read through the transcription to see what you might have missed while listening.
@@ -462,45 +457,25 @@ const Listening = () => {
                             </span>
                           </div>
                           <div className="text-sm text-gray-700 mb-2">
-                            <strong>Question:</strong> {analysis.question_text}
+                            <strong>Question:</strong> {typeof analysis.question_text === 'string' ? analysis.question_text : JSON.stringify(analysis.question_text)}
                           </div>
                           <div className="text-sm text-gray-700 mb-2">
-                            <strong>Your Answer:</strong> {analysis.student_answer}
+                            <strong>Your Answer:</strong> {typeof analysis.student_answer === 'string' ? analysis.student_answer : JSON.stringify(analysis.student_answer)}
                           </div>
                           <div className="text-sm text-gray-700 mb-2">
-                            <strong>Correct Answer:</strong> {analysis.correct_answer}
+                            <strong>Correct Answer:</strong> {typeof analysis.correct_answer === 'string' ? analysis.correct_answer : JSON.stringify(analysis.correct_answer)}
                           </div>
                           <div className="text-sm text-gray-700 mb-2">
-                            <strong>Explanation:</strong> {analysis.explanation}
+                            <strong>Explanation:</strong> {typeof analysis.explanation === 'string' ? analysis.explanation : JSON.stringify(analysis.explanation)}
                           </div>
                           <div className="text-sm text-gray-700 mb-2">
-                            <strong>Listening Tip:</strong> {analysis.listening_tips}
+                            <strong>Listening Tip:</strong> {typeof analysis.listening_tips === 'string' ? analysis.listening_tips : JSON.stringify(analysis.listening_tips)}
                           </div>
                           <div className="text-sm text-gray-700">
                             <strong>Key Vocabulary:</strong> {analysis.key_vocabulary?.join(', ')}
                           </div>
                         </div>
                       ))}
-                    </div>
-                  )}
-
-                  {/* Strategies Tab */}
-                  {activeTab === 'strategies' && (
-                    <div className="space-y-4">
-                      <div className="text-lg font-semibold text-blue-800 mb-3">
-                        Listening Strategies
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {aiFeedback.listening_strategies?.map((strategy, idx) => (
-                          <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-blue-600 text-lg">🎯</span>
-                              <span className="font-semibold text-blue-800">Strategy {idx + 1}</span>
-                            </div>
-                            <div className="text-gray-700">{strategy}</div>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
 
@@ -514,10 +489,10 @@ const Listening = () => {
                         {aiFeedback.vocabulary_notes?.map((vocab, idx) => (
                           <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
                             <div className="font-semibold text-blue-800 mb-1">
-                              {vocab.word}
+                              {typeof vocab.word === 'string' ? vocab.word : JSON.stringify(vocab.word)}
                             </div>
                             <div className="text-sm text-gray-700">
-                              {vocab.definition}
+                              {typeof vocab.definition === 'string' ? vocab.definition : JSON.stringify(vocab.definition)}
                             </div>
                           </div>
                         ))}
@@ -525,25 +500,13 @@ const Listening = () => {
                     </div>
                   )}
 
-                  {/* Improvement Tips Tab */}
-                  {activeTab === 'tips' && (
-                    <div className="space-y-4">
-                      <div className="text-lg font-semibold text-blue-800 mb-3">
-                        Personalized Improvement Tips
-                      </div>
-                      <div className="space-y-3">
-                        {aiFeedback.improvement_tips?.map((tip, idx) => (
-                          <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-blue-600 text-lg">💡</span>
-                              <span className="font-semibold text-blue-800">Tip {idx + 1}</span>
-                            </div>
-                            <div className="text-gray-700">{tip}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                </div>
+              ) : (
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
+                  <div className="text-center text-gray-600">
+                    <p>AI feedback is not available at the moment.</p>
+                    <p className="text-sm mt-2">Your score has been calculated successfully.</p>
+                  </div>
                 </div>
               )}
 
