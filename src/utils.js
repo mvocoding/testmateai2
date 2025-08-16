@@ -326,19 +326,19 @@ export const generateReadingFeedback = async (passage, questions, userAnswers) =
         'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
     };
 
-    const prompt = `You are an IELTS reading examiner and coach.
-Analyze the student's answers for this reading passage and provide detailed feedback.
-
-Passage Text: "${passage.text}"
-Passage Title: "${passage.title}"
-
-Questions and Answers:
-${questions.map((q, idx) => `
-Question ${idx + 1}: ${q.question}
-Type: ${q.type}
-Correct Answer: ${q.correct || q.answer}
-Student's Answer: ${userAnswers[q.id] || 'No answer provided'}
-`).join('\n')}
+         const prompt = `You are an IELTS reading examiner and coach.
+     Analyze the student's answers for this reading passage and provide detailed feedback.
+     
+     Passage Text: "${passage.text}"
+     Passage Title: "${passage.title}"
+     
+     Questions and Answers:
+     ${questions.map((q, idx) => `
+     Question ${idx + 1}: ${q.text}
+     Type: ${q.options ? 'Multiple Choice' : 'Short Answer'}
+     Correct Answer: ${q.options ? q.options[q.correct] : q.correct}
+     Student's Answer: ${userAnswers[idx] || 'No answer provided'}
+     `).join('\n')}
 
 Return a JSON with:
 - overall_score: (0-9, float)
@@ -400,17 +400,17 @@ Return a JSON with:
       overall_score: 6.0,
       overall_feedback: 'Could not parse AI feedback. (Demo)',
       passage_summary: 'This is a demo passage summary.',
-      question_analysis: questions.map((q, idx) => ({
-        question_number: idx + 1,
-        question_text: q.question,
-        correct_answer: q.correct || q.answer,
-        student_answer: userAnswers[q.id] || 'No answer provided',
-        is_correct: userAnswers[q.id] === (q.correct || q.answer),
-        explanation: 'This is a demo explanation.',
-        reading_strategy: 'Read the question carefully and scan for key words.',
-        key_vocabulary: ['key', 'words'],
-        paragraph_reference: 'Look in the relevant paragraph.'
-      })),
+             question_analysis: questions.map((q, idx) => ({
+         question_number: idx + 1,
+         question_text: q.text,
+         correct_answer: q.options ? q.options[q.correct] : q.correct,
+         student_answer: userAnswers[idx] || 'No answer provided',
+         is_correct: userAnswers[idx] === q.correct,
+         explanation: 'This is a demo explanation.',
+         reading_strategy: 'Read the question carefully and scan for key words.',
+         key_vocabulary: ['key', 'words'],
+         paragraph_reference: 'Look in the relevant paragraph.'
+       })),
       reading_strategies: [
         'Skim the passage first for main ideas',
         'Scan for specific information',
