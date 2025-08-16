@@ -1,391 +1,334 @@
 import mockData from '../data/mockdata.json';
 
-class DataService {
-  constructor() {
-    this.data = mockData;
+// Initialize localStorage with mock data if it doesn't exist
+const initializeData = () => {
+  if (!localStorage.getItem('testmate_user')) {
+    // Set default user (level 1, 0 XP)
+    const defaultUser = {
+      id: 1,
+      name: "Test User",
+      email: "user@testmate.com",
+      currentScore: 0,
+      targetScore: 7.0,
+      testDate: null,
+      hasPreviousTest: false,
+      lastTestScore: null,
+      level: 1,
+      xp: 0,
+      studyPlan: null
+    };
+    localStorage.setItem('testmate_user', JSON.stringify(defaultUser));
   }
 
-  // User related methods
-  getUsers() {
-    return this.data.users;
+  if (!localStorage.getItem('testmate_activities')) {
+    localStorage.setItem('testmate_activities', JSON.stringify([]));
   }
 
-  getUserById(id) {
-    return this.data.users.find(user => user.id === id);
+  if (!localStorage.getItem('testmate_vocabulary')) {
+    localStorage.setItem('testmate_vocabulary', JSON.stringify([]));
   }
 
-  getUserByEmail(email) {
-    return this.data.users.find(user => user.email === email);
+  if (!localStorage.getItem('testmate_mockdata')) {
+    localStorage.setItem('testmate_mockdata', JSON.stringify(mockData));
   }
+};
 
-  // Mock test related methods
-  getMockTests() {
-    return this.data.mockTests;
+// Initialize data on import
+initializeData();
+
+// User Management
+export const getUser = () => {
+  try {
+    const user = localStorage.getItem('testmate_user');
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error('Error getting user:', error);
+    return null;
   }
+};
 
-  getMockTestById(id) {
-    return this.data.mockTests.find(test => test.id === id);
+export const updateUser = (updates) => {
+  try {
+    const user = getUser();
+    const updatedUser = { ...user, ...updates };
+    localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
+    return updatedUser;
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return null;
   }
+};
 
-  getMockTestSections(testId) {
-    const test = this.getMockTestById(testId);
-    return test ? test.sections : [];
+export const addXP = (amount) => {
+  try {
+    const user = getUser();
+    if (!user) return null;
+
+    const newXP = user.xp + amount;
+    const newLevel = Math.floor(newXP / 100) + 1; // Level up every 100 XP
+
+    const updatedUser = {
+      ...user,
+      xp: newXP,
+      level: newLevel
+    };
+
+    localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
+    return updatedUser;
+  } catch (error) {
+    console.error('Error adding XP:', error);
+    return null;
   }
+};
 
-  // Generate random questions for mock tests from practice questions
-  generateMockTestQuestions(testId, section) {
-    const test = this.getMockTestById(testId);
-    if (!test) return [];
+// Activities Management
+export const getActivities = () => {
+  try {
+    const activities = localStorage.getItem('testmate_activities');
+    return activities ? JSON.parse(activities) : [];
+  } catch (error) {
+    console.error('Error getting activities:', error);
+    return [];
+  }
+};
 
-    const sectionConfig = test.sections.find(s => s.id === section);
-    if (!sectionConfig) return [];
-
-    const questionCount = sectionConfig.questions;
-    const practiceQuestions = this.getPracticeQuestions(section);
+export const addActivity = (activity) => {
+  try {
+    const activities = getActivities();
+    const newActivity = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      ...activity
+    };
     
-    if (!practiceQuestions) return [];
-
-    // Collect all available questions from practice data
-    let allQuestions = [];
+    const updatedActivities = [newActivity, ...activities].slice(0, 50); // Keep last 50 activities
+    localStorage.setItem('testmate_activities', JSON.stringify(updatedActivities));
     
-    if (section === 'listening') {
-      // For listening, collect questions from all categories
-      Object.keys(practiceQuestions).forEach(category => {
-        const categoryData = practiceQuestions[category];
-        if (categoryData.passages) {
-          categoryData.passages.forEach(passage => {
-            if (passage.questions) {
-              passage.questions.forEach(question => {
-                allQuestions.push({
-                  ...question,
-                  category,
-                  passageTitle: passage.title,
-                  passageText: passage.text,
-                  type: category
-                });
-              });
-            }
-          });
-        }
-      });
-    } else if (section === 'reading') {
-      // For reading, collect questions from all categories
-      Object.keys(practiceQuestions).forEach(category => {
-        const categoryData = practiceQuestions[category];
-        if (categoryData.passages) {
-          categoryData.passages.forEach(passage => {
-            if (passage.questions) {
-              passage.questions.forEach(question => {
-                allQuestions.push({
-                  ...question,
-                  category,
-                  passageTitle: passage.title,
-                  passage: passage.passage,
-                  type: category
-                });
-              });
-            }
-          });
-        }
-      });
-    } else if (section === 'speaking') {
-      // For speaking, collect questions from all parts
-      Object.keys(practiceQuestions).forEach(part => {
-        const partData = practiceQuestions[part];
-        if (partData.questions) {
-          partData.questions.forEach((question, index) => {
-            allQuestions.push({
-              id: index + 1,
-              part: parseInt(part.replace('part', '')),
-              title: partData.name,
-              question: question,
-              timeLimit: part === 'part1' ? 120 : part === 'part2' ? 180 : 240,
-              preparationTime: part === 'part2' ? 60 : 0,
-              type: part
-            });
-          });
-        }
-      });
-    } else if (section === 'writing') {
-      // For writing, collect prompts from both tasks
-      Object.keys(practiceQuestions).forEach(task => {
-        const taskData = practiceQuestions[task];
-        if (taskData.prompts) {
-          taskData.prompts.forEach((prompt, index) => {
-            allQuestions.push({
-              id: index + 1,
-              type: task,
-              title: taskData.name,
-              question: prompt,
-              timeLimit: task === 'task1' ? 1200 : 2400,
-              wordLimit: task === 'task1' ? '150-200 words' : '250-300 words'
-            });
-          });
-        }
-      });
-    }
+    return newActivity;
+  } catch (error) {
+    console.error('Error adding activity:', error);
+    return null;
+  }
+};
 
-    // Shuffle and select random questions
-    const shuffled = this.shuffleArray([...allQuestions]);
-    return shuffled.slice(0, questionCount);
+export const addPracticeActivity = (type, score, band, details = {}) => {
+  const activity = {
+    type: 'practice',
+    practiceType: type, // 'listening', 'reading', 'writing', 'speaking'
+    score: score,
+    band: band,
+    details: details,
+    xpEarned: Math.floor(score * 10) // XP based on score
+  };
+
+  const newActivity = addActivity(activity);
+  if (newActivity) {
+    addXP(newActivity.xpEarned);
   }
 
-  // Helper method to shuffle array
-  shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
+  return newActivity;
+};
+
+// Vocabulary Management
+export const getVocabulary = () => {
+  try {
+    const vocabulary = localStorage.getItem('testmate_vocabulary');
+    return vocabulary ? JSON.parse(vocabulary) : [];
+  } catch (error) {
+    console.error('Error getting vocabulary:', error);
+    return [];
   }
+};
 
-  // Practice questions related methods
-  getPracticeQuestions(skill) {
-    return this.data.practiceQuestions[skill] || {};
+export const addVocabulary = (words) => {
+  try {
+    const vocabulary = getVocabulary();
+    const newWords = Array.isArray(words) ? words : [words];
+    
+    // Add new words, avoiding duplicates
+    const existingWords = vocabulary.map(v => v.word);
+    const uniqueNewWords = newWords.filter(word => !existingWords.includes(word));
+    
+    const newVocabularyItems = uniqueNewWords.map(word => ({
+      id: Date.now() + Math.random(),
+      word: word,
+      addedAt: new Date().toISOString(),
+      source: 'practice', // or 'quiz', 'manual'
+      reviewed: false,
+      mastered: false
+    }));
+
+    const updatedVocabulary = [...vocabulary, ...newVocabularyItems].slice(0, 100); // Keep last 100 words
+    localStorage.setItem('testmate_vocabulary', JSON.stringify(updatedVocabulary));
+    
+    return newVocabularyItems;
+  } catch (error) {
+    console.error('Error adding vocabulary:', error);
+    return [];
   }
+};
 
-  getListeningQuestions() {
-    return this.data.practiceQuestions.listening;
+export const updateVocabularyItem = (id, updates) => {
+  try {
+    const vocabulary = getVocabulary();
+    const updatedVocabulary = vocabulary.map(item => 
+      item.id === id ? { ...item, ...updates } : item
+    );
+    localStorage.setItem('testmate_vocabulary', JSON.stringify(updatedVocabulary));
+    return updatedVocabulary.find(item => item.id === id);
+  } catch (error) {
+    console.error('Error updating vocabulary item:', error);
+    return null;
   }
+};
 
-  getReadingQuestions() {
-    return this.data.practiceQuestions.reading;
+// Mock Data Management
+export const getMockData = () => {
+  try {
+    const data = localStorage.getItem('testmate_mockdata');
+    return data ? JSON.parse(data) : mockData;
+  } catch (error) {
+    console.error('Error getting mock data:', error);
+    return mockData;
   }
+};
 
-  getSpeakingQuestions() {
-    return this.data.practiceQuestions.speaking;
+export const getPracticeQuestions = (type) => {
+  try {
+    const data = getMockData();
+    return data.practiceQuestions?.[type] || null;
+  } catch (error) {
+    console.error('Error getting practice questions:', error);
+    return null;
   }
+};
 
-  getWritingQuestions() {
-    return this.data.practiceQuestions.writing;
+export const getMockTests = () => {
+  try {
+    const data = getMockData();
+    return data.mockTests || [];
+  } catch (error) {
+    console.error('Error getting mock tests:', error);
+    return [];
   }
+};
 
-  // AI responses related methods
-  getAIResponses() {
-    return this.data.aiResponses;
-  }
+// Dashboard Data
+export const getDashboardData = () => {
+  try {
+    const user = getUser();
+    const activities = getActivities();
+    const vocabulary = getVocabulary();
+    
+    // Calculate recent activity stats
+    const recentActivities = activities.slice(0, 10);
+    const today = new Date().toDateString();
+    const todayActivities = activities.filter(activity => 
+      new Date(activity.timestamp).toDateString() === today
+    );
 
-  getStudyPlanQuestions() {
-    return this.data.aiResponses.studyPlanQuestions;
-  }
+    // Calculate practice stats
+    const practiceActivities = activities.filter(activity => activity.type === 'practice');
+    const practiceStats = {
+      total: practiceActivities.length,
+      listening: practiceActivities.filter(a => a.practiceType === 'listening').length,
+      reading: practiceActivities.filter(a => a.practiceType === 'reading').length,
+      writing: practiceActivities.filter(a => a.practiceType === 'writing').length,
+      speaking: practiceActivities.filter(a => a.practiceType === 'speaking').length
+    };
 
-  getGeneralQuestions() {
-    return this.data.aiResponses.generalQuestions;
-  }
-
-  // Dashboard related methods
-  getDashboardData() {
-    return this.data.dashboard;
-  }
-
-  getUserStats() {
-    return this.data.dashboard.userStats;
-  }
-
-  getRecentActivity() {
-    return this.data.dashboard.recentActivity;
-  }
-
-  getProgressCharts() {
-    return this.data.dashboard.progressCharts;
-  }
-
-  getUpcomingTasks() {
-    return this.data.dashboard.upcomingTasks;
-  }
-
-  getAchievements() {
-    return this.data.dashboard.achievements;
-  }
-
-  getRecommendations() {
-    return this.data.dashboard.recommendations;
-  }
-
-  // Study plans related methods
-  getStudyPlans() {
-    return this.data.studyPlans;
-  }
-
-  getStudyPlanTemplates() {
-    return this.data.studyPlans.templates;
-  }
-
-  getStudyPlanTemplateById(id) {
-    return this.data.studyPlans.templates.find(template => template.id === id);
-  }
-
-  getStudyPlanResources() {
-    return this.data.studyPlans.resources;
-  }
-
-  getStudyPlanVideos() {
-    return this.data.studyPlans.resources.videos;
-  }
-
-  getStudyPlanArticles() {
-    return this.data.studyPlans.resources.articles;
-  }
-
-  getStudyPlanPracticeMaterials() {
-    return this.data.studyPlans.resources.practiceMaterials;
-  }
-
-  getProgressTracking() {
-    return this.data.studyPlans.progressTracking;
-  }
-
-  getMilestones() {
-    return this.data.studyPlans.progressTracking.milestones;
-  }
-
-  getWeeklyGoals() {
-    return this.data.studyPlans.progressTracking.weeklyGoals;
-  }
-
-  // Generic data access
-  getAllData() {
-    return this.data;
-  }
-
-  // Search and filter methods
-  searchQuestions(query, skill = null) {
-    const questions = skill ? this.getPracticeQuestions(skill) : this.data.practiceQuestions;
-    const results = [];
-
-    Object.keys(questions).forEach(category => {
-      const categoryData = questions[category];
-      if (categoryData.passages) {
-        categoryData.passages.forEach(passage => {
-          if (passage.title.toLowerCase().includes(query.toLowerCase()) ||
-              passage.passage?.toLowerCase().includes(query.toLowerCase()) ||
-              passage.text?.toLowerCase().includes(query.toLowerCase())) {
-            results.push({
-              skill,
-              category,
-              passage
-            });
-          }
-        });
+    // Calculate average scores
+    const averageScores = {};
+    ['listening', 'reading', 'writing', 'speaking'].forEach(type => {
+      const typeActivities = practiceActivities.filter(a => a.practiceType === type);
+      if (typeActivities.length > 0) {
+        const totalScore = typeActivities.reduce((sum, a) => sum + (a.score || 0), 0);
+        averageScores[type] = (totalScore / typeActivities.length).toFixed(1);
+      } else {
+        averageScores[type] = 0;
       }
     });
 
-    return results;
+    return {
+      user,
+      recentActivities,
+      todayActivities: todayActivities.length,
+      practiceStats,
+      averageScores,
+      vocabularyCount: vocabulary.length,
+      vocabularyToReview: vocabulary.filter(v => !v.reviewed).length
+    };
+  } catch (error) {
+    console.error('Error getting dashboard data:', error);
+    return null;
   }
+};
 
-  // Mock API methods (for future real API integration)
-  async fetchUsers() {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getUsers());
-      }, 100);
-    });
+// Study Plan Management
+export const generateStudyPlan = async (userData) => {
+  try {
+    // This would normally call the AI service
+    // For now, return a basic study plan
+    const studyPlan = {
+      summary: "Focus on improving all skills systematically",
+      weeks: 8,
+      recommendations: [
+        "Practice each skill daily",
+        "Focus on weak areas",
+        "Take regular mock tests",
+        "Review vocabulary regularly"
+      ],
+      focus_areas: [
+        {
+          skill: "All Skills",
+          reason: "Balanced preparation for comprehensive improvement"
+        }
+      ],
+      weekly_schedule: [
+        {
+          week: 1,
+          focus: "Foundation",
+          tasks: ["Grammar basics", "Essential vocabulary", "Test format overview"]
+        },
+        {
+          week: 2,
+          focus: "Listening",
+          tasks: ["Note-taking skills", "Audio comprehension", "Question types"]
+        }
+      ]
+    };
+
+    updateUser({ studyPlan });
+    return studyPlan;
+  } catch (error) {
+    console.error('Error generating study plan:', error);
+    return null;
   }
+};
 
-  async fetchMockTest(testId) {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getMockTestById(testId));
-      }, 100);
-    });
-  }
+// Reset all data (for testing)
+export const resetAllData = () => {
+  localStorage.removeItem('testmate_user');
+  localStorage.removeItem('testmate_activities');
+  localStorage.removeItem('testmate_vocabulary');
+  localStorage.removeItem('testmate_mockdata');
+  initializeData();
+};
 
-  async fetchMockTestQuestions(testId, section) {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.generateMockTestQuestions(testId, section));
-      }, 100);
-    });
-  }
-
-  async fetchPracticeQuestions(skill) {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getPracticeQuestions(skill));
-      }, 100);
-    });
-  }
-
-  async fetchDashboardData() {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getDashboardData());
-      }, 100);
-    });
-  }
-
-  async fetchUserStats() {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getUserStats());
-      }, 100);
-    });
-  }
-
-  async fetchRecentActivity() {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getRecentActivity());
-      }, 100);
-    });
-  }
-
-  async fetchStudyPlanTemplates() {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getStudyPlanTemplates());
-      }, 100);
-    });
-  }
-
-  async fetchStudyPlanTemplate(id) {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getStudyPlanTemplateById(id));
-      }, 100);
-    });
-  }
-
-  async fetchStudyPlanResources() {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getStudyPlanResources());
-      }, 100);
-    });
-  }
-
-  async fetchProgressTracking() {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.getProgressTracking());
-      }, 100);
-    });
-  }
-
-  // Data validation methods
-  validateUser(userData) {
-    const required = ['name', 'email'];
-    return required.every(field => userData[field]);
-  }
-
-  validateQuestion(questionData) {
-    const required = ['question'];
-    return required.every(field => questionData[field]);
-  }
-}
-
-// Create and export a singleton instance
-const dataService = new DataService();
-export default dataService;
+export default {
+  getUser,
+  updateUser,
+  addXP,
+  getActivities,
+  addActivity,
+  addPracticeActivity,
+  getVocabulary,
+  addVocabulary,
+  updateVocabularyItem,
+  getMockData,
+  getPracticeQuestions,
+  getMockTests,
+  getDashboardData,
+  generateStudyPlan,
+  resetAllData
+};

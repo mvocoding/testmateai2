@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dataService from '../services/dataService';
-import { generateWritingFeedback, saveVocabularyWords } from '../utils';
+import { generateWritingFeedback, saveVocabularyWords, recordPracticeActivity } from '../utils';
 
 const Writing = () => {
   const [selectedTask, setSelectedTask] = useState('task1');
@@ -68,6 +68,15 @@ const Writing = () => {
         if (feedback.vocabulary_words && Array.isArray(feedback.vocabulary_words)) {
           saveVocabularyWords(feedback.vocabulary_words);
         }
+
+        // Record practice activity
+        const score = feedback.overall_score || 6.0;
+        const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+        recordPracticeActivity('writing', score, band, {
+          task: currentPrompts[currentPrompt],
+          wordCount: wordCount,
+          feedback: feedback.overall_feedback
+        });
       } else {
         console.error('Invalid feedback structure:', feedback);
         setAiFeedback(null);

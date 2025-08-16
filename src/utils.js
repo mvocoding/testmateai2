@@ -1,3 +1,6 @@
+// Import data service
+import { addVocabulary, getVocabulary, addPracticeActivity } from './services/dataService';
+
 export const generateTextResponse = async (inputMessage, setMessages, setIsLoading) => {
   try {
     const headers = {
@@ -686,24 +689,8 @@ Return a JSON with:
 // Function to save vocabulary words from test results
 export const saveVocabularyWords = (words) => {
   try {
-    const existingWords = localStorage.getItem('vocabularyWords');
-    let allWords = [];
-    
-    if (existingWords) {
-      allWords = JSON.parse(existingWords);
-    }
-    
-    // Add new words (avoid duplicates)
-    const newWords = words.filter(word => !allWords.includes(word));
-    allWords = [...allWords, ...newWords];
-    
-    // Keep only the last 50 words to avoid overwhelming the user
-    if (allWords.length > 50) {
-      allWords = allWords.slice(-50);
-    }
-    
-    localStorage.setItem('vocabularyWords', JSON.stringify(allWords));
-    return allWords;
+    const addedWords = addVocabulary(words);
+    return addedWords.map(w => w.word);
   } catch (error) {
     console.error('Error saving vocabulary words:', error);
     return [];
@@ -713,10 +700,20 @@ export const saveVocabularyWords = (words) => {
 // Function to get vocabulary words from localStorage
 export const getVocabularyWords = () => {
   try {
-    const words = localStorage.getItem('vocabularyWords');
-    return words ? JSON.parse(words) : [];
+    const vocabulary = getVocabulary();
+    return vocabulary.map(v => v.word);
   } catch (error) {
     console.error('Error getting vocabulary words:', error);
     return [];
+  }
+};
+
+// Function to record practice activity and add XP
+export const recordPracticeActivity = (type, score, band, details = {}) => {
+  try {
+    return addPracticeActivity(type, score, band, details);
+  } catch (error) {
+    console.error('Error recording practice activity:', error);
+    return null;
   }
 };

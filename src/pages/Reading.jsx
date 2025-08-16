@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dataService from '../services/dataService';
-import { generateReadingFeedback, saveVocabularyWords } from '../utils';
+import { generateReadingFeedback, saveVocabularyWords, recordPracticeActivity } from '../utils';
 
 const Reading = () => {
   const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
@@ -91,15 +91,25 @@ const Reading = () => {
        );
       setAiFeedback(feedback);
       
-      // Save vocabulary words from the feedback
-      if (feedback.vocabulary_notes && Array.isArray(feedback.vocabulary_notes)) {
-        const words = feedback.vocabulary_notes.map(note => 
-          typeof note === 'string' ? note : note.word || ''
-        ).filter(word => word);
-        if (words.length > 0) {
-          saveVocabularyWords(words);
+              // Save vocabulary words from the feedback
+        if (feedback.vocabulary_notes && Array.isArray(feedback.vocabulary_notes)) {
+          const words = feedback.vocabulary_notes.map(note => 
+            typeof note === 'string' ? note : note.word || ''
+          ).filter(word => word);
+          if (words.length > 0) {
+            saveVocabularyWords(words);
+          }
         }
-      }
+
+        // Record practice activity
+        const score = feedback.overall_score || 6.0;
+        const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+        recordPracticeActivity('reading', score, band, {
+          passage: selectedPassage.title,
+          questionsAnswered: Object.keys(answers).length,
+          totalQuestions: currentQuestions.length,
+          feedback: feedback.overall_feedback
+        });
     } catch (error) {
       console.error('Error generating AI feedback:', error);
     } finally {

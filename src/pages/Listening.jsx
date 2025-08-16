@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import dataService from '../services/dataService';
-import { generateListeningFeedback, saveVocabularyWords } from '../utils';
+import { generateListeningFeedback, saveVocabularyWords, recordPracticeActivity } from '../utils';
 
 const Listening = () => {
   const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
@@ -187,6 +187,16 @@ const Listening = () => {
             saveVocabularyWords(words);
           }
         }
+
+        // Record practice activity
+        const score = feedback.overall_score || 6.0;
+        const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+        recordPracticeActivity('listening', score, band, {
+          passage: passage.title,
+          questionsAnswered: Object.keys(answers).length,
+          totalQuestions: questions.length,
+          feedback: feedback.overall_feedback
+        });
       } else {
         console.error('Invalid feedback structure:', feedback);
         setAiFeedback(null);

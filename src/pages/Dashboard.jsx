@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getDashboardData, getUser } from '../services/dataService';
 
-const skills = [
+const getSkillsData = (dashboardData) => [
   {
     name: 'Speaking',
     path: '/speaking',
@@ -9,8 +10,8 @@ const skills = [
     desc: 'Castle of Conversation',
     color: 'from-purple-400 to-pink-400',
     bgColor: 'from-purple-50 to-pink-50',
-    progress: 75,
-    lastScore: 7.5,
+    progress: dashboardData?.practiceStats?.speaking || 0,
+    lastScore: parseFloat(dashboardData?.averageScores?.speaking) || 0,
   },
   {
     name: 'Listening',
@@ -19,8 +20,8 @@ const skills = [
     desc: 'Whispering Forest',
     color: 'from-green-400 to-emerald-400',
     bgColor: 'from-green-50 to-emerald-50',
-    progress: 60,
-    lastScore: 6.8,
+    progress: dashboardData?.practiceStats?.listening || 0,
+    lastScore: parseFloat(dashboardData?.averageScores?.listening) || 0,
   },
   {
     name: 'Writing',
@@ -29,8 +30,8 @@ const skills = [
     desc: 'Mountain of Mastery',
     color: 'from-blue-400 to-cyan-400',
     bgColor: 'from-blue-50 to-cyan-50',
-    progress: 45,
-    lastScore: 6.2,
+    progress: dashboardData?.practiceStats?.writing || 0,
+    lastScore: parseFloat(dashboardData?.averageScores?.writing) || 0,
   },
   {
     name: 'Reading',
@@ -39,8 +40,8 @@ const skills = [
     desc: 'Library of Knowledge',
     color: 'from-orange-400 to-red-400',
     bgColor: 'from-orange-50 to-red-50',
-    progress: 30,
-    lastScore: 5.9,
+    progress: dashboardData?.practiceStats?.reading || 0,
+    lastScore: parseFloat(dashboardData?.averageScores?.reading) || 0,
   },
 ];
 
@@ -66,43 +67,78 @@ const achievements = [
   { name: 'Master', desc: 'Score 8.0+ on any test', icon: '🏆', earned: false },
 ];
 
-const recentActivity = [
-  {
-    type: 'speaking',
-    action: 'Completed test',
-    score: 7.5,
-    time: '2 hours ago',
-  },
-  {
-    type: 'listening',
-    action: 'Finished exercise',
-    score: 6.8,
-    time: '1 day ago',
-  },
-  {
-    type: 'writing',
-    action: 'Submitted essay',
-    score: 6.2,
-    time: '2 days ago',
-  },
-  { type: 'reading', action: 'Read passage', score: 5.9, time: '3 days ago' },
-];
+const getRecentActivity = (dashboardData) => {
+  if (!dashboardData?.recentActivities) return [];
+  
+  return dashboardData.recentActivities.map(activity => ({
+    type: activity.practiceType || activity.type,
+    action: activity.type === 'practice' ? 'Completed practice' : 'Activity',
+    score: activity.score || 0,
+    time: new Date(activity.timestamp).toLocaleDateString(),
+  }));
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [currentLevel] = useState(3);
-  const [currentXP] = useState(245);
-  const [totalXP] = useState(500);
-  const [studyStreak] = useState(5);
-  const [totalTime] = useState(12.5);
-  const [testsCompleted] = useState(23);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDashboardData = () => {
+      const data = getDashboardData();
+      const userData = getUser();
+      setDashboardData(data);
+      setUser(userData);
+      setLoading(false);
+    };
+
+    loadDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  const currentLevel = user?.level || 1;
+  const currentXP = user?.xp || 0;
+  const totalXP = 100; // XP needed for next level
+  const studyStreak = 0; // TODO: Implement study streak tracking
+  const totalTime = dashboardData?.practiceStats?.total || 0;
+  const testsCompleted = dashboardData?.practiceStats?.total || 0;
 
   const xpPercent = (currentXP / totalXP) * 100;
 
+  // Function to reset data for testing (remove in production)
+  const resetData = () => {
+    localStorage.clear();
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
-      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+      <div className="w-full max-w-7xl mx-auto p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-purple-700 mb-2">
+            Welcome back, {user?.name || 'Student'}!
+          </h1>
+          <p className="text-gray-600 text-lg">
+            Ready to continue your IELTS journey?
+          </p>
+          <button
+            onClick={resetData}
+            className="mt-2 text-sm text-red-500 hover:text-red-700 underline"
+          >
+            Reset Data (Testing)
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
           <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
             {' '}
             <div className="flex items-center justify-between mb-6">
@@ -153,7 +189,7 @@ const Dashboard = () => {
               Recent Activity
             </h2>
             <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
+              {getRecentActivity(dashboardData).map((activity, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-4 bg-white/50 rounded-xl"
@@ -193,7 +229,7 @@ const Dashboard = () => {
               Continue Learning
             </h2>
             <div className="space-y-3">
-              {skills.map((skill, index) => (
+              {getSkillsData(dashboardData).map((skill, index) => (
                 <button
                   key={skill.name}
                   onClick={() => navigate(skill.path)}
@@ -275,6 +311,7 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
+          </div>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { generateVocabularyQuiz, getVocabularyWords } from '../utils';
+import { generateVocabularyQuiz } from '../utils';
+import { getVocabulary } from '../services/dataService';
 
 const Review = () => {
   const [vocabularyWords, setVocabularyWords] = useState([]);
@@ -11,12 +12,12 @@ const Review = () => {
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load vocabulary words from localStorage (this would be populated from other test results)
+  // Load vocabulary words from data service
   useEffect(() => {
     const loadVocabularyWords = () => {
-      const savedWords = getVocabularyWords();
-      if (savedWords.length > 0) {
-        setVocabularyWords(savedWords);
+      const vocabulary = getVocabulary();
+      if (vocabulary.length > 0) {
+        setVocabularyWords(vocabulary.map(v => v.word));
       } else {
         // Demo data for testing
         setVocabularyWords([

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { generateSpeakingFeedback } from '../utils';
+import { generateSpeakingFeedback, recordPracticeActivity } from '../utils';
 import dataService from '../services/dataService';
 
 const SpeakingTest = () => {
@@ -82,6 +82,15 @@ const FEEDBACK_TABS = [
       }));
       setIsLoading(false);
       updateXP(aiFeedback.band);
+
+      // Record practice activity
+      const score = aiFeedback.band || 6.0;
+      const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+      recordPracticeActivity('speaking', score, band, {
+        question: currentQuestions[currentQ],
+        transcript: result,
+        feedback: aiFeedback.comment
+      });
     };
     recognition.onerror = function () {
       setIsListening(false);
