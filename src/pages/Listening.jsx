@@ -147,7 +147,7 @@ const Listening = () => {
       } else if (question.type === 'fill_blank') {
         if (
           userAnswer &&
-          userAnswer.toLowerCase().includes(question.answer.toLowerCase())
+          userAnswer.toLowerCase().trim() === (question.answer || question.correct).toLowerCase().trim()
         ) {
           correct++;
         }
@@ -174,33 +174,66 @@ const Listening = () => {
         questions,
         answers
       );
-      // Validate feedback structure
-      if (feedback && typeof feedback === 'object') {
-        setAiFeedback(feedback);
-        
-        // Save vocabulary words from the feedback
-        if (feedback.vocabulary_notes && Array.isArray(feedback.vocabulary_notes)) {
-          const words = feedback.vocabulary_notes.map(note => 
-            typeof note === 'string' ? note : note.word || ''
-          ).filter(word => word);
-          if (words.length > 0) {
-            saveVocabularyWords(words);
+      
+      // Fix the AI feedback to use actual correct answers from our data
+      const correctedFeedback = {
+        ...feedback,
+        question_analysis: feedback.question_analysis?.map((analysis, idx) => {
+          const question = questions[idx];
+          let actualCorrectAnswer, actualStudentAnswer;
+          
+          if (question.type === 'multiple_choice') {
+            actualCorrectAnswer = question.options ? question.options[question.correct] : question.correct;
+            actualStudentAnswer = question.options && answers[question.id] !== undefined 
+              ? question.options[answers[question.id]] 
+              : answers[question.id] || 'No answer provided';
+          } else {
+            actualCorrectAnswer = question.answer || question.correct;
+            actualStudentAnswer = answers[question.id] || 'No answer provided';
           }
+          
+          // Determine if the answer is actually correct based on our data
+          let isActuallyCorrect = false;
+          if (question.type === 'multiple_choice') {
+            isActuallyCorrect = answers[question.id] === question.correct;
+          } else if (question.type === 'fill_blank') {
+            const userAnswer = (answers[question.id] || '').toString().toLowerCase().trim();
+            const correctAnswer = (question.answer || question.correct).toString().toLowerCase().trim();
+            isActuallyCorrect = userAnswer === correctAnswer;
+          } else if (question.type === 'true_false') {
+            isActuallyCorrect = answers[question.id] === question.correct;
+          }
+          
+          return {
+            ...analysis,
+            correct_answer: actualCorrectAnswer,
+            student_answer: actualStudentAnswer,
+            is_correct: isActuallyCorrect
+          };
+        }) || []
+      };
+      
+      setAiFeedback(correctedFeedback);
+      
+      // Save vocabulary words from the feedback
+      if (feedback.vocabulary_notes && Array.isArray(feedback.vocabulary_notes)) {
+        const words = feedback.vocabulary_notes.map(note => 
+          typeof note === 'string' ? note : note.word || ''
+        ).filter(word => word);
+        if (words.length > 0) {
+          saveVocabularyWords(words);
         }
-
-        // Record practice activity
-        const score = feedback.overall_score || 6.0;
-        const band = Math.round(score * 2) / 2; // Round to nearest 0.5
-        recordPracticeActivity('listening', score, band, {
-          passage: passage.title,
-          questionsAnswered: Object.keys(answers).length,
-          totalQuestions: questions.length,
-          feedback: feedback.overall_feedback
-        });
-      } else {
-        console.error('Invalid feedback structure:', feedback);
-        setAiFeedback(null);
       }
+
+      // Record practice activity
+      const score = feedback.overall_score || 6.0;
+      const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+      recordPracticeActivity('listening', score, band, {
+        passage: passage.title,
+        questionsAnswered: Object.keys(answers).length,
+        totalQuestions: questions.length,
+        feedback: feedback.overall_feedback
+      });
     } catch (error) {
       console.error('Error generating AI feedback:', error);
       setAiFeedback(null);
@@ -480,10 +513,10 @@ const Listening = () => {
                             <strong>Question:</strong> {typeof analysis.question_text === 'string' ? analysis.question_text : JSON.stringify(analysis.question_text)}
                           </div>
                           <div className="text-sm text-gray-700 mb-2">
-                            <strong>Your Answer:</strong> {typeof analysis.student_answer === 'string' ? analysis.student_answer : JSON.stringify(analysis.student_answer)}
+                            <strong>Your Answer:</strong> {analysis.student_answer}
                           </div>
                           <div className="text-sm text-gray-700 mb-2">
-                            <strong>Correct Answer:</strong> {typeof analysis.correct_answer === 'string' ? analysis.correct_answer : JSON.stringify(analysis.correct_answer)}
+                            <strong>Correct Answer:</strong> {analysis.correct_answer}
                           </div>
                           <div className="text-sm text-gray-700 mb-2">
                             <strong>Explanation:</strong> {typeof analysis.explanation === 'string' ? analysis.explanation : JSON.stringify(analysis.explanation)}
@@ -506,16 +539,31 @@ const Listening = () => {
                         Important Vocabulary
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {aiFeedback.vocabulary_notes?.map((vocab, idx) => (
-                          <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
-                            <div className="font-semibold text-blue-800 mb-1">
-                              {typeof vocab.word === 'string' ? vocab.word : JSON.stringify(vocab.word)}
+                        {aiFeedback.vocabulary_notes?.map((vocab, idx) => {
+                          // Handle different vocabulary data structures
+                          let word, definition;
+                          if (typeof vocab === 'string') {
+                            word = vocab;
+                            definition = 'Definition not available';
+                          } else if (vocab && typeof vocab === 'object') {
+                            word = vocab.word || vocab.mistake || 'Unknown word';
+                            definition = vocab.definition || vocab.solution || 'Definition not available';
+                          } else {
+                            word = 'Unknown word';
+                            definition = 'Definition not available';
+                          }
+                          
+                          return (
+                            <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
+                              <div className="font-semibold text-blue-800 mb-1">
+                                {word}
+                              </div>
+                              <div className="text-sm text-gray-700">
+                                {definition}
+                              </div>
                             </div>
-                            <div className="text-sm text-gray-700">
-                              {typeof vocab.definition === 'string' ? vocab.definition : JSON.stringify(vocab.definition)}
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

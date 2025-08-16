@@ -67,6 +67,13 @@ const Reading = () => {
         if (answers[index] === question.correct) {
           correctAnswers++;
         }
+      } else {
+        // For text input questions, check if answer matches (case-insensitive)
+        const userAnswer = (answers[index] || '').toString().toLowerCase().trim();
+        const correctAnswer = question.correct.toString().toLowerCase().trim();
+        if (userAnswer === correctAnswer) {
+          correctAnswers++;
+        }
       }
     });
     const percentage = (correctAnswers / currentQuestions.length) * 100;
@@ -89,7 +96,31 @@ const Reading = () => {
          currentQuestions,
          answers
        );
-      setAiFeedback(feedback);
+             // Fix the AI feedback to use actual correct answers from our data
+       const correctedFeedback = {
+         ...feedback,
+         question_analysis: feedback.question_analysis?.map((analysis, idx) => {
+           const question = currentQuestions[idx];
+           const actualCorrectAnswer = question.options ? question.options[question.correct] : question.correct;
+           const actualStudentAnswer = question.options && answers[idx] !== undefined 
+             ? question.options[answers[idx]] 
+             : answers[idx] || 'No answer provided';
+           
+           // Determine if the answer is actually correct based on our data
+           const isActuallyCorrect = question.options 
+             ? answers[idx] === question.correct
+             : (answers[idx] || '').toString().toLowerCase().trim() === question.correct.toString().toLowerCase().trim();
+           
+           return {
+             ...analysis,
+             correct_answer: actualCorrectAnswer,
+             student_answer: actualStudentAnswer,
+             is_correct: isActuallyCorrect
+           };
+         }) || []
+       };
+       
+       setAiFeedback(correctedFeedback);
       
               // Save vocabulary words from the feedback
         if (feedback.vocabulary_notes && Array.isArray(feedback.vocabulary_notes)) {
@@ -245,23 +276,41 @@ const Reading = () => {
                       />
                     )}
 
-                    {/* Show feedback if submitted */}
-                    {showResults && question.options && (
-                      <div className="mt-4">
-                        {answers[index] === question.correct ? (
-                          <div className="text-green-700 font-bold text-lg">
-                            Correct! 🎉
-                          </div>
-                        ) : (
-                          <div className="text-red-600 font-bold text-lg">
-                            Incorrect. The correct answer is:{' '}
-                            <span className="underline">
-                              {question.options[question.correct]}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                                         {/* Show feedback if submitted */}
+                     {showResults && question.options && (
+                       <div className="mt-4">
+                         {answers[index] === question.correct ? (
+                           <div className="text-green-700 font-bold text-lg">
+                             Correct! 🎉
+                           </div>
+                         ) : (
+                           <div className="text-red-600 font-bold text-lg">
+                             Incorrect. The correct answer is:{' '}
+                             <span className="underline">
+                               {question.options[question.correct]}
+                             </span>
+                           </div>
+                         )}
+                       </div>
+                     )}
+                     
+                     {/* Show feedback for text input questions */}
+                     {showResults && !question.options && (
+                       <div className="mt-4">
+                         {answers[index]?.toString().toLowerCase().trim() === question.correct.toString().toLowerCase().trim() ? (
+                           <div className="text-green-700 font-bold text-lg">
+                             Correct! 🎉
+                           </div>
+                         ) : (
+                           <div className="text-red-600 font-bold text-lg">
+                             Incorrect. The correct answer is:{' '}
+                             <span className="underline">
+                               {question.correct}
+                             </span>
+                           </div>
+                         )}
+                       </div>
+                     )}
                   </div>
                 ))}
 
@@ -380,12 +429,20 @@ const Reading = () => {
                                 <div className="text-sm text-gray-700 mb-2">
                                   <strong>Question:</strong> {analysis.question_text}
                                 </div>
-                                <div className="text-sm text-gray-700 mb-2">
-                                  <strong>Your Answer:</strong> {analysis.student_answer}
-                                </div>
-                                <div className="text-sm text-gray-700 mb-2">
-                                  <strong>Correct Answer:</strong> {analysis.correct_answer}
-                                </div>
+                                                                 <div className="text-sm text-gray-700 mb-2">
+                                   <strong>Your Answer:</strong> {
+                                     currentQuestions[analysis.question_number - 1]?.options 
+                                       ? currentQuestions[analysis.question_number - 1].options[analysis.student_answer] || analysis.student_answer
+                                       : analysis.student_answer
+                                   }
+                                 </div>
+                                 <div className="text-sm text-gray-700 mb-2">
+                                   <strong>Correct Answer:</strong> {
+                                     currentQuestions[analysis.question_number - 1]?.options 
+                                       ? currentQuestions[analysis.question_number - 1].options[analysis.correct_answer] || analysis.correct_answer
+                                       : analysis.correct_answer
+                                   }
+                                 </div>
                                 <div className="text-sm text-gray-700 mb-2">
                                   <strong>Explanation:</strong> {analysis.explanation}
                                 </div>
