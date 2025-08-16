@@ -190,32 +190,75 @@
         "passages": [
           {
             "id": 1,
-            "title": "University Campus Tour",
-            "text": "Welcome to our university campus. The main library is located in the center of campus, next to the student union building. The library is open from 8 AM to 10 PM on weekdays, and 9 AM to 6 PM on weekends. There are over 500,000 books and 50 study rooms available. The cafeteria is open from 7 AM to 8 PM daily, and the gym facilities are available from 6 AM to 11 PM on weekdays and 8 AM to 10 PM on weekends.",
+            "title": "University Accommodation Office",
+            "text": "Good morning, I'm calling from the university accommodation office. I understand you've applied for on-campus housing for the upcoming semester. Let me go through your application details. You've requested a single room in the graduate student residence, which is located in the North Campus area. The monthly rent is £650, which includes utilities and internet access. The building has 24-hour security, laundry facilities on each floor, and a common kitchen area. The contract period is from September 1st to May 31st, with a £200 security deposit required. Payment is due on the 1st of each month. There's also a £50 application fee that needs to be paid within the next week to secure your place. The building is within walking distance of the main library and the student union, and there's a shuttle bus service that runs every 15 minutes during peak hours.",
             "questions": [
               {
                 "id": 1,
-                "question": "What time does the library close on weekdays?",
-                "options": ["8 PM", "9 PM", "10 PM", "11 PM"],
-                "correct": 2
+                "question": "What is the monthly rent for the graduate student residence?",
+                "options": ["£600", "£650", "£700", "£750"],
+                "correct": 1
               },
               {
                 "id": 2,
-                "question": "How many books are available in the library?",
-                "options": ["400,000", "500,000", "600,000", "700,000"],
+                "question": "When does the contract period end?",
+                "options": ["April 30th", "May 31st", "June 30th", "July 31st"],
                 "correct": 1
               },
               {
                 "id": 3,
-                "question": "What time does the cafeteria close?",
-                "options": ["6 PM", "7 PM", "8 PM", "9 PM"],
+                "question": "What is included in the monthly rent?",
+                "options": ["Utilities only", "Internet only", "Utilities and internet", "Utilities, internet, and meals"],
                 "correct": 2
               },
               {
                 "id": 4,
-                "question": "When is the gym open on weekends?",
-                "options": ["6 AM to 10 PM", "7 AM to 9 PM", "8 AM to 10 PM", "9 AM to 11 PM"],
+                "question": "How often does the shuttle bus run during peak hours?",
+                "options": ["Every 10 minutes", "Every 15 minutes", "Every 20 minutes", "Every 30 minutes"],
+                "correct": 1
+              },
+              {
+                "id": 5,
+                "question": "What is the security deposit amount?",
+                "options": ["£150", "£200", "£250", "£300"],
+                "correct": 1
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "Environmental Science Lecture",
+            "text": "Today we'll be discussing the impact of climate change on marine ecosystems. Recent studies have shown that ocean temperatures have increased by approximately 0.8 degrees Celsius over the past century. This seemingly small change has had profound effects on marine life. Coral reefs, which are particularly sensitive to temperature changes, have experienced widespread bleaching events. In fact, over 50% of the Great Barrier Reef has been affected by bleaching since 2016. Additionally, rising sea levels, which have increased by about 20 centimeters globally, are threatening coastal habitats. The acidification of oceans due to increased carbon dioxide absorption is also affecting shellfish and other marine organisms. Scientists predict that if current trends continue, we could see a further temperature increase of 2-4 degrees Celsius by the end of this century.",
+            "questions": [
+              {
+                "id": 1,
+                "question": "How much have ocean temperatures increased over the past century?",
+                "options": ["0.5 degrees Celsius", "0.8 degrees Celsius", "1.2 degrees Celsius", "1.5 degrees Celsius"],
+                "correct": 1
+              },
+              {
+                "id": 2,
+                "question": "What percentage of the Great Barrier Reef has been affected by bleaching since 2016?",
+                "options": ["30%", "40%", "50%", "60%"],
                 "correct": 2
+              },
+              {
+                "id": 3,
+                "question": "How much have sea levels risen globally?",
+                "options": ["15 centimeters", "20 centimeters", "25 centimeters", "30 centimeters"],
+                "correct": 1
+              },
+              {
+                "id": 4,
+                "question": "What is the predicted temperature increase by the end of this century?",
+                "options": ["1-2 degrees Celsius", "2-4 degrees Celsius", "3-5 degrees Celsius", "4-6 degrees Celsius"],
+                "correct": 1
+              },
+              {
+                "id": 5,
+                "question": "What is causing ocean acidification?",
+                "options": ["Increased carbon dioxide absorption", "Rising temperatures", "Pollution", "Overfishing"],
+                "correct": 0
               }
             ]
           }
@@ -228,31 +271,74 @@
         "passages": [
           {
             "id": 1,
-            "title": "Weather Forecast",
-            "text": "Today will be sunny with a high temperature of 25 degrees Celsius. There is a 20% chance of rain in the afternoon. The wind will be light, around 10 kilometers per hour. Tomorrow will be cloudy with temperatures reaching 18 degrees Celsius and a 60% chance of rain.",
+            "title": "Job Interview Preparation",
+            "text": "Welcome to today's workshop on job interview preparation. First, let's discuss the importance of research. You should thoroughly research the company, including its history, values, and recent developments. This shows genuine interest and helps you ask intelligent questions. Next, prepare your responses to common questions like 'Tell me about yourself' and 'Why do you want this position?' Practice these answers out loud, but avoid memorizing them word for word. During the interview, maintain good eye contact and use confident body language. Remember to bring extra copies of your resume and a list of references. Follow up with a thank-you email within 24 hours of the interview. This demonstrates professionalism and keeps you fresh in the interviewer's mind.",
             "questions": [
               {
                 "id": 1,
-                "question": "The high temperature today will be _____ degrees Celsius.",
-                "answer": "25",
+                "question": "You should research the company's history, _____ and recent developments.",
+                "answer": "values",
                 "type": "completion"
               },
               {
                 "id": 2,
-                "question": "There is a _____ percent chance of rain today.",
-                "answer": "20",
+                "question": "Practice your answers out loud, but avoid _____ them word for word.",
+                "answer": "memorizing",
                 "type": "completion"
               },
               {
                 "id": 3,
-                "question": "The wind speed will be _____ kilometers per hour.",
-                "answer": "10",
+                "question": "During the interview, maintain good _____ contact.",
+                "answer": "eye",
                 "type": "completion"
               },
               {
                 "id": 4,
-                "question": "Tomorrow's temperature will reach _____ degrees Celsius.",
-                "answer": "18",
+                "question": "Bring extra copies of your resume and a list of _____.",
+                "answer": "references",
+                "type": "completion"
+              },
+              {
+                "id": 5,
+                "question": "Follow up with a thank-you email within _____ hours of the interview.",
+                "answer": "24",
+                "type": "completion"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "Sustainable Energy Solutions",
+            "text": "Today's lecture focuses on sustainable energy solutions for urban areas. Solar panels have become increasingly efficient, with modern systems converting up to 22% of sunlight into electricity. Wind turbines, particularly offshore installations, can generate substantial power with minimal environmental impact. Geothermal energy, which harnesses heat from the Earth's core, provides consistent power regardless of weather conditions. However, the initial installation costs remain high, often requiring government subsidies to be economically viable. Battery storage technology has improved significantly, with lithium-ion batteries now capable of storing energy for extended periods. This addresses the intermittent nature of renewable energy sources. Smart grid systems help distribute power more efficiently and reduce waste.",
+            "questions": [
+              {
+                "id": 1,
+                "question": "Modern solar panels convert up to _____ percent of sunlight into electricity.",
+                "answer": "22",
+                "type": "completion"
+              },
+              {
+                "id": 2,
+                "question": "_____ energy harnesses heat from the Earth's core.",
+                "answer": "Geothermal",
+                "type": "completion"
+              },
+              {
+                "id": 3,
+                "question": "Initial installation costs often require government _____ to be viable.",
+                "answer": "subsidies",
+                "type": "completion"
+              },
+              {
+                "id": 4,
+                "question": "_____ storage technology has improved significantly.",
+                "answer": "Battery",
+                "type": "completion"
+              },
+              {
+                "id": 5,
+                "question": "Smart grid systems help distribute power more _____.",
+                "answer": "efficiently",
                 "type": "completion"
               }
             ]
@@ -265,19 +351,74 @@
         "passages": [
           {
             "id": 1,
-            "title": "Travel Information",
-            "text": "The train to London departs from platform 3 at 2:30 PM. The journey takes approximately 2 hours and 15 minutes. The ticket price is 45 pounds for adults and 25 pounds for children.",
+            "title": "Healthcare System Reform",
+            "text": "The government has announced comprehensive reforms to the healthcare system. The new policy will be implemented over a three-year period, starting from January next year. The reforms include increasing the number of general practitioners by 15%, reducing waiting times for specialist appointments to a maximum of four weeks, and introducing a new digital health record system. The total budget allocated for these reforms is £2.3 billion, with £800 million dedicated to infrastructure improvements. The policy also includes mandatory health insurance for all citizens, with premiums based on income levels. Employers will be required to contribute 60% of their employees' insurance costs. The reforms aim to reduce overall healthcare costs by 12% within five years while improving patient outcomes.",
             "questions": [
               {
                 "id": 1,
-                "question": "What platform does the train depart from?",
-                "answer": "platform 3",
+                "question": "When will the healthcare reforms begin?",
+                "answer": "January next year",
                 "type": "shortAnswer"
               },
               {
                 "id": 2,
-                "question": "How much does an adult ticket cost?",
-                "answer": "45 pounds",
+                "question": "What is the maximum waiting time for specialist appointments?",
+                "answer": "four weeks",
+                "type": "shortAnswer"
+              },
+              {
+                "id": 3,
+                "question": "How much is the total budget for the reforms?",
+                "answer": "£2.3 billion",
+                "type": "shortAnswer"
+              },
+              {
+                "id": 4,
+                "question": "What percentage of insurance costs must employers contribute?",
+                "answer": "60%",
+                "type": "shortAnswer"
+              },
+              {
+                "id": 5,
+                "question": "What is the target reduction in healthcare costs?",
+                "answer": "12%",
+                "type": "shortAnswer"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "International Trade Agreement",
+            "text": "Representatives from 15 countries have signed a new international trade agreement that will eliminate tariffs on 95% of goods traded between member nations. The agreement, which took five years to negotiate, will come into effect on March 1st of next year. It includes provisions for intellectual property protection, environmental standards, and labor rights. The agreement is expected to increase trade volume by approximately 18% within the first three years. Member countries represent 40% of global GDP and include major economies such as the United States, Japan, and Germany. The agreement also establishes a dispute resolution mechanism and requires regular reviews every two years. Environmental provisions require all member countries to reduce carbon emissions by 25% by 2030.",
+            "questions": [
+              {
+                "id": 1,
+                "question": "How many countries signed the trade agreement?",
+                "answer": "15",
+                "type": "shortAnswer"
+              },
+              {
+                "id": 2,
+                "question": "What percentage of goods will have tariffs eliminated?",
+                "answer": "95%",
+                "type": "shortAnswer"
+              },
+              {
+                "id": 3,
+                "question": "When will the agreement come into effect?",
+                "answer": "March 1st of next year",
+                "type": "shortAnswer"
+              },
+              {
+                "id": 4,
+                "question": "What percentage increase in trade volume is expected?",
+                "answer": "18%",
+                "type": "shortAnswer"
+              },
+              {
+                "id": 5,
+                "question": "What percentage of global GDP do member countries represent?",
+                "answer": "40%",
                 "type": "shortAnswer"
               }
             ]
@@ -292,53 +433,113 @@
         "passages": [
           {
             "id": 1,
-            "title": "Honeybees",
-            "passage": "The honeybee is a remarkable insect known for its role in pollination and for producing honey and beeswax. Honeybees live in well-organized colonies and communicate with each other through a unique dance language. Their work is essential for the growth of many crops and wild plants. These social insects have a complex hierarchy with a queen, workers, and drones, each playing specific roles in the colony's survival.",
+            "title": "The Impact of Artificial Intelligence on Employment",
+            "passage": "The rapid advancement of artificial intelligence (AI) technology has sparked intense debate about its potential impact on employment patterns across various industries. While some experts predict widespread job displacement, others argue that AI will create new opportunities and enhance human productivity rather than replace workers entirely. Research conducted by the McKinsey Global Institute suggests that by 2030, up to 375 million workers worldwide may need to switch occupational categories due to automation. However, this same study indicates that AI could also create 65 million new jobs that don't currently exist. The key factor determining whether AI leads to job creation or destruction appears to be the nature of the tasks involved. Routine, repetitive tasks are most susceptible to automation, while jobs requiring creativity, emotional intelligence, and complex problem-solving are likely to remain predominantly human domains. Furthermore, historical evidence suggests that technological revolutions typically result in net job creation over the long term, despite initial disruption. The Industrial Revolution, for instance, initially caused significant unemployment but ultimately led to unprecedented economic growth and job creation. The challenge for policymakers and educators lies in preparing workers for the transition, ensuring that education systems adapt to equip people with the skills needed in an AI-driven economy.",
             "questions": [
               {
-                "text": "What is one important role of the honeybee?",
+                "text": "According to the McKinsey Global Institute, how many workers may need to switch jobs by 2030?",
                 "options": [
-                  "They make silk for clothing.",
-                  "They pollinate plants and crops.",
-                  "They eat harmful insects.",
-                  "They live alone in the wild."
+                  "275 million",
+                  "375 million",
+                  "475 million",
+                  "575 million"
                 ],
                 "correct": 1
               },
               {
-                "text": "How do honeybees communicate with each other?",
+                "text": "What type of tasks are most likely to be automated by AI?",
                 "options": [
-                  "Through vocal sounds",
-                  "Through a unique dance language",
-                  "Through chemical signals only",
-                  "Through physical contact"
+                  "Creative tasks",
+                  "Emotional intelligence tasks",
+                  "Routine and repetitive tasks",
+                  "Complex problem-solving tasks"
+                ],
+                "correct": 2
+              },
+              {
+                "text": "What does the passage suggest about the Industrial Revolution?",
+                "options": [
+                  "It caused permanent job losses",
+                  "It led to immediate economic growth",
+                  "It initially caused unemployment but eventually created jobs",
+                  "It had no impact on employment patterns"
+                ],
+                "correct": 2
+              },
+              {
+                "text": "What is the main challenge identified for policymakers and educators?",
+                "options": [
+                  "Preventing AI development",
+                  "Preparing workers for job transitions",
+                  "Creating new AI jobs",
+                  "Reducing automation"
                 ],
                 "correct": 1
+              },
+              {
+                "text": "How many new jobs could AI potentially create according to the McKinsey study?",
+                "options": [
+                  "45 million",
+                  "55 million",
+                  "65 million",
+                  "75 million"
+                ],
+                "correct": 2
               }
             ]
           },
           {
             "id": 2,
-            "title": "Solar Energy",
-            "passage": "Solar energy is one of the most abundant and clean sources of renewable energy available on Earth. The sun provides enough energy in one hour to meet the world's energy needs for an entire year. Solar panels convert sunlight into electricity through a process called the photovoltaic effect. This technology has become increasingly affordable and efficient over the past few decades.",
+            "title": "The Psychology of Consumer Behavior in Digital Marketing",
+            "passage": "Digital marketing has fundamentally transformed how businesses understand and influence consumer behavior. The advent of big data analytics has enabled marketers to track consumer interactions with unprecedented precision, revealing patterns that were previously invisible. One of the most significant findings in this field is the concept of 'choice paralysis,' where consumers become overwhelmed by too many options and either delay decisions or choose not to purchase at all. Research by psychologists Sheena Iyengar and Mark Lepper demonstrated that when consumers were presented with 24 varieties of jam instead of 6, they were ten times less likely to make a purchase. This phenomenon has profound implications for e-commerce platforms and digital marketing strategies. Another critical insight involves the role of social proof in online purchasing decisions. Studies show that products with customer reviews, ratings, and testimonials experience significantly higher conversion rates than those without. The mere presence of social proof can increase sales by up to 270%, according to research published in the Journal of Consumer Research. Furthermore, the timing of marketing messages has emerged as a crucial factor in consumer engagement. Analysis of email marketing campaigns reveals that personalized messages sent at optimal times can achieve open rates 26% higher than generic messages sent at random times. The psychological principle of reciprocity also plays a vital role in digital marketing success. When businesses provide value through free content, samples, or services, consumers feel compelled to reciprocate, often through purchases or brand loyalty.",
             "questions": [
               {
-                "text": "How much energy does the sun provide in one hour?",
+                "text": "What is 'choice paralysis' in consumer behavior?",
                 "options": [
-                  "Enough for one day",
-                  "Enough for one week",
-                  "Enough for one month",
-                  "Enough for one year"
+                  "When consumers make quick decisions",
+                  "When consumers become overwhelmed by too many options",
+                  "When consumers always choose the cheapest option",
+                  "When consumers ignore marketing messages"
                 ],
-                "correct": 3
+                "correct": 1
               },
               {
-                "text": "What process converts sunlight into electricity?",
+                "text": "According to Iyengar and Lepper's research, how much less likely were consumers to purchase when presented with 24 jam varieties instead of 6?",
                 "options": [
-                  "Photosynthesis",
-                  "Photovoltaic effect",
-                  "Thermal conversion",
-                  "Chemical reaction"
+                  "Five times less likely",
+                  "Ten times less likely",
+                  "Fifteen times less likely",
+                  "Twenty times less likely"
+                ],
+                "correct": 1
+              },
+              {
+                "text": "How much can social proof increase sales according to the Journal of Consumer Research?",
+                "options": [
+                  "Up to 170%",
+                  "Up to 270%",
+                  "Up to 370%",
+                  "Up to 470%"
+                ],
+                "correct": 1
+              },
+              {
+                "text": "What percentage higher open rates can personalized email messages achieve?",
+                "options": [
+                  "16%",
+                  "26%",
+                  "36%",
+                  "46%"
+                ],
+                "correct": 1
+              },
+              {
+                "text": "What psychological principle involves consumers feeling compelled to reciprocate when businesses provide value?",
+                "options": [
+                  "Social proof",
+                  "Reciprocity",
+                  "Choice paralysis",
+                  "Timing optimization"
                 ],
                 "correct": 1
               }
@@ -352,23 +553,33 @@
         "passages": [
           {
             "id": 1,
-            "title": "Climate Change",
-            "passage": "Climate change is affecting global weather patterns. Scientists have observed increased temperatures worldwide, leading to more extreme weather events. Some regions are experiencing longer droughts, while others face increased rainfall and flooding. The melting of polar ice caps is contributing to rising sea levels, which threatens coastal communities around the world. Research indicates that human activities, particularly the burning of fossil fuels, are the primary drivers of these changes.",
+            "title": "Sustainable Urban Development and Green Infrastructure",
+            "passage": "Urban areas worldwide are increasingly adopting green infrastructure solutions to address environmental challenges and improve quality of life. Green roofs, which involve growing vegetation on building rooftops, have been shown to reduce building energy consumption by up to 30% during summer months. These installations also help mitigate the urban heat island effect, where cities experience higher temperatures than surrounding rural areas. Research conducted in Toronto found that widespread adoption of green roofs could reduce city temperatures by 2-3 degrees Celsius. Additionally, green infrastructure projects often provide economic benefits that exceed their initial costs. A study by the American Society of Landscape Architects revealed that every dollar invested in green infrastructure generates $2.50 in economic benefits over 20 years. However, the implementation of these projects faces significant challenges, including high initial costs and maintenance requirements. Some cities have addressed these challenges through innovative financing mechanisms, such as stormwater utility fees and public-private partnerships. The effectiveness of green infrastructure varies significantly depending on local climate conditions and urban density. Cities in temperate regions typically see greater benefits than those in arid climates, where water availability becomes a limiting factor.",
             "questions": [
               {
-                "text": "Global temperatures have increased in recent years.",
+                "text": "Green roofs can reduce building energy consumption by up to 30% during summer months.",
                 "options": ["True", "False", "Not Given"],
                 "correct": 0
               },
               {
-                "text": "All regions are experiencing drought conditions.",
+                "text": "The urban heat island effect causes cities to be cooler than surrounding rural areas.",
                 "options": ["True", "False", "Not Given"],
                 "correct": 1
               },
               {
-                "text": "Scientists use satellites to monitor climate change.",
+                "text": "Green infrastructure projects in Toronto could reduce city temperatures by 2-3 degrees Celsius.",
                 "options": ["True", "False", "Not Given"],
-                "correct": 2
+                "correct": 0
+              },
+              {
+                "text": "Every dollar invested in green infrastructure generates exactly $2.50 in economic benefits.",
+                "options": ["True", "False", "Not Given"],
+                "correct": 1
+              },
+              {
+                "text": "Cities in arid climates benefit more from green infrastructure than cities in temperate regions.",
+                "options": ["True", "False", "Not Given"],
+                "correct": 1
               }
             ]
           }
@@ -380,23 +591,33 @@
         "passages": [
           {
             "id": 1,
-            "title": "Electric Vehicles",
-            "passage": "Electric vehicles are becoming increasingly popular as people seek more environmentally friendly transportation options. These vehicles produce zero emissions during operation and can be charged using renewable energy sources. Many governments are offering incentives to encourage the adoption of electric vehicles.",
+            "title": "The Future of Remote Work and Digital Nomadism",
+            "passage": "The COVID-19 pandemic accelerated the adoption of remote work practices, leading to a fundamental shift in how organizations approach workplace flexibility. Many companies have reported increased productivity among remote workers, with some studies showing productivity gains of 13-15% compared to traditional office settings. However, this transition has also revealed significant challenges, particularly in maintaining team cohesion and company culture. Digital nomadism, the practice of working remotely while traveling, has emerged as a growing trend among professionals seeking location independence. Countries such as Estonia, Portugal, and Barbados have introduced special visas to attract digital nomads, recognizing the economic benefits they bring to local communities. Research indicates that digital nomads typically spend 30-40% more than regular tourists in their host countries, contributing significantly to local economies. Despite these benefits, concerns exist about the long-term sustainability of remote work arrangements. Some experts argue that remote work may lead to increased social isolation and mental health challenges, while others point to improved work-life balance and reduced commuting stress. The future of remote work likely depends on finding the right balance between flexibility and human connection.",
             "questions": [
               {
-                "text": "Do electric vehicles produce emissions during operation?",
-                "options": ["Yes", "No", "Not Given"],
-                "correct": 1
-              },
-              {
-                "text": "Are governments providing incentives for electric vehicles?",
+                "text": "Did the COVID-19 pandemic accelerate the adoption of remote work?",
                 "options": ["Yes", "No", "Not Given"],
                 "correct": 0
               },
               {
-                "text": "Are all electric vehicles more expensive than gasoline cars?",
+                "text": "Do all companies report increased productivity among remote workers?",
                 "options": ["Yes", "No", "Not Given"],
-                "correct": 2
+                "correct": 1
+              },
+              {
+                "text": "Have some countries introduced special visas for digital nomads?",
+                "options": ["Yes", "No", "Not Given"],
+                "correct": 0
+              },
+              {
+                "text": "Do digital nomads spend more money than regular tourists?",
+                "options": ["Yes", "No", "Not Given"],
+                "correct": 0
+              },
+              {
+                "text": "Is there consensus among experts about the mental health impacts of remote work?",
+                "options": ["Yes", "No", "Not Given"],
+                "correct": 1
               }
             ]
           }
@@ -409,17 +630,64 @@
         "passages": [
           {
             "id": 1,
-            "title": "Human Brain",
-            "passage": "The human brain contains approximately 86 billion neurons. These neurons communicate through electrical and chemical signals. The brain is responsible for all our thoughts, emotions, and actions. It continues to develop throughout our lives.",
+            "title": "The Science of Sleep and Cognitive Performance",
+            "passage": "Sleep plays a crucial role in cognitive function and overall health, with research revealing that adequate sleep is essential for memory consolidation, emotional regulation, and decision-making processes. The human brain undergoes several distinct sleep cycles during a typical night, each lasting approximately 90 minutes. During the rapid eye movement (REM) phase, which accounts for about 25% of total sleep time, the brain processes emotional experiences and consolidates procedural memories. Non-REM sleep, particularly the deep sleep stages, is critical for physical restoration and the consolidation of declarative memories. Studies have shown that sleep deprivation can impair cognitive performance equivalent to being legally intoxicated, with reaction times increasing by up to 50% after just 24 hours without sleep. Furthermore, chronic sleep deprivation has been linked to increased risk of cardiovascular disease, diabetes, and mental health disorders. The optimal amount of sleep varies by age, with adults typically requiring 7-9 hours per night, while teenagers may need 8-10 hours for optimal functioning.",
             "questions": [
               {
-                "text": "Complete the sentence: The human brain contains about _____ billion neurons.",
-                "answer": "86",
+                "text": "Each sleep cycle lasts approximately _____ minutes.",
+                "answer": "90",
                 "type": "completion"
               },
               {
-                "text": "Neurons communicate through _____ and chemical signals.",
-                "answer": "electrical",
+                "text": "REM sleep accounts for about _____ percent of total sleep time.",
+                "answer": "25",
+                "type": "completion"
+              },
+              {
+                "text": "Reaction times can increase by up to _____ percent after 24 hours without sleep.",
+                "answer": "50",
+                "type": "completion"
+              },
+              {
+                "text": "Adults typically require _____ hours of sleep per night.",
+                "answer": "7-9",
+                "type": "completion"
+              },
+              {
+                "text": "Teenagers may need _____ hours for optimal functioning.",
+                "answer": "8-10",
+                "type": "completion"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "The Economics of Renewable Energy Transition",
+            "passage": "The global transition to renewable energy sources represents one of the most significant economic transformations of the 21st century. Solar photovoltaic technology has experienced remarkable cost reductions, with prices falling by approximately 90% over the past decade. This dramatic decrease has made solar energy competitive with fossil fuels in many markets, even without government subsidies. Wind energy has also seen substantial cost improvements, with onshore wind becoming one of the most cost-effective electricity generation methods available. The International Renewable Energy Agency (IRENA) estimates that renewable energy could create up to 28 million jobs globally by 2050, significantly offsetting job losses in the fossil fuel sector. However, the transition also presents challenges, particularly in energy storage and grid infrastructure. Battery storage costs have decreased by 85% since 2010, but further improvements are needed to support widespread renewable energy adoption. The economic benefits of renewable energy extend beyond direct employment, including reduced healthcare costs from improved air quality and decreased environmental damage.",
+            "questions": [
+              {
+                "text": "Solar photovoltaic prices have fallen by approximately _____ percent over the past decade.",
+                "answer": "90",
+                "type": "completion"
+              },
+              {
+                "text": "IRENA estimates renewable energy could create up to _____ million jobs by 2050.",
+                "answer": "28",
+                "type": "completion"
+              },
+              {
+                "text": "Battery storage costs have decreased by _____ percent since 2010.",
+                "answer": "85",
+                "type": "completion"
+              },
+              {
+                "text": "_____ wind has become one of the most cost-effective electricity generation methods.",
+                "answer": "Onshore",
+                "type": "completion"
+              },
+              {
+                "text": "The transition presents challenges in energy _____ and grid infrastructure.",
+                "answer": "storage",
                 "type": "completion"
               }
             ]
@@ -432,18 +700,20 @@
         "passages": [
           {
             "id": 1,
-            "title": "Water Cycle",
-            "passage": "The water cycle consists of four main stages: evaporation, condensation, precipitation, and collection. Water evaporates from oceans and lakes, condenses into clouds, falls as rain or snow, and collects back into water bodies.",
+            "title": "The Human Digestive System",
+            "passage": "The human digestive system is a complex network of organs responsible for breaking down food and absorbing nutrients. The process begins in the mouth, where mechanical and chemical digestion starts with chewing and the action of salivary enzymes. Food then travels through the esophagus to the stomach, where gastric juices containing hydrochloric acid and pepsin break down proteins. The small intestine, which is approximately 6 meters long, is where most nutrient absorption occurs through specialized structures called villi. The large intestine, or colon, absorbs water and electrolytes while housing beneficial bacteria that aid in digestion. The liver produces bile, which is stored in the gallbladder and released to help digest fats. The pancreas secretes digestive enzymes and hormones that regulate blood sugar levels. Finally, waste products are eliminated through the rectum and anus.",
             "questions": [
               {
-                "text": "Label the water cycle stages:",
+                "text": "Label the digestive system organs in order of food processing:",
                 "options": [
-                  "Evaporation",
-                  "Condensation",
-                  "Precipitation",
-                  "Collection"
+                  "Mouth",
+                  "Esophagus",
+                  "Stomach",
+                  "Small intestine",
+                  "Large intestine",
+                  "Rectum"
                 ],
-                "correct": [0, 1, 2, 3],
+                "correct": [0, 1, 2, 3, 4, 5],
                 "type": "diagram"
               }
             ]
@@ -456,17 +726,64 @@
         "passages": [
           {
             "id": 1,
-            "title": "Internet History",
-            "passage": "The Internet was developed in the 1960s as a military project called ARPANET. It was designed to allow computers to communicate even if some connections were destroyed. Today, the Internet connects billions of people worldwide.",
+            "title": "The Psychology of Decision Making",
+            "passage": "Human decision-making processes are influenced by various cognitive biases and heuristics that can lead to systematic errors in judgment. The availability heuristic, first identified by psychologists Amos Tversky and Daniel Kahneman, causes people to overestimate the probability of events that are easily recalled from memory. For example, people often overestimate the likelihood of plane crashes because these events receive extensive media coverage, despite being statistically rare. Another common bias is the confirmation bias, where individuals seek out information that confirms their existing beliefs while ignoring contradictory evidence. This bias is particularly evident in political and social media contexts, where people tend to consume content that aligns with their viewpoints. The anchoring effect occurs when people rely too heavily on the first piece of information they receive when making decisions. Research shows that even arbitrary numbers can serve as anchors, significantly influencing subsequent judgments. Understanding these biases is crucial for improving decision-making quality in both personal and professional contexts.",
             "questions": [
               {
-                "text": "What was the original name of the Internet?",
-                "answer": "ARPANET",
+                "text": "Who first identified the availability heuristic?",
+                "answer": "Amos Tversky and Daniel Kahneman",
                 "type": "shortAnswer"
               },
               {
-                "text": "When was the Internet first developed?",
-                "answer": "1960s",
+                "text": "What is the confirmation bias?",
+                "answer": "Seeking information that confirms existing beliefs",
+                "type": "shortAnswer"
+              },
+              {
+                "text": "What is the anchoring effect?",
+                "answer": "Relying too heavily on the first piece of information",
+                "type": "shortAnswer"
+              },
+              {
+                "text": "Where is the confirmation bias particularly evident?",
+                "answer": "Political and social media contexts",
+                "type": "shortAnswer"
+              },
+              {
+                "text": "What can serve as anchors according to research?",
+                "answer": "Arbitrary numbers",
+                "type": "shortAnswer"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "The History of Computer Programming Languages",
+            "passage": "The evolution of computer programming languages reflects the changing needs and capabilities of computing technology. The first high-level programming language, FORTRAN, was developed by IBM in the 1950s to simplify scientific calculations. COBOL, created in 1959, became the standard for business applications and is still used in many financial systems today. The 1970s saw the development of C, which became the foundation for many modern programming languages including C++, Java, and Python. Object-oriented programming, introduced with Simula in the 1960s, revolutionized software development by allowing programmers to create reusable code components. The rise of the internet in the 1990s led to the development of web-specific languages such as JavaScript and PHP. More recently, the emergence of artificial intelligence and machine learning has driven the popularity of languages like Python and R, which offer extensive libraries for data analysis and statistical computing.",
+            "questions": [
+              {
+                "text": "When was FORTRAN developed?",
+                "answer": "1950s",
+                "type": "shortAnswer"
+              },
+              {
+                "text": "What was the first high-level programming language?",
+                "answer": "FORTRAN",
+                "type": "shortAnswer"
+              },
+              {
+                "text": "When was COBOL created?",
+                "answer": "1959",
+                "type": "shortAnswer"
+              },
+              {
+                "text": "What decade saw the development of C?",
+                "answer": "1970s",
+                "type": "shortAnswer"
+              },
+              {
+                "text": "What programming paradigm was introduced with Simula?",
+                "answer": "Object-oriented programming",
                 "type": "shortAnswer"
               }
             ]
@@ -479,33 +796,77 @@
         "name": "Part 1: Introduction & Interview",
         "description": "Personal questions about familiar topics",
         "questions": [
-          "What do you do in your free time?",
-          "Do you enjoy reading books?",
-          "What kind of music do you like?",
-          "Where do you live?",
-          "What do you do for work or study?"
+          "Can you tell me about your hometown?",
+          "What do you do for work or study?",
+          "Do you enjoy reading books? What kind of books do you prefer?",
+          "What do you usually do in your free time?",
+          "Do you like listening to music? What type of music do you enjoy?",
+          "Have you ever traveled to another country? Where did you go?",
+          "What's your favorite type of food? Do you like cooking?",
+          "Do you prefer living in a city or the countryside? Why?",
+          "What languages do you speak? How did you learn them?",
+          "Do you have any hobbies or interests? How long have you been interested in them?",
+          "What's your favorite season of the year? Why do you like it?",
+          "Do you like watching movies or TV shows? What kind do you prefer?",
+          "Have you ever lived in a different place? What was it like?",
+          "What do you think about social media? Do you use it often?",
+          "Do you like sports? What sports do you enjoy watching or playing?"
         ]
       },
       "part2": {
         "name": "Part 2: Individual Long Turn",
         "description": "Speak for 2 minutes on a given topic",
         "questions": [
-          "Describe a place you would like to visit",
-          "Talk about a book you have read recently",
-          "Describe a person who has influenced you",
-          "Talk about an important event in your life",
-          "Describe your hometown"
+          "Describe a place you would like to visit in the future. You should say: where it is, why you want to go there, what you would do there, and explain why this place interests you.",
+          "Talk about a book you have read recently. You should say: what the book is about, when you read it, why you chose to read it, and explain what you learned from it.",
+          "Describe a person who has influenced you in your life. You should say: who this person is, how you know them, what they have done to influence you, and explain why they have been important to you.",
+          "Talk about an important event in your life. You should say: what the event was, when it happened, why it was important, and explain how it affected your life.",
+          "Describe your hometown. You should say: where it is located, what it is famous for, what you like about it, and explain whether you would recommend others to visit it.",
+          "Talk about a skill you would like to learn. You should say: what the skill is, why you want to learn it, how you would learn it, and explain how it would be useful to you.",
+          "Describe a memorable journey you have taken. You should say: where you went, when you went there, who you went with, and explain why it was memorable.",
+          "Talk about a piece of technology you use regularly. You should say: what it is, how often you use it, what you use it for, and explain why it is important to you.",
+          "Describe a restaurant you enjoy going to. You should say: where it is located, what type of food it serves, how often you go there, and explain why you like it.",
+          "Talk about a goal you have achieved. You should say: what the goal was, when you achieved it, how you achieved it, and explain how you felt when you accomplished it.",
+          "Describe a person you admire. You should say: who this person is, what they do, why you admire them, and explain what qualities they have that you find impressive.",
+          "Talk about a time when you helped someone. You should say: who you helped, what you did to help them, why they needed help, and explain how you felt about helping them.",
+          "Describe a place where you like to study or work. You should say: where this place is, what it looks like, when you go there, and explain why you prefer this place.",
+          "Talk about a tradition in your country. You should say: what the tradition is, when it is celebrated, how people celebrate it, and explain why it is important to your culture.",
+          "Describe a time when you were surprised. You should say: what happened, when it happened, who was involved, and explain why you were surprised."
         ]
       },
       "part3": {
         "name": "Part 3: Two-Way Discussion",
         "description": "Discuss abstract topics and ideas",
         "questions": [
-          "What are the advantages and disadvantages of living in a big city?",
-          "How has technology changed the way people communicate?",
-          "Do you think education should be free for everyone?",
-          "What are the benefits of learning a foreign language?",
-          "How important is it to protect the environment?"
+          "What are the advantages and disadvantages of living in a big city compared to a small town?",
+          "How has technology changed the way people communicate in recent years?",
+          "Do you think education should be free for everyone? Why or why not?",
+          "What are the benefits of learning a foreign language? How important is it in today's world?",
+          "How important is it to protect the environment? What can individuals do to help?",
+          "What are the pros and cons of working from home versus working in an office?",
+          "How has social media affected relationships between people?",
+          "Do you think it's better to live in the past or focus on the future? Why?",
+          "What role does advertising play in our daily lives? Is it mostly positive or negative?",
+          "How has the way people shop changed in recent years? What do you think about online shopping?",
+          "What are the challenges of raising children in today's society?",
+          "How important is it to maintain traditional customs and values in a modern world?",
+          "What are the benefits and drawbacks of globalization?",
+          "How has the role of women in society changed over the past few decades?",
+          "What do you think about the increasing use of artificial intelligence in our daily lives?",
+          "How important is it to have a work-life balance? What are the challenges in achieving this?",
+          "What are the advantages and disadvantages of living in a multicultural society?",
+          "How has the way people travel changed over the years? What do you think about budget travel?",
+          "What role does the media play in shaping public opinion? Is this positive or negative?",
+          "How important is it to preserve historical buildings and monuments?",
+          "What are the challenges of maintaining good health in modern society?",
+          "How has the way people entertain themselves changed over the years?",
+          "What do you think about the increasing focus on mental health awareness?",
+          "How important is it to have good communication skills in today's world?",
+          "What are the benefits and challenges of living in a digital age?",
+          "How has the way people learn changed with the introduction of technology?",
+          "What role does creativity play in solving problems in modern society?",
+          "How important is it to have a sense of community in today's world?",
+          "What are the challenges of maintaining privacy in the digital age?"
         ]
       }
     },
@@ -514,22 +875,57 @@
         "name": "Task 1: Letter Writing",
         "description": "Write a letter based on a given situation",
         "prompts": [
-          "You recently stayed at a hotel and had a problem with your room. Write a letter to the hotel manager explaining what happened and what you would like them to do about it.",
-          "You are planning to move to a new city and need to find accommodation. Write a letter to a local real estate agent asking for information about available apartments.",
-          "You have been invited to a friend's wedding but cannot attend. Write a letter to your friend explaining why you cannot come and wishing them well.",
-          "You recently bought a product online but it arrived damaged. Write a letter to the customer service department requesting a replacement or refund.",
-          "You want to apply for a job in another city. Write a letter to a friend asking for help with finding accommodation and information about the area."
+          "You recently stayed at a hotel and experienced several problems during your stay. Write a letter to the hotel manager describing the issues you encountered and what you would like them to do about it.",
+          "You are planning to move to a new city for work and need to find suitable accommodation. Write a letter to a local real estate agent asking for information about available apartments in your budget range.",
+          "You have been invited to a close friend's wedding but cannot attend due to unavoidable circumstances. Write a letter to your friend explaining why you cannot come and expressing your best wishes for their special day.",
+          "You recently purchased an expensive electronic device online, but it arrived damaged and is not functioning properly. Write a letter to the customer service department requesting a replacement or full refund.",
+          "You want to apply for a job in another city and need help with finding accommodation and information about the area. Write a letter to a friend who lives there asking for assistance.",
+          "You recently attended a conference at a local venue and were very impressed with the facilities and service. Write a letter to the venue manager expressing your satisfaction and recommending improvements for future events.",
+          "You have been offered a job in another country and need to apply for a work visa. Write a letter to the embassy requesting information about the application process and required documents.",
+          "You recently joined a gym but are not satisfied with the facilities and services provided. Write a letter to the gym manager explaining your concerns and what changes you would like to see.",
+          "You are planning a family vacation and want to book a holiday package. Write a letter to a travel agency asking for information about available packages, prices, and booking procedures.",
+          "You have been living in your current apartment for two years and the lease is about to expire. Write a letter to your landlord requesting a renewal of the lease and discussing any necessary repairs.",
+          "You recently attended a restaurant with friends and had an excellent dining experience. Write a letter to the restaurant manager complimenting the staff and food quality.",
+          "You are interested in enrolling in a language course at a local institute. Write a letter to the institute asking for information about course schedules, fees, and enrollment procedures.",
+          "You have been experiencing problems with your internet service provider for the past month. Write a letter to the company explaining the issues and requesting immediate resolution.",
+          "You are planning to organize a charity event and need to book a community hall. Write a letter to the hall manager requesting information about availability, rental fees, and facilities.",
+          "You recently visited a museum and were disappointed with the exhibits and services. Write a letter to the museum director expressing your concerns and suggesting improvements."
         ]
       },
       "task2": {
         "name": "Task 2: Essay",
         "description": "Write an essay on a given topic",
         "prompts": [
-          "Some people believe that technology has made life easier and more convenient, while others think it has made life more complex and stressful. Discuss both views and give your opinion.",
-          "Many people believe that the best way to learn a foreign language is to live in the country where it is spoken. To what extent do you agree or disagree?",
-          "Some people think that the government should spend money on public services rather than on the arts. To what extent do you agree or disagree?",
-          "In many countries, people are living longer. What are the advantages and disadvantages of this trend?",
-          "Some people believe that children should be taught to be competitive, while others think they should be taught to cooperate. Discuss both views and give your opinion."
+          "Some people believe that the government should invest more money in public transportation, while others think that individuals should be responsible for their own transportation. Discuss both views and give your opinion.",
+          "Many people believe that the best way to learn a foreign language is to live in the country where it is spoken. To what extent do you agree or disagree with this statement?",
+          "Some people think that the government should spend money on public services rather than on the arts. To what extent do you agree or disagree with this view?",
+          "In many countries, people are living longer than ever before. What are the advantages and disadvantages of this trend for individuals and society?",
+          "Some people believe that children should be taught to be competitive, while others think they should be taught to cooperate. Discuss both views and give your opinion.",
+          "The increasing use of technology in education has both positive and negative effects. To what extent do you agree or disagree with this statement?",
+          "Some people believe that it is better to live in a big city, while others prefer to live in the countryside. Discuss both views and give your opinion.",
+          "Many people believe that the internet has made communication easier and more convenient, while others think it has made people more isolated. Discuss both views and give your opinion.",
+          "Some people think that the government should provide free healthcare for all citizens, while others believe that individuals should pay for their own medical treatment. Discuss both views and give your opinion.",
+          "The increasing popularity of online shopping has affected traditional retail businesses. What are the advantages and disadvantages of this trend?",
+          "Some people believe that schools should focus more on practical skills rather than academic subjects. To what extent do you agree or disagree?",
+          "Many people believe that the media has too much influence on people's lives today. To what extent do you agree or disagree with this statement?",
+          "Some people think that it is better to work for a large company, while others prefer to work for a small company. Discuss both views and give your opinion.",
+          "The increasing use of social media has changed the way people interact with each other. What are the positive and negative effects of this change?",
+          "Some people believe that it is important to preserve traditional customs and values, while others think that society should be more modern and flexible. Discuss both views and give your opinion.",
+          "Many people believe that the best way to solve environmental problems is to increase the cost of fuel for cars and other vehicles. To what extent do you agree or disagree?",
+          "Some people think that universities should provide graduates with the knowledge and skills needed in the workplace. Others think that the true function of a university should be to give access to knowledge for its own sake. Discuss both views and give your opinion.",
+          "The increasing number of people living in cities has created many problems. What are the main problems faced by people living in cities, and how can these problems be solved?",
+          "Some people believe that it is better to travel alone, while others think it is better to travel with a group. Discuss both views and give your opinion.",
+          "Many people believe that the best way to reduce crime is to give longer prison sentences. Others believe that there are better alternative ways to reduce crime. Discuss both views and give your opinion.",
+          "Some people think that the government should provide free housing for everyone who cannot afford it. To what extent do you agree or disagree with this statement?",
+          "The increasing use of artificial intelligence in various fields has both benefits and drawbacks. To what extent do you agree or disagree with this statement?",
+          "Some people believe that it is better to work from home, while others think it is better to work in an office. Discuss both views and give your opinion.",
+          "Many people believe that the best way to improve public health is to increase the number of sports facilities. Others think that this would have little effect on public health. Discuss both views and give your opinion.",
+          "Some people think that the government should spend money on exploring outer space, while others believe that it is more important to spend money on solving problems on Earth. Discuss both views and give your opinion.",
+          "The increasing use of mobile phones and computers has made communication easier, but it has also led to people spending less time together. To what extent do you agree or disagree?",
+          "Some people believe that it is better to live in a house, while others think it is better to live in an apartment. Discuss both views and give your opinion.",
+          "Many people believe that the best way to learn about other cultures is to travel to different countries. To what extent do you agree or disagree with this statement?",
+          "Some people think that the government should provide free education at all levels, while others believe that individuals should pay for their own education. Discuss both views and give your opinion.",
+          "The increasing use of renewable energy sources has both advantages and disadvantages. To what extent do you agree or disagree with this statement?"
         ]
       }
     }
