@@ -97,7 +97,7 @@ function SkillSidebar() {
       window.removeEventListener('userDataUpdated', handleUserDataUpdate);
       clearInterval(pollInterval);
     };
-  }, [user]);
+  }, []); // Remove user from dependency array to prevent infinite loop
 
   const level = user?.level || 1;
   const xp = user?.xp || 0;

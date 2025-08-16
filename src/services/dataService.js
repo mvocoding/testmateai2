@@ -1,9 +1,9 @@
 import mockData from '../data/mockdata.json';
+import { generateStudyPlan as generateStudyPlanFromUtils } from '../utils';
 
 // Initialize localStorage with mock data if it doesn't exist
 const initializeData = () => {
   if (!localStorage.getItem('testmate_user')) {
-    // Set default user (level 1, 0 XP)
     const defaultUser = {
       id: 1,
       name: "Test User",
@@ -33,10 +33,8 @@ const initializeData = () => {
   }
 };
 
-// Initialize data on import
 initializeData();
 
-// User Management
 export const getUser = () => {
   try {
     const user = localStorage.getItem('testmate_user');
@@ -54,7 +52,6 @@ export const updateUser = (updates) => {
     console.log('Updating user:', { current: user, updates, updated: updatedUser });
     localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
     
-    // Dispatch custom event to notify components of user data update
     console.log('Dispatching userDataUpdated event from updateUser');
     window.dispatchEvent(new CustomEvent('userDataUpdated'));
     
@@ -94,7 +91,6 @@ export const addXP = (amount) => {
   }
 };
 
-// Activities Management
 export const getActivities = () => {
   try {
     const activities = localStorage.getItem('testmate_activities');
@@ -127,11 +123,11 @@ export const addActivity = (activity) => {
 export const addPracticeActivity = (type, score, band, details = {}) => {
   const activity = {
     type: 'practice',
-    practiceType: type, // 'listening', 'reading', 'writing', 'speaking'
+    practiceType: type, 
     score: score,
     band: band,
     details: details,
-    xpEarned: Math.floor(score * 10) // XP based on score
+    xpEarned: Math.floor(score * 10) 
   };
 
   const newActivity = addActivity(activity);
@@ -142,7 +138,6 @@ export const addPracticeActivity = (type, score, band, details = {}) => {
   return newActivity;
 };
 
-// Vocabulary Management
 export const getVocabulary = () => {
   try {
     const vocabulary = localStorage.getItem('testmate_vocabulary');
@@ -158,7 +153,6 @@ export const addVocabulary = (words) => {
     const vocabulary = getVocabulary();
     const newWords = Array.isArray(words) ? words : [words];
     
-    // Add new words, avoiding duplicates
     const existingWords = vocabulary.map(v => v.word);
     const uniqueNewWords = newWords.filter(word => !existingWords.includes(word));
     
@@ -166,12 +160,12 @@ export const addVocabulary = (words) => {
       id: Date.now() + Math.random(),
       word: word,
       addedAt: new Date().toISOString(),
-      source: 'practice', // or 'quiz', 'manual'
+      source: 'practice', 
       reviewed: false,
       mastered: false
     }));
 
-    const updatedVocabulary = [...vocabulary, ...newVocabularyItems].slice(0, 100); // Keep last 100 words
+    const updatedVocabulary = [...vocabulary, ...newVocabularyItems].slice(0, 100); 
     localStorage.setItem('testmate_vocabulary', JSON.stringify(updatedVocabulary));
     
     return newVocabularyItems;
@@ -195,7 +189,6 @@ export const updateVocabularyItem = (id, updates) => {
   }
 };
 
-// Mock Data Management
 export const getMockData = () => {
   try {
     const data = localStorage.getItem('testmate_mockdata');
@@ -226,21 +219,62 @@ export const getMockTests = () => {
   }
 };
 
-// Dashboard Data
+export const fetchMockTest = (testId) => {
+  try {
+    const data = getMockData();
+    const mockTest = data.mockTests?.find(test => test.id === testId);
+    return mockTest || null;
+  } catch (error) {
+    console.error('Error fetching mock test:', error);
+    return null;
+  }
+};
+
+export const fetchMockTestQuestions = (testId, sectionId) => {
+  try {
+    const data = getMockData();
+    const sectionData = data.practiceQuestions?.[sectionId];
+    
+    if (!sectionData) {
+      return [];
+    }
+    
+    const allQuestions = [];
+    Object.values(sectionData).forEach(questionType => {
+      if (questionType.passages) {
+        questionType.passages.forEach(passage => {
+          if (passage.questions) {
+            passage.questions.forEach(question => {
+              allQuestions.push({
+                ...question,
+                passage: passage,
+                questionType: questionType.name
+              });
+            });
+          }
+        });
+      }
+    });
+    
+    return allQuestions.slice(0, 10); // Limit to 10 questions per section
+  } catch (error) {
+    console.error('Error fetching mock test questions:', error);
+    return [];
+  }
+};
+
 export const getDashboardData = () => {
   try {
     const user = getUser();
     const activities = getActivities();
     const vocabulary = getVocabulary();
     
-    // Calculate recent activity stats
     const recentActivities = activities.slice(0, 10);
     const today = new Date().toDateString();
     const todayActivities = activities.filter(activity => 
       new Date(activity.timestamp).toDateString() === today
     );
 
-    // Calculate practice stats
     const practiceActivities = activities.filter(activity => activity.type === 'practice');
     const practiceStats = {
       total: practiceActivities.length,
@@ -250,7 +284,6 @@ export const getDashboardData = () => {
       speaking: practiceActivities.filter(a => a.practiceType === 'speaking').length
     };
 
-    // Calculate average scores
     const averageScores = {};
     ['listening', 'reading', 'writing', 'speaking'].forEach(type => {
       const typeActivities = practiceActivities.filter(a => a.practiceType === type);
@@ -277,91 +310,33 @@ export const getDashboardData = () => {
   }
 };
 
-// Study Plan Management
 export const generateStudyPlan = async (userData) => {
   try {
-    // This would normally call the AI service
-    // For now, return a basic study plan
-    const studyPlan = {
-      summary: "You're on track to achieve your target score! Focus on consistent daily practice and targeted improvement in your weaker areas. Remember, small daily efforts lead to significant long-term results.",
-      weeks: 8,
-      recommendations: [
-        "Practice 2-3 exercises daily across all skills",
-        "Focus 60% of time on your weakest skill",
-        "Take a full mock test every 2 weeks",
-        "Review and learn 10 new vocabulary words daily"
-      ],
-      focus_areas: [
-        {
-          skill: "Listening",
-          reason: "Improving listening comprehension will boost your overall score"
-        },
-        {
-          skill: "Reading", 
-          reason: "Strong reading skills help with time management and accuracy"
-        },
-        {
-          skill: "Writing",
-          reason: "Writing requires the most practice to see improvement"
-        },
-        {
-          skill: "Speaking",
-          reason: "Regular speaking practice builds confidence and fluency"
-        }
-      ],
-      weekly_schedule: [
-        {
-          week: 1,
-          focus: "Foundation & Assessment",
-          tasks: [
-            "Complete 2 listening passages daily",
-            "Practice 3 reading exercises",
-            "Write 1 essay (Task 1 or 2)",
-            "Record 2 speaking responses"
-          ]
-        },
-        {
-          week: 2,
-          focus: "Listening & Reading",
-          tasks: [
-            "Practice note-taking with 3 listening passages",
-            "Complete 4 reading exercises with time limits",
-            "Review vocabulary from previous week",
-            "Take 1 mini mock test"
-          ]
-        },
-        {
-          week: 3,
-          focus: "Writing & Speaking",
-          tasks: [
-            "Write 2 essays (both Task 1 and 2)",
-            "Practice speaking with 4 different topics",
-            "Review grammar rules and common mistakes",
-            "Complete 2 listening exercises"
-          ]
-        },
-        {
-          week: 4,
-          focus: "Integrated Practice",
-          tasks: [
-            "Take 1 full mock test",
-            "Analyze mistakes and create improvement plan",
-            "Focus on weakest areas identified",
-            "Practice time management for all sections"
-          ]
-        }
-      ]
-    };
+    // Extract the required data from userData
+    const currentScore = userData.currentScore || userData.lastTestScore || 0;
+    const targetScore = userData.targetScore || 7.0;
+    const testDate = userData.testDate || '2024-12-31'; // Default date if not provided
 
-    updateUser({ studyPlan });
-    return studyPlan;
+    // Call the AI-powered study plan generator from utils
+    const studyPlan = await generateStudyPlanFromUtils({
+      currentScore,
+      targetScore,
+      testDate
+    });
+
+    if (studyPlan) {
+      // Save the generated study plan to user data
+      updateUser({ studyPlan });
+      return studyPlan;
+    } else {
+      throw new Error('Failed to generate study plan from AI service');
+    }
   } catch (error) {
     console.error('Error generating study plan:', error);
     return null;
   }
 };
 
-// Reset all data (for testing)
 export const resetAllData = () => {
   localStorage.removeItem('testmate_user');
   localStorage.removeItem('testmate_activities');
@@ -383,6 +358,8 @@ export default {
   getMockData,
   getPracticeQuestions,
   getMockTests,
+  fetchMockTest,
+  fetchMockTestQuestions,
   getDashboardData,
   generateStudyPlan,
   resetAllData
