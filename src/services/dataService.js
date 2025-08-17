@@ -1,6 +1,5 @@
 import { generateStudyPlan as generateStudyPlanFromUtils } from '../utils';
 
-// Initialize localStorage with mock data if it doesn't exist
 const initializeData = async () => {
   if (!localStorage.getItem('testmate_user')) {
     const defaultUser = {
@@ -27,7 +26,6 @@ const initializeData = async () => {
     localStorage.setItem('testmate_vocabulary', JSON.stringify([]));
   }
 
-  // Fetch mock data from public folder
   try {
     const response = await fetch('/mockdata.json');
     if (response.ok) {
@@ -41,7 +39,6 @@ const initializeData = async () => {
   }
 };
 
-// Initialize data when the module loads
 initializeData();
 
 export const getUser = () => {
@@ -60,10 +57,10 @@ export const updateUser = (updates) => {
     const updatedUser = { ...user, ...updates };
     console.log('Updating user:', { current: user, updates, updated: updatedUser });
     localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
-    
+
     console.log('Dispatching userDataUpdated event from updateUser');
     window.dispatchEvent(new CustomEvent('userDataUpdated'));
-    
+
     return updatedUser;
   } catch (error) {
     console.error('Error updating user:', error);
@@ -77,7 +74,7 @@ export const addXP = (amount) => {
     if (!user) return null;
 
     const newXP = user.xp + amount;
-    const newLevel = Math.floor(newXP / 100) + 1; // Level up every 100 XP
+    const newLevel = Math.floor(newXP / 100) + 1;
 
     console.log('Adding XP:', { currentXP: user.xp, amount, newXP, newLevel });
 
@@ -88,11 +85,10 @@ export const addXP = (amount) => {
     };
 
     localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
-    
-    // Dispatch custom event to notify components of user data update
+
     console.log('Dispatching userDataUpdated event');
     window.dispatchEvent(new CustomEvent('userDataUpdated'));
-    
+
     return updatedUser;
   } catch (error) {
     console.error('Error adding XP:', error);
@@ -118,10 +114,10 @@ export const addActivity = (activity) => {
       timestamp: new Date().toISOString(),
       ...activity
     };
-    
-    const updatedActivities = [newActivity, ...activities].slice(0, 50); // Keep last 50 activities
+
+    const updatedActivities = [newActivity, ...activities].slice(0, 50);
     localStorage.setItem('testmate_activities', JSON.stringify(updatedActivities));
-    
+
     return newActivity;
   } catch (error) {
     console.error('Error adding activity:', error);
@@ -132,11 +128,11 @@ export const addActivity = (activity) => {
 export const addPracticeActivity = (type, score, band, details = {}) => {
   const activity = {
     type: 'practice',
-    practiceType: type, 
+    practiceType: type,
     score: score,
     band: band,
     details: details,
-    xpEarned: Math.floor(score * 10) 
+    xpEarned: Math.floor(score * 10)
   };
 
   const newActivity = addActivity(activity);
@@ -161,22 +157,22 @@ export const addVocabulary = (words) => {
   try {
     const vocabulary = getVocabulary();
     const newWords = Array.isArray(words) ? words : [words];
-    
+
     const existingWords = vocabulary.map(v => v.word);
     const uniqueNewWords = newWords.filter(word => !existingWords.includes(word));
-    
+
     const newVocabularyItems = uniqueNewWords.map(word => ({
       id: Date.now() + Math.random(),
       word: word,
       addedAt: new Date().toISOString(),
-      source: 'practice', 
+      source: 'practice',
       reviewed: false,
       mastered: false
     }));
 
-    const updatedVocabulary = [...vocabulary, ...newVocabularyItems].slice(0, 100); 
+    const updatedVocabulary = [...vocabulary, ...newVocabularyItems].slice(0, 100);
     localStorage.setItem('testmate_vocabulary', JSON.stringify(updatedVocabulary));
-    
+
     return newVocabularyItems;
   } catch (error) {
     console.error('Error adding vocabulary:', error);
@@ -187,7 +183,7 @@ export const addVocabulary = (words) => {
 export const updateVocabularyItem = (id, updates) => {
   try {
     const vocabulary = getVocabulary();
-    const updatedVocabulary = vocabulary.map(item => 
+    const updatedVocabulary = vocabulary.map(item =>
       item.id === id ? { ...item, ...updates } : item
     );
     localStorage.setItem('testmate_vocabulary', JSON.stringify(updatedVocabulary));
@@ -201,7 +197,7 @@ export const updateVocabularyItem = (id, updates) => {
 export const getMockData = () => {
   try {
     const data = localStorage.getItem('testmate_mockdata');
-    return data ? JSON.parse(data) : null; // Return null if mockdata is not found
+    return data ? JSON.parse(data) : null;
   } catch (error) {
     console.error('Error getting mock data:', error);
     return null;
@@ -211,7 +207,6 @@ export const getMockData = () => {
 export const resetMockData = () => {
   try {
     localStorage.removeItem('testmate_mockdata');
-    // Re-fetch mock data from public folder
     initializeData();
     console.log('Mock data reset successfully');
   } catch (error) {
@@ -325,7 +320,7 @@ const createFallbackQuestions = (sectionId) => {
       }
     ]
   };
-  
+
   return fallbackQuestions[sectionId] || [];
 };
 
@@ -335,110 +330,99 @@ export const fetchMockTestQuestions = (testId, sectionId) => {
     const data = getMockData();
     console.log('Mock data structure:', Object.keys(data));
     console.log('Practice questions structure:', Object.keys(data?.practiceQuestions || {}));
-    
+
     const sectionData = data?.practiceQuestions?.[sectionId];
     console.log(`Section data for ${sectionId}:`, sectionData);
-    
+
     if (!sectionData) {
       console.log(`No section data found for ${sectionId}`);
       return [];
     }
-    
-         const allQuestions = [];
-     Object.entries(sectionData).forEach(([questionTypeKey, questionType]) => {
-       console.log(`Processing question type: ${questionTypeKey}`, questionType);
-       
-       // Handle different question structures
-       if (questionType.passages) {
-         // Structure with passages (listening, reading)
-         questionType.passages.forEach(passage => {
-           console.log(`Processing passage:`, passage);
-           if (passage.questions) {
-                           // For listening and reading, we want to group questions by passage
-              if (sectionId === 'listening' || sectionId === 'reading') {
-                // Create a single question object that contains all questions for this passage
+
+    const allQuestions = [];
+    Object.entries(sectionData).forEach(([questionTypeKey, questionType]) => {
+      console.log(`Processing question type: ${questionTypeKey}`, questionType);
+
+      if (questionType.passages) {
+        questionType.passages.forEach(passage => {
+          console.log(`Processing passage:`, passage);
+          if (passage.questions) {
+            if (sectionId === 'listening' || sectionId === 'reading') {
+              allQuestions.push({
+                id: passage.id,
+                question: `Passage: ${passage.title}`,
+                passageText: passage.text || passage.passage,
+                passageTitle: passage.title,
+                questions: passage.questions,
+                questionType: questionType.name,
+                type: 'passage'
+              });
+            } else {
+              passage.questions.forEach(question => {
                 allQuestions.push({
-                  id: passage.id,
-                  question: `Passage: ${passage.title}`,
-                  passageText: passage.text || passage.passage,
-                  passageTitle: passage.title,
-                  questions: passage.questions, // Keep all questions for this passage
-                  questionType: questionType.name,
-                  type: 'passage' // Mark as a passage type
+                  ...question,
+                  question: question.text || question.question || '',
+                  passageText: passage.passage || passage.text || passage.title || '',
+                  questionType: questionType.name
                 });
-              } else {
-                // For other sections, process each question individually
-                passage.questions.forEach(question => {
-                  allQuestions.push({
-                    ...question,
-                    // Map text to question for consistency
-                    question: question.text || question.question || '',
-                    // Map passage text
-                    passageText: passage.passage || passage.text || passage.title || '',
-                    questionType: questionType.name
-                  });
-                });
-              }
-           }
-         });
-       } else if (questionType.questions) {
-         // Structure with direct questions (speaking part1, part2, part3)
-         questionType.questions.forEach((questionText, index) => {
-           allQuestions.push({
-             id: index + 1,
-             question: questionText,
-             title: questionType.name,
-             part: questionTypeKey.replace('part', ''),
-             type: 'speaking',
-             preparationTime: questionTypeKey === 'part2' ? 120 : 60
-           });
-         });
-       } else if (questionType.prompts) {
-         // Structure with prompts (writing task1, task2)
-         // For writing, we only want 1 question per task (2 total)
-         if (sectionId === 'writing') {
-           // Take only the first prompt from each task
-           if (questionTypeKey === 'task1' || questionTypeKey === 'task2') {
-             const prompt = questionType.prompts[0]; // Only take the first prompt
-             allQuestions.push({
-               id: questionTypeKey === 'task1' ? 1 : 2,
-               question: prompt,
-               title: questionType.name,
-               type: questionTypeKey,
-               timeLimit: questionTypeKey === 'task1' ? 20 * 60 : 40 * 60,
-               wordLimit: questionTypeKey === 'task1' ? '150-200 words' : '250-300 words'
-             });
-           }
-         } else {
-           // For other sections, keep all prompts
-           questionType.prompts.forEach((prompt, index) => {
-             allQuestions.push({
-               id: index + 1,
-               question: prompt,
-               title: questionType.name,
-               type: questionTypeKey,
-               timeLimit: questionTypeKey === 'task1' ? 20 * 60 : 40 * 60,
-               wordLimit: questionTypeKey === 'task1' ? '150-200 words' : '250-300 words'
-             });
-           });
-         }
-       }
-     });
-    
+              });
+            }
+          }
+        });
+      } else if (questionType.questions) {
+        questionType.questions.forEach((questionText, index) => {
+          allQuestions.push({
+            id: index + 1,
+            question: questionText,
+            title: questionType.name,
+            part: questionTypeKey.replace('part', ''),
+            type: 'speaking',
+            preparationTime: questionTypeKey === 'part2' ? 120 : 60
+          });
+        });
+      } else if (questionType.prompts) {
+        // Structure with prompts (writing task1, task2)
+        // For writing, we only want 1 question per task (2 total)
+        if (sectionId === 'writing') {
+          // Take only the first prompt from each task
+          if (questionTypeKey === 'task1' || questionTypeKey === 'task2') {
+            const prompt = questionType.prompts[0]; // Only take the first prompt
+            allQuestions.push({
+              id: questionTypeKey === 'task1' ? 1 : 2,
+              question: prompt,
+              title: questionType.name,
+              type: questionTypeKey,
+              timeLimit: questionTypeKey === 'task1' ? 20 * 60 : 40 * 60,
+              wordLimit: questionTypeKey === 'task1' ? '150-200 words' : '250-300 words'
+            });
+          }
+        } else {
+          // For other sections, keep all prompts
+          questionType.prompts.forEach((prompt, index) => {
+            allQuestions.push({
+              id: index + 1,
+              question: prompt,
+              title: questionType.name,
+              type: questionTypeKey,
+              timeLimit: questionTypeKey === 'task1' ? 20 * 60 : 40 * 60,
+              wordLimit: questionTypeKey === 'task1' ? '150-200 words' : '250-300 words'
+            });
+          });
+        }
+      }
+    });
+
     console.log(`Total questions found for ${sectionId}:`, allQuestions.length);
-    
-    // For speaking, we want all parts (1, 2, 3) so we need more questions
-    // For writing, we only want 2 questions (Task 1 and Task 2)
-    const maxQuestions = sectionId === 'speaking' ? 15 : 
-                        sectionId === 'writing' ? 2 : 10;
+
+    const maxQuestions = sectionId === 'speaking' ? 15 :
+      sectionId === 'writing' ? 2 : 10;
     let result = allQuestions.slice(0, maxQuestions);
-    
-    // If no questions found, create some basic fallback questions
+
     if (result.length === 0) {
       console.log(`No questions found for ${sectionId}, creating fallback questions`);
       result = createFallbackQuestions(sectionId);
     }
-    
+
     console.log(`Returning ${result.length} questions for ${sectionId}`);
     return result;
   } catch (error) {
@@ -452,10 +436,10 @@ export const getDashboardData = () => {
     const user = getUser();
     const activities = getActivities();
     const vocabulary = getVocabulary();
-    
+
     const recentActivities = activities.slice(0, 10);
     const today = new Date().toDateString();
-    const todayActivities = activities.filter(activity => 
+    const todayActivities = activities.filter(activity =>
       new Date(activity.timestamp).toDateString() === today
     );
 
@@ -496,12 +480,10 @@ export const getDashboardData = () => {
 
 export const generateStudyPlan = async (userData) => {
   try {
-    // Extract the required data from userData
     const currentScore = userData.currentScore || userData.lastTestScore || 0;
     const targetScore = userData.targetScore || 7.0;
-    const testDate = userData.testDate || '2024-12-31'; // Default date if not provided
+    const testDate = userData.testDate || '2024-12-31';
 
-    // Call the AI-powered study plan generator from utils
     const studyPlan = await generateStudyPlanFromUtils({
       currentScore,
       targetScore,
@@ -509,7 +491,6 @@ export const generateStudyPlan = async (userData) => {
     });
 
     if (studyPlan) {
-      // Save the generated study plan to user data
       updateUser({ studyPlan });
       return studyPlan;
     } else {

@@ -88,7 +88,6 @@ const Writing = () => {
         });
       } else {
         console.error('Invalid feedback structure:', feedback);
-        // Set a basic fallback feedback
         setAiFeedback({
           overall_score: 6.0,
           overall_feedback: 'Demo feedback - Your essay shows good structure.',

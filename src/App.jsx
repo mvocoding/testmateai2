@@ -99,7 +99,7 @@ function SkillSidebar() {
 
   const level = user?.level || 1;
   const xp = user?.xp || 0;
-  const totalXP = 100; 
+  const totalXP = 100;
   const xpPercent = (xp / totalXP) * 100;
 
   const handleLogout = () => {
