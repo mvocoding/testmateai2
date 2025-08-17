@@ -90,8 +90,16 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center">
-      <div className="w-full max-w-md mx-auto bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 flex flex-col items-center gap-8">
+    <div className="min-h-screen bg-gray-50 relative z-10 overflow-hidden flex flex-col justify-center pr-20">
+      <video
+        src="banner.mp4"
+        className="absolute inset-0 -z-10 object-contain"
+        autoPlay
+        muted
+        loop
+        playsInline
+      />
+      <div className="w-full max-w-md ml-auto bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12 flex flex-col items-center gap-8">
         <header className="w-full flex items-center justify-between mb-4">
           <Link
             to="/"
