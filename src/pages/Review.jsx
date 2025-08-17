@@ -12,7 +12,6 @@ const Review = () => {
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load vocabulary words from data service
   useEffect(() => {
     const loadVocabularyWords = () => {
       const vocabulary = getVocabulary();
@@ -36,7 +35,6 @@ const Review = () => {
       console.log('Quiz data received:', quiz);
       console.log('Quiz questions:', quiz?.questions);
       
-      // Validate quiz structure
       if (!quiz || !quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
         throw new Error('Invalid quiz structure received');
       }
@@ -71,7 +69,6 @@ const Review = () => {
        setSelectedAnswer(null);
        setIsAnswered(false);
      } else {
-       // Quiz completed
        setIsQuizMode(false);
        setCurrentQuiz(null);
      }
@@ -94,7 +91,6 @@ const Review = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-purple-700 mb-2">
             Vocabulary Review
@@ -105,7 +101,6 @@ const Review = () => {
         </div>
 
         {!isQuizMode ? (
-          /* Vocabulary List View */
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">
@@ -156,9 +151,7 @@ const Review = () => {
             )}
           </div>
         ) : (
-          /* Quiz Mode */
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
-            {/* Quiz Header */}
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">
@@ -178,7 +171,6 @@ const Review = () => {
               </div>
             </div>
 
-            {/* Progress Bar */}
             <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
                              <div
                  className="bg-gradient-to-r from-purple-600 to-purple-400 h-2 rounded-full transition-all duration-300"
@@ -188,7 +180,6 @@ const Review = () => {
                ></div>
             </div>
 
-                         {/* Question */}
              {currentQuestion ? (
                <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 mb-6">
                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
@@ -212,7 +203,6 @@ const Review = () => {
                </div>
              )}
 
-                                      {/* Answer Options */}
              {currentQuestion && currentQuestion.options ? (
                <div className="space-y-3 mb-6">
                  {currentQuestion.options.map((option, index) => (
@@ -259,7 +249,6 @@ const Review = () => {
                 </div>
               )}
 
-                         {/* Feedback */}
              {isAnswered && currentQuestion && (
               <div className={`p-4 rounded-xl mb-6 ${
                 selectedAnswer === currentQuestion.correct_answer

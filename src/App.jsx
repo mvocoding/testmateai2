@@ -14,7 +14,6 @@ import Listening from './pages/Listening';
 import Reading from './pages/Reading';
 import Writing from './pages/Writing';
 import Dashboard from './pages/Dashboard';
-// import StudyPlan from './pages/StudyPlan';
 import AskMeAnything from './pages/AskMeAnything';
 import MockTest from './pages/MockTest';
 import Review from './pages/Review';
@@ -68,7 +67,6 @@ function SkillSidebar() {
 
     loadUserData();
 
-    // Refresh user data when localStorage changes
     const handleStorageChange = () => {
       loadUserData();
     };
@@ -77,38 +75,36 @@ function SkillSidebar() {
       loadUserData();
     };
 
-    // Poll for user data changes every 2 seconds as a fallback
     const pollInterval = setInterval(() => {
       const currentUser = getUser();
-      if (currentUser && (!user || currentUser.xp !== user.xp || currentUser.level !== user.level)) {
+      if (
+        currentUser &&
+        (!user ||
+          currentUser.xp !== user.xp ||
+          currentUser.level !== user.level)
+      ) {
         setUser(currentUser);
       }
     }, 2000);
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('userDataUpdated', handleUserDataUpdate);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('userDataUpdated', handleUserDataUpdate);
       clearInterval(pollInterval);
     };
-  }, []); // Empty dependency array - only run on mount
+  }, []);
 
   const level = user?.level || 1;
   const xp = user?.xp || 0;
-  const totalXP = 100; // XP needed for next level
+  const totalXP = 100; 
   const xpPercent = (xp / totalXP) * 100;
 
   const handleLogout = () => {
     navigate('/');
   };
-
-  // const handleRefresh = () => {
-  //   const userData = getUser();
-  //   console.log('Manual refresh - user data:', userData);
-  //   setUser(userData);
-  // };
 
   return (
     <aside className="h-screen w-56 bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl border-r border-white/50 flex flex-col items-center py-2 fixed left-0 top-0 z-40 shadow-2xl">

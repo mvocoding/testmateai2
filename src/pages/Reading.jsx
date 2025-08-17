@@ -177,17 +177,6 @@ const Reading = () => {
     }
   };
 
-  // const prevPassage = () => {
-  //   if (currentPassage > 0) {
-  //     setCurrentPassage(currentPassage - 1);
-  //     setAnswers({});
-  //     setShowResults(false);
-  //     setScore(0);
-  //     setAiFeedback(null);
-  //     setActiveTab('summary');
-  //   }
-  // };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -461,7 +450,6 @@ const Reading = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {aiFeedback.vocabulary_notes?.map(
                                 (vocab, idx) => {
-                                  // Handle different vocabulary data structures
                                   let word, definition;
                                   if (typeof vocab === 'string') {
                                     word = vocab;

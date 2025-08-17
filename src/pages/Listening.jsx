@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import dataService from '../services/dataService';
-import { generateListeningFeedback, saveVocabularyWords, recordPracticeActivity } from '../utils';
+import {
+  generateListeningFeedback,
+  saveVocabularyWords,
+  recordPracticeActivity,
+} from '../utils';
 
 const Listening = () => {
   const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
@@ -12,8 +16,7 @@ const Listening = () => {
   const [aiFeedback, setAiFeedback] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState('transcription');
-  
-  // Removed currentQuestion state to show all questions at once
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [playCount, setPlayCount] = useState(0);
@@ -24,7 +27,7 @@ const Listening = () => {
   const timerRef = useRef(null);
 
   const MAX_PLAYS = 2;
-  const TIME_LIMIT = 300; // 5 minutes per passage
+  const TIME_LIMIT = 300; 
 
   const FEEDBACK_TABS = [
     { key: 'transcription', label: 'Transcription' },
@@ -32,7 +35,6 @@ const Listening = () => {
     { key: 'vocabulary', label: 'Vocabulary' },
   ];
 
-  // Load listening data and voices
   useEffect(() => {
     const loadListeningData = async () => {
       try {
@@ -44,16 +46,14 @@ const Listening = () => {
     };
 
     loadListeningData();
-    
-    // Load speech synthesis voices
+
     const loadVoices = () => {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.getVoices();
       }
     };
-    
+
     loadVoices();
-    // Some browsers need a delay to load voices
     setTimeout(loadVoices, 1000);
   }, []);
 
@@ -63,7 +63,6 @@ const Listening = () => {
         setTimeRemaining((prev) => prev - 1);
       }, 1000);
     } else if (timeRemaining === 0 && isTimerActive) {
-      // Auto-submit when timer reaches zero
       setIsTimerActive(false);
       clearTimeout(timerRef.current);
       const finalScore = calculateScore();
@@ -103,15 +102,17 @@ const Listening = () => {
       }
 
       const utterance = new SpeechSynthesisUtterance(passage.text);
-      utterance.rate = 0.85; // Slightly slower for better comprehension
-      utterance.pitch = 1.1; // Slightly higher pitch for clarity
+      utterance.rate = 0.85;
+      utterance.pitch = 1.1;
       utterance.volume = 1;
-      
-      // Try to use a better voice if available
+
       const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(voice => 
-        voice.lang.includes('en') && 
-        (voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Premium'))
+      const preferredVoice = voices.find(
+        (voice) =>
+          voice.lang.includes('en') &&
+          (voice.name.includes('Google') ||
+            voice.name.includes('Natural') ||
+            voice.name.includes('Premium'))
       );
       if (preferredVoice) {
         utterance.voice = preferredVoice;
@@ -153,7 +154,9 @@ const Listening = () => {
   };
 
   const handleAnswerChange = (questionId, value) => {
-    console.log(`handleAnswerChange: questionId = ${questionId}, value = ${value}, type = ${typeof value}`);
+    console.log(
+      `handleAnswerChange: questionId = ${questionId}, value = ${value}, type = ${typeof value}`
+    );
     setAnswers((prev) => {
       const newAnswers = {
         ...prev,
@@ -178,7 +181,8 @@ const Listening = () => {
       } else if (question.type === 'fill_blank') {
         if (
           userAnswer &&
-          userAnswer.toLowerCase().trim() === (question.answer || question.correct).toLowerCase().trim()
+          userAnswer.toLowerCase().trim() ===
+            (question.answer || question.correct).toLowerCase().trim()
         ) {
           correct++;
         }
@@ -187,7 +191,7 @@ const Listening = () => {
       }
     });
 
-    return Math.round((correct / total) * 9); // Convert to IELTS band scale
+    return Math.round((correct / total) * 9);
   };
 
   const handleSubmit = async () => {
@@ -196,96 +200,125 @@ const Listening = () => {
     const finalScore = calculateScore();
     setScore(finalScore);
     setShowResults(true);
-    
-    // Debug: Log the answers object
+
     console.log('Answers object:', answers);
     console.log('Questions:', questions);
-    
-    // Generate AI feedback
+
     setIsAnalyzing(true);
     try {
-             // Format answers for AI feedback - convert indices to actual answer text
-       const formattedAnswers = {};
-       questions.forEach((question, idx) => {
-         const userAnswer = answers[question.id];
-         console.log(`Question ${question.id}: userAnswer = ${userAnswer}, type = ${typeof userAnswer}`);
-         console.log(`Question options:`, question.options);
-         console.log(`Question type: ${question.type}`);
-         console.log(`Has options: ${!!question.options}`);
-         console.log(`User answer check: ${userAnswer !== undefined && userAnswer !== null}`);
-         
-         if (question.options && userAnswer !== undefined && userAnswer !== null) {
-           formattedAnswers[question.id] = question.options[userAnswer];
-           console.log(`Formatted answer for ${question.id}: ${formattedAnswers[question.id]}`);
-         } else {
-           formattedAnswers[question.id] = userAnswer;
-           console.log(`Using raw answer for ${question.id}: ${userAnswer}`);
-         }
-       });
-       
-       console.log('Formatted answers:', formattedAnswers);
+      const formattedAnswers = {};
+      questions.forEach((question, idx) => {
+        const userAnswer = answers[question.id];
+        console.log(
+          `Question ${
+            question.id
+          }: userAnswer = ${userAnswer}, type = ${typeof userAnswer}`
+        );
+        console.log(`Question options:`, question.options);
+        console.log(`Question type: ${question.type}`);
+        console.log(`Has options: ${!!question.options}`);
+        console.log(
+          `User answer check: ${
+            userAnswer !== undefined && userAnswer !== null
+          }`
+        );
 
-             const feedback = await generateListeningFeedback(
-         passage,
-         questions,
-         formattedAnswers
-       );
-       
-       console.log('AI Feedback received:', feedback);
-       
-       // Fix the AI feedback to use actual correct answers from our data
-       const correctedFeedback = {
-         ...feedback,
-         question_analysis: feedback.question_analysis?.map((analysis, idx) => {
-           const question = questions[idx];
-           const userAnswer = answers[question.id];
-           
-           // Get actual answer text
-           let actualCorrectAnswer, actualStudentAnswer;
-           if (question.options) {
-             actualCorrectAnswer = question.options ? question.options[question.correct] : question.correct;
-             actualStudentAnswer = question.options && userAnswer !== undefined && userAnswer !== null
-               ? question.options[userAnswer] 
-               : 'No answer provided';
-             console.log(`  Actual correct answer: ${actualCorrectAnswer}`);
-             console.log(`  Actual student answer: ${actualStudentAnswer}`);
-           } else {
-             actualCorrectAnswer = question.answer || question.correct;
-             actualStudentAnswer = userAnswer || 'No answer provided';
-           }
-          
-                     // Determine if the answer is actually correct based on our data
-           let isActuallyCorrect = false;
-           if (question.options) {
-             isActuallyCorrect = userAnswer === question.correct;
-           } else if (question.type === 'fill_blank') {
-             const userAnswerText = (userAnswer || '').toString().toLowerCase().trim();
-             const correctAnswer = (question.answer || question.correct).toString().toLowerCase().trim();
-             isActuallyCorrect = userAnswerText === correctAnswer;
-           } else if (question.type === 'true_false') {
-             isActuallyCorrect = userAnswer === question.correct;
-           }
-          
-                     const correctedAnalysis = {
-             ...analysis,
-             correct_answer: actualCorrectAnswer,
-             student_answer: actualStudentAnswer,
-             is_correct: isActuallyCorrect
-           };
-           console.log(`Corrected analysis for question ${idx + 1}:`, correctedAnalysis);
-           return correctedAnalysis;
-         }) || []
-       };
-       
-       console.log('Final corrected feedback:', correctedFeedback);
-      
+        if (
+          question.options &&
+          userAnswer !== undefined &&
+          userAnswer !== null
+        ) {
+          formattedAnswers[question.id] = question.options[userAnswer];
+          console.log(
+            `Formatted answer for ${question.id}: ${
+              formattedAnswers[question.id]
+            }`
+          );
+        } else {
+          formattedAnswers[question.id] = userAnswer;
+          console.log(`Using raw answer for ${question.id}: ${userAnswer}`);
+        }
+      });
+
+      console.log('Formatted answers:', formattedAnswers);
+
+      const feedback = await generateListeningFeedback(
+        passage,
+        questions,
+        formattedAnswers
+      );
+
+      console.log('AI Feedback received:', feedback);
+
+      const correctedFeedback = {
+        ...feedback,
+        question_analysis:
+          feedback.question_analysis?.map((analysis, idx) => {
+            const question = questions[idx];
+            const userAnswer = answers[question.id];
+
+            // Get actual answer text
+            let actualCorrectAnswer, actualStudentAnswer;
+            if (question.options) {
+              actualCorrectAnswer = question.options
+                ? question.options[question.correct]
+                : question.correct;
+              actualStudentAnswer =
+                question.options &&
+                userAnswer !== undefined &&
+                userAnswer !== null
+                  ? question.options[userAnswer]
+                  : 'No answer provided';
+              console.log(`  Actual correct answer: ${actualCorrectAnswer}`);
+              console.log(`  Actual student answer: ${actualStudentAnswer}`);
+            } else {
+              actualCorrectAnswer = question.answer || question.correct;
+              actualStudentAnswer = userAnswer || 'No answer provided';
+            }
+
+            let isActuallyCorrect = false;
+            if (question.options) {
+              isActuallyCorrect = userAnswer === question.correct;
+            } else if (question.type === 'fill_blank') {
+              const userAnswerText = (userAnswer || '')
+                .toString()
+                .toLowerCase()
+                .trim();
+              const correctAnswer = (question.answer || question.correct)
+                .toString()
+                .toLowerCase()
+                .trim();
+              isActuallyCorrect = userAnswerText === correctAnswer;
+            } else if (question.type === 'true_false') {
+              isActuallyCorrect = userAnswer === question.correct;
+            }
+
+            const correctedAnalysis = {
+              ...analysis,
+              correct_answer: actualCorrectAnswer,
+              student_answer: actualStudentAnswer,
+              is_correct: isActuallyCorrect,
+            };
+            console.log(
+              `Corrected analysis for question ${idx + 1}:`,
+              correctedAnalysis
+            );
+            return correctedAnalysis;
+          }) || [],
+      };
+
+      console.log('Final corrected feedback:', correctedFeedback);
+
       setAiFeedback(correctedFeedback);
-      
+
       // Save vocabulary words from the feedback
-      if (feedback.vocabulary_notes && Array.isArray(feedback.vocabulary_notes)) {
-        const words = feedback.vocabulary_notes.map(note => 
-          typeof note === 'string' ? note : note.word || ''
-        ).filter(word => word);
+      if (
+        feedback.vocabulary_notes &&
+        Array.isArray(feedback.vocabulary_notes)
+      ) {
+        const words = feedback.vocabulary_notes
+          .map((note) => (typeof note === 'string' ? note : note.word || ''))
+          .filter((word) => word);
         if (words.length > 0) {
           saveVocabularyWords(words);
         }
@@ -298,7 +331,7 @@ const Listening = () => {
         passage: passage.title,
         questionsAnswered: Object.keys(answers).length,
         totalQuestions: questions.length,
-        feedback: feedback.overall_feedback
+        feedback: feedback.overall_feedback,
       });
     } catch (error) {
       console.error('Error generating AI feedback:', error);
@@ -349,16 +382,15 @@ const Listening = () => {
               <button
                 key={key}
                 onClick={() => {
-                                     setSelectedLevel(key);
-                   setCurrentPassage(0);
-                   // Removed setCurrentQuestion(0) since all questions are shown at once
-                   setAnswers({});
-                   setShowResults(false);
-                   setAiFeedback(null);
-                   setActiveTab('transcription');
-                   setPlayCount(0);
-                   setTimeRemaining(0);
-                   setIsTimerActive(false);
+                  setSelectedLevel(key);
+                  setCurrentPassage(0);
+                  setAnswers({});
+                  setShowResults(false);
+                  setAiFeedback(null);
+                  setActiveTab('transcription');
+                  setPlayCount(0);
+                  setTimeRemaining(0);
+                  setIsTimerActive(false);
                 }}
                 className={`px-4 py-3 rounded-xl font-semibold transition-all duration-200 text-sm ${
                   selectedLevel === key
@@ -388,13 +420,16 @@ const Listening = () => {
             </div>
           </div>
           <div className="flex flex-col items-center gap-4">
-            {/* Audio Player Section */}
             <div className="w-full max-w-md bg-teal-50 rounded-xl p-6 border-2 border-teal-200">
               <div className="text-center mb-4">
-                <h3 className="text-lg font-bold text-teal-800 mb-2">🎧 Audio Player</h3>
-                <p className="text-sm text-teal-600">Listen to the passage and answer the questions below</p>
+                <h3 className="text-lg font-bold text-teal-800 mb-2">
+                  🎧 Audio Player
+                </h3>
+                <p className="text-sm text-teal-600">
+                  Listen to the passage and answer the questions below
+                </p>
               </div>
-              
+
               <div className="flex flex-col items-center gap-3">
                 <div className="flex items-center gap-4">
                   <button
@@ -413,23 +448,27 @@ const Listening = () => {
                     <span role="img" aria-label="audio">
                       {isPlaying ? '⏸️' : '▶️'}
                     </span>
-                    {isLoading ? 'Loading...' : isPlaying ? 'Pause' : 'Play Audio'}
+                    {isLoading
+                      ? 'Loading...'
+                      : isPlaying
+                      ? 'Pause'
+                      : 'Play Audio'}
                   </button>
                 </div>
-                
-                {/* Play Count Display */}
+
                 <div className="text-sm text-teal-700">
                   Plays remaining: {MAX_PLAYS - playCount} of {MAX_PLAYS}
                 </div>
-                
-                {/* Audio Status */}
+
                 {isPlaying && (
                   <div className="flex items-center gap-2 text-teal-600">
                     <div className="animate-pulse">🔊</div>
-                    <span className="text-sm font-medium">Playing audio...</span>
+                    <span className="text-sm font-medium">
+                      Playing audio...
+                    </span>
                   </div>
                 )}
-                
+
                 {!isPlaying && playCount > 0 && (
                   <div className="text-sm text-gray-600">
                     Audio ready to play again
@@ -437,13 +476,11 @@ const Listening = () => {
                 )}
               </div>
             </div>
-            {/* Timer */}
             {isTimerActive && (
               <div className="text-lg font-bold text-red-600">
                 Time remaining: {formatTime(timeRemaining)}
               </div>
             )}
-            
           </div>
           {!showResults ? (
             <form
@@ -513,7 +550,6 @@ const Listening = () => {
             </form>
           ) : (
             <div className="space-y-6 mt-8">
-              {/* Score and Navigation */}
               <div className="text-center space-y-4">
                 <div className="text-2xl font-bold text-green-700">
                   Your Score: Band {score}
@@ -528,7 +564,6 @@ const Listening = () => {
                 )}
               </div>
 
-              {/* AI Analysis Section */}
               {aiFeedback && typeof aiFeedback === 'object' ? (
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
                   <div className="flex mb-4 w-full overflow-x-auto border-b border-blue-200">
@@ -547,67 +582,76 @@ const Listening = () => {
                     ))}
                   </div>
 
-                  
-
-                  {/* Transcription Tab */}
                   {activeTab === 'transcription' && (
                     <div className="space-y-4">
                       <div className="text-lg font-semibold text-blue-800 mb-3">
                         Full Passage Transcription
                       </div>
                       <div className="bg-white rounded-lg p-4 border border-blue-200 text-gray-700 leading-relaxed">
-                        {typeof aiFeedback.transcription === 'string' ? aiFeedback.transcription : JSON.stringify(aiFeedback.transcription)}
+                        {typeof aiFeedback.transcription === 'string'
+                          ? aiFeedback.transcription
+                          : JSON.stringify(aiFeedback.transcription)}
                       </div>
                       <div className="text-sm text-gray-600">
-                        <strong>Tip:</strong> Read through the transcription to see what you might have missed while listening.
+                        <strong>Tip:</strong> Read through the transcription to
+                        see what you might have missed while listening.
                       </div>
                     </div>
                   )}
 
-                  {/* Question Analysis Tab */}
                   {activeTab === 'analysis' && (
                     <div className="space-y-4">
                       <div className="text-lg font-semibold text-blue-800 mb-3">
                         Detailed Question Analysis
                       </div>
-                                                                    {aiFeedback.question_analysis?.map((analysis, idx) => (
-                         <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
-                           <div className="flex items-center gap-2 mb-2">
-                             <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                               analysis.is_correct 
-                                 ? 'bg-green-100 text-green-800' 
-                                 : 'bg-red-100 text-red-800'
-                             }`}>
-                               {analysis.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                             </span>
-                             <span className="font-semibold text-blue-800">
-                               Question {analysis.question_number}
-                             </span>
-                           </div>
-                           <div className="text-sm text-gray-700 mb-2">
-                             <strong>Question:</strong> {analysis.question_text}
-                           </div>
-                                                       <div className="text-sm text-gray-700 mb-2">
-                              <strong>Your Answer:</strong> {analysis.student_answer}
-                            </div>
-                            <div className="text-sm text-gray-700 mb-2">
-                              <strong>Correct Answer:</strong> {analysis.correct_answer}
-                            </div>
-                           <div className="text-sm text-gray-700 mb-2">
-                             <strong>Explanation:</strong> {analysis.explanation}
-                           </div>
-                           <div className="text-sm text-gray-700 mb-2">
-                             <strong>Listening Tip:</strong> {analysis.listening_tips}
-                           </div>
-                           <div className="text-sm text-gray-700">
-                             <strong>Key Vocabulary:</strong> {analysis.key_vocabulary?.join(', ')}
-                           </div>
-                         </div>
-                       ))}
+                      {aiFeedback.question_analysis?.map((analysis, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white rounded-lg p-4 border border-blue-200"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-semibold ${
+                                analysis.is_correct
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {analysis.is_correct
+                                ? '✓ Correct'
+                                : '✗ Incorrect'}
+                            </span>
+                            <span className="font-semibold text-blue-800">
+                              Question {analysis.question_number}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-700 mb-2">
+                            <strong>Question:</strong> {analysis.question_text}
+                          </div>
+                          <div className="text-sm text-gray-700 mb-2">
+                            <strong>Your Answer:</strong>{' '}
+                            {analysis.student_answer}
+                          </div>
+                          <div className="text-sm text-gray-700 mb-2">
+                            <strong>Correct Answer:</strong>{' '}
+                            {analysis.correct_answer}
+                          </div>
+                          <div className="text-sm text-gray-700 mb-2">
+                            <strong>Explanation:</strong> {analysis.explanation}
+                          </div>
+                          <div className="text-sm text-gray-700 mb-2">
+                            <strong>Listening Tip:</strong>{' '}
+                            {analysis.listening_tips}
+                          </div>
+                          <div className="text-sm text-gray-700">
+                            <strong>Key Vocabulary:</strong>{' '}
+                            {analysis.key_vocabulary?.join(', ')}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
 
-                  {/* Vocabulary Tab */}
                   {activeTab === 'vocabulary' && (
                     <div className="space-y-4">
                       <div className="text-lg font-semibold text-blue-800 mb-3">
@@ -615,21 +659,27 @@ const Listening = () => {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {aiFeedback.vocabulary_notes?.map((vocab, idx) => {
-                          // Handle different vocabulary data structures
                           let word, definition;
                           if (typeof vocab === 'string') {
                             word = vocab;
                             definition = 'Definition not available';
                           } else if (vocab && typeof vocab === 'object') {
-                            word = vocab.word || vocab.mistake || 'Unknown word';
-                            definition = vocab.definition || vocab.solution || 'Definition not available';
+                            word =
+                              vocab.word || vocab.mistake || 'Unknown word';
+                            definition =
+                              vocab.definition ||
+                              vocab.solution ||
+                              'Definition not available';
                           } else {
                             word = 'Unknown word';
                             definition = 'Definition not available';
                           }
-                          
+
                           return (
-                            <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
+                            <div
+                              key={idx}
+                              className="bg-white rounded-lg p-4 border border-blue-200"
+                            >
                               <div className="font-semibold text-blue-800 mb-1">
                                 {word}
                               </div>
@@ -642,18 +692,18 @@ const Listening = () => {
                       </div>
                     </div>
                   )}
-
                 </div>
               ) : (
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
                   <div className="text-center text-gray-600">
                     <p>AI feedback is not available at the moment.</p>
-                    <p className="text-sm mt-2">Your score has been calculated successfully.</p>
+                    <p className="text-sm mt-2">
+                      Your score has been calculated successfully.
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* Navigation Buttons */}
               <div className="text-center">
                 {currentPassage < currentPassages.length - 1 ? (
                   <button
@@ -671,7 +721,6 @@ const Listening = () => {
             </div>
           )}
         </div>
-        {/* Sidebar */}
         <div className="w-full md:w-64 flex-shrink-0 mt-8 md:mt-0">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 flex flex-col gap-2 sticky top-24">
             <div className="font-bold text-gray-700 mb-2 text-center">
@@ -681,17 +730,17 @@ const Listening = () => {
               <button
                 key={p.id}
                 onClick={() => {
-                                     setCurrentPassage(idx);
-                   setAnswers({});
-                   setShowResults(false);
-                   setAiFeedback(null);
-                   setActiveTab('transcription');
-                   setPlayCount(0);
-                   setTimeRemaining(0);
-                   setIsTimerActive(false);
-                   if (speechRef.current) {
-                     window.speechSynthesis.cancel();
-                   }
+                  setCurrentPassage(idx);
+                  setAnswers({});
+                  setShowResults(false);
+                  setAiFeedback(null);
+                  setActiveTab('transcription');
+                  setPlayCount(0);
+                  setTimeRemaining(0);
+                  setIsTimerActive(false);
+                  if (speechRef.current) {
+                    window.speechSynthesis.cancel();
+                  }
                 }}
                 className={`w-full text-left px-4 py-2 rounded-lg font-semibold transition-all duration-150 mb-1 ${
                   currentPassage === idx

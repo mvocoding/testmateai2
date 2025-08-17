@@ -16,7 +16,6 @@ const Writing = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState('sample_answer');
 
-  // Load writing data
   useEffect(() => {
     const loadWritingData = async () => {
       try {
@@ -53,7 +52,6 @@ const Writing = () => {
     e.preventDefault();
     setSubmitted(true);
 
-    // Generate AI feedback
     setIsAnalyzing(true);
     try {
       const wordCount = answer.trim().split(/\s+/).length;
@@ -62,10 +60,8 @@ const Writing = () => {
         answer,
         wordCount
       );
-      // Validate feedback structure
       console.log('Received feedback:', feedback);
       
-      // Handle case where feedback might be an array
       let processedFeedback = feedback;
       if (Array.isArray(feedback) && feedback.length > 0) {
         processedFeedback = feedback[0];
@@ -76,7 +72,6 @@ const Writing = () => {
         console.log('Setting AI feedback:', processedFeedback);
         setAiFeedback(processedFeedback);
 
-        // Save vocabulary words from the feedback
         if (
           processedFeedback.vocabulary_words &&
           Array.isArray(processedFeedback.vocabulary_words)
@@ -84,7 +79,6 @@ const Writing = () => {
           saveVocabularyWords(processedFeedback.vocabulary_words);
         }
 
-        // Record practice activity
         const score = processedFeedback.overall_score || 6.0;
         const band = Math.round(score * 2) / 2; // Round to nearest 0.5
         recordPracticeActivity('writing', score, band, {

@@ -26,23 +26,20 @@ const MockTest = () => {
     listening: [],
     speaking: [],
     reading: [],
-    writing: []
+    writing: [],
   });
-  
-  // Test completion and results states
+
   const [isTestCompleted, setIsTestCompleted] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [showResults, setShowResults] = useState(false);
-  
-  // Audio states for listening section
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [playCount, setPlayCount] = useState(0);
   const [speechRef] = useState(useRef(null));
-  
+
   const MAX_PLAYS = 2;
 
-  // Calculate scores for each section
   const calculateSectionScore = (sectionId) => {
     const sectionAnswers = answers[sectionId] || {};
     const sectionQuestions = questions[sectionId] || [];
@@ -51,37 +48,39 @@ const MockTest = () => {
 
     sectionQuestions.forEach((question, index) => {
       if (question.type === 'passage' && question.questions) {
-        // For passage-type questions, check each sub-question
         question.questions.forEach((subQuestion, subIndex) => {
           totalQuestions++;
           const answerKey = `${question.id}-${subIndex}`;
           const userAnswer = sectionAnswers[answerKey];
-          
+
           if (subQuestion.correct !== undefined) {
-            // Multiple choice or true/false
             if (userAnswer === subQuestion.correct) {
               correctAnswers++;
             }
           } else if (subQuestion.answer) {
-            // Short answer or completion
-            if (userAnswer && userAnswer.toString().toLowerCase().trim() === 
-                subQuestion.answer.toString().toLowerCase().trim()) {
+            if (
+              userAnswer &&
+              userAnswer.toString().toLowerCase().trim() ===
+                subQuestion.answer.toString().toLowerCase().trim()
+            ) {
               correctAnswers++;
             }
           }
         });
       } else {
-        // For individual questions
         totalQuestions++;
         const userAnswer = sectionAnswers[question.id];
-        
+
         if (question.correct !== undefined) {
           if (userAnswer === question.correct) {
             correctAnswers++;
           }
         } else if (question.answer) {
-          if (userAnswer && userAnswer.toString().toLowerCase().trim() === 
-              question.answer.toString().toLowerCase().trim()) {
+          if (
+            userAnswer &&
+            userAnswer.toString().toLowerCase().trim() ===
+              question.answer.toString().toLowerCase().trim()
+          ) {
             correctAnswers++;
           }
         }
@@ -91,14 +90,12 @@ const MockTest = () => {
     return totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
   };
 
-  // Calculate overall IELTS band score
   const calculateOverallScore = () => {
     const listeningScore = calculateSectionScore('listening');
     const readingScore = calculateSectionScore('reading');
     const writingScore = calculateSectionScore('writing');
     const speakingScore = calculateSectionScore('speaking');
 
-    // Convert percentage to IELTS band score (simplified)
     const convertToBandScore = (percentage) => {
       if (percentage >= 90) return 9.0;
       if (percentage >= 80) return 8.0;
@@ -116,18 +113,18 @@ const MockTest = () => {
     const writingBand = convertToBandScore(writingScore);
     const speakingBand = convertToBandScore(speakingScore);
 
-    const overallBand = (listeningBand + readingBand + writingBand + speakingBand) / 4;
+    const overallBand =
+      (listeningBand + readingBand + writingBand + speakingBand) / 4;
 
     return {
       listening: { percentage: listeningScore, band: listeningBand },
       reading: { percentage: readingScore, band: readingBand },
       writing: { percentage: writingScore, band: writingBand },
       speaking: { percentage: speakingScore, band: speakingBand },
-      overall: { band: Math.round(overallBand * 2) / 2 } // Round to nearest 0.5
+      overall: { band: Math.round(overallBand * 2) / 2 }, // Round to nearest 0.5
     };
   };
 
-  // Submit test and calculate results
   const submitTest = () => {
     const results = calculateOverallScore();
     setTestResults(results);
@@ -135,100 +132,112 @@ const MockTest = () => {
     setShowResults(true);
   };
 
-  // Generate feedback based on scores
   const generateFeedback = (skill, score) => {
     const band = score.band;
-    // const percentage = score.percentage;
-    
+
     if (band >= 8.0) {
-      return `Excellent performance in ${skill}! Your score of ${band.toFixed(1)} shows mastery of this skill.`;
+      return `Excellent performance in ${skill}! Your score of ${band.toFixed(
+        1
+      )} shows mastery of this skill.`;
     } else if (band >= 7.0) {
-      return `Good performance in ${skill}. Your score of ${band.toFixed(1)} indicates strong proficiency.`;
+      return `Good performance in ${skill}. Your score of ${band.toFixed(
+        1
+      )} indicates strong proficiency.`;
     } else if (band >= 6.0) {
-      return `Satisfactory performance in ${skill}. Your score of ${band.toFixed(1)} shows adequate proficiency.`;
+      return `Satisfactory performance in ${skill}. Your score of ${band.toFixed(
+        1
+      )} shows adequate proficiency.`;
     } else if (band >= 5.0) {
-      return `Limited performance in ${skill}. Your score of ${band.toFixed(1)} suggests you need more practice.`;
+      return `Limited performance in ${skill}. Your score of ${band.toFixed(
+        1
+      )} suggests you need more practice.`;
     } else {
-      return `Poor performance in ${skill}. Your score of ${band.toFixed(1)} indicates significant improvement needed.`;
+      return `Poor performance in ${skill}. Your score of ${band.toFixed(
+        1
+      )} indicates significant improvement needed.`;
     }
   };
 
   // Skill introductions
   const skillIntroductions = {
     listening: {
-      title: "Listening Section",
-      description: "The Listening section tests your ability to understand spoken English in various contexts. You will hear recordings of native English speakers and answer questions based on what you hear.",
-      duration: "30 minutes",
+      title: 'Listening Section',
+      description:
+        'The Listening section tests your ability to understand spoken English in various contexts. You will hear recordings of native English speakers and answer questions based on what you hear.',
+      duration: '30 minutes',
       tips: [
-        "Listen carefully to the audio - you can only hear it once",
-        "Read the questions before the audio starts",
-        "Pay attention to key words and phrases",
-        "Use the time given to review your answers",
-        "Don't leave any questions blank - make an educated guess if needed"
+        'Listen carefully to the audio - you can only hear it once',
+        'Read the questions before the audio starts',
+        'Pay attention to key words and phrases',
+        'Use the time given to review your answers',
+        "Don't leave any questions blank - make an educated guess if needed",
       ],
-      icon: "🎧"
+      icon: '🎧',
     },
     speaking: {
-      title: "Speaking Section",
-      description: "The Speaking section assesses your ability to communicate effectively in English. You will have a conversation with an examiner and discuss various topics.",
-      duration: "15 minutes",
+      title: 'Speaking Section',
+      description:
+        'The Speaking section assesses your ability to communicate effectively in English. You will have a conversation with an examiner and discuss various topics.',
+      duration: '15 minutes',
       tips: [
-        "Speak clearly and at a natural pace",
+        'Speak clearly and at a natural pace',
         "Listen carefully to the examiner's questions",
-        "Give detailed answers with examples",
+        'Give detailed answers with examples',
         "Don't worry about making some mistakes - focus on communication",
-        "Use a variety of vocabulary and grammar structures"
+        'Use a variety of vocabulary and grammar structures',
       ],
-      icon: "🗣️"
+      icon: '🗣️',
     },
     reading: {
-      title: "Reading Section",
-      description: "The Reading section evaluates your ability to understand written English. You will read passages and answer questions to test your comprehension skills.",
-      duration: "60 minutes",
+      title: 'Reading Section',
+      description:
+        'The Reading section evaluates your ability to understand written English. You will read passages and answer questions to test your comprehension skills.',
+      duration: '60 minutes',
       tips: [
-        "Read the questions first to know what to look for",
-        "Skim the passage to get the main idea",
-        "Look for key words in both questions and passages",
+        'Read the questions first to know what to look for',
+        'Skim the passage to get the main idea',
+        'Look for key words in both questions and passages',
         "Manage your time - don't spend too long on one question",
-        "Check your answers before moving to the next section"
+        'Check your answers before moving to the next section',
       ],
-      icon: "📖"
+      icon: '📖',
     },
     writing: {
-      title: "Writing Section",
-      description: "The Writing section tests your ability to write clearly and coherently in English. You will complete two writing tasks with different requirements.",
-      duration: "60 minutes",
+      title: 'Writing Section',
+      description:
+        'The Writing section tests your ability to write clearly and coherently in English. You will complete two writing tasks with different requirements.',
+      duration: '60 minutes',
       tips: [
-        "Plan your essay before you start writing",
-        "Use clear topic sentences and supporting details",
-        "Vary your vocabulary and sentence structures",
-        "Check your grammar and spelling",
-        "Stay within the word limits for each task"
+        'Plan your essay before you start writing',
+        'Use clear topic sentences and supporting details',
+        'Vary your vocabulary and sentence structures',
+        'Check your grammar and spelling',
+        'Stay within the word limits for each task',
       ],
-      icon: "✍️"
-    }
+      icon: '✍️',
+    },
   };
 
-  // Load mock test data and generate random questions
   useEffect(() => {
     const loadTestData = async () => {
       try {
         const mockTest = await dataService.fetchMockTest(1); // Load first mock test
         if (mockTest) {
           setSections(mockTest.sections);
-          
-          // Update time remaining based on loaded sections
+
           const newTimeRemaining = {};
-          mockTest.sections.forEach(section => {
+          mockTest.sections.forEach((section) => {
             const minutes = parseInt(section.time.split(' ')[0]);
             newTimeRemaining[section.id] = minutes * 60;
           });
           setTimeRemaining(newTimeRemaining);
 
-          // Generate random questions for each section
           const generatedQuestions = {};
           for (const section of mockTest.sections) {
-            const sectionQuestions = await dataService.fetchMockTestQuestions(1, section.id);
+            const sectionQuestions = await dataService.fetchMockTestQuestions(
+              1,
+              section.id
+            );
             generatedQuestions[section.id] = sectionQuestions || [];
           }
           setQuestions(generatedQuestions);
@@ -239,16 +248,14 @@ const MockTest = () => {
     };
 
     loadTestData();
-    
-    // Load speech synthesis voices
+
     const loadVoices = () => {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.getVoices();
       }
     };
-    
+
     loadVoices();
-    // Some browsers need a delay to load voices
     setTimeout(loadVoices, 1000);
   }, []);
 
@@ -266,24 +273,23 @@ const MockTest = () => {
   }, [isTestStarted, currentSection, timeRemaining]);
 
   const startTest = () => {
-    // Check if questions are loaded
     if (!questions || Object.keys(questions).length === 0) {
       alert('Questions are still loading. Please wait a moment and try again.');
       return;
     }
-    
-    // Check if there are questions for the first section
+
     const firstSection = sections[0]?.id;
-    if (firstSection && (!questions[firstSection] || questions[firstSection].length === 0)) {
+    if (
+      firstSection &&
+      (!questions[firstSection] || questions[firstSection].length === 0)
+    ) {
       alert('No questions available for the first section. Please try again.');
       return;
     }
-    
+
     setIsTestStarted(true);
     setShowingIntroduction(true);
-    // Clear all answers when starting a new test
     setAnswers({});
-    // Reset audio state when starting test
     setPlayCount(0);
     setIsPlaying(false);
     setIsLoading(false);
@@ -293,19 +299,22 @@ const MockTest = () => {
   };
 
   const startSection = () => {
-    // Check if there are questions for the current section
     const currentQuestions = questions[currentSection];
     if (!currentQuestions || currentQuestions.length === 0) {
-      alert(`No questions available for ${currentSection} section. Please try again.`);
+      alert(
+        `No questions available for ${currentSection} section. Please try again.`
+      );
       return;
     }
-    // Clear answers for the current section to prevent binding issues
     clearSectionAnswers(currentSection);
     setShowingIntroduction(false);
   };
 
   const handleAnswer = (section, questionId, answer) => {
-    console.log(`Setting answer for ${section}, question ${questionId}:`, answer);
+    console.log(
+      `Setting answer for ${section}, question ${questionId}:`,
+      answer
+    );
     setAnswers((prev) => ({
       ...prev,
       [section]: {
@@ -318,18 +327,17 @@ const MockTest = () => {
   const clearSectionAnswers = (section) => {
     setAnswers((prev) => ({
       ...prev,
-      [section]: {}
+      [section]: {},
     }));
   };
 
   const clearCurrentQuestionAnswers = () => {
     if (!questions || !questions[currentSection]) return;
-    
+
     const currentQuestions = questions[currentSection];
     const currentQ = currentQuestions[currentQuestion];
-    
+
     if (currentQ && currentQ.type === 'passage' && currentQ.questions) {
-      // For passage-type questions, clear all sub-question answers
       const newAnswers = { ...answers };
       currentQ.questions.forEach((_, subIndex) => {
         const answerKey = `${currentQ.id}-${subIndex}`;
@@ -339,7 +347,6 @@ const MockTest = () => {
       });
       setAnswers(newAnswers);
     } else if (currentQ) {
-      // For individual questions, clear the specific question answer
       const newAnswers = { ...answers };
       if (newAnswers[currentSection][currentQ.id] !== undefined) {
         delete newAnswers[currentSection][currentQ.id];
@@ -350,13 +357,11 @@ const MockTest = () => {
 
   const nextQuestion = () => {
     if (!questions || !questions[currentSection]) return;
-    
+
     const currentQuestions = questions[currentSection];
     if (currentQuestion < currentQuestions.length - 1) {
-      // Clear answers for the current question before moving to next
       clearCurrentQuestionAnswers();
       setCurrentQuestion((prev) => prev + 1);
-      // Reset audio state for new question
       if (currentSection === 'listening') {
         setPlayCount(0);
         setIsPlaying(false);
@@ -373,9 +378,7 @@ const MockTest = () => {
         setCurrentSection(nextSection);
         setCurrentQuestion(0);
         setShowingIntroduction(true);
-        // Clear answers for the new section to prevent binding issues
         clearSectionAnswers(nextSection);
-        // Reset audio state for new section
         setPlayCount(0);
         setIsPlaying(false);
         setIsLoading(false);
@@ -388,12 +391,10 @@ const MockTest = () => {
 
   const prevQuestion = () => {
     if (!questions) return;
-    
+
     if (currentQuestion > 0) {
-      // Clear answers for the current question before moving to previous
       clearCurrentQuestionAnswers();
       setCurrentQuestion((prev) => prev - 1);
-      // Reset audio state for new question
       if (currentSection === 'listening') {
         setPlayCount(0);
         setIsPlaying(false);
@@ -409,9 +410,7 @@ const MockTest = () => {
         const prevSection = sections[sectionIndex - 1].id;
         setCurrentSection(prevSection);
         setCurrentQuestion(questions[prevSection].length - 1);
-        // Clear answers for the new section to prevent binding issues
         clearSectionAnswers(prevSection);
-        // Reset audio state for new section
         setPlayCount(0);
         setIsPlaying(false);
         setIsLoading(false);
@@ -441,7 +440,11 @@ const MockTest = () => {
     recognition.onend = () => setIsRecording(false);
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      if (questions && questions.speaking && questions.speaking[currentQuestion]) {
+      if (
+        questions &&
+        questions.speaking &&
+        questions.speaking[currentQuestion]
+      ) {
         handleAnswer(
           'speaking',
           questions.speaking[currentQuestion].id,
@@ -471,10 +474,15 @@ const MockTest = () => {
 
     setIsLoading(true);
     const question = questions.listening[currentQuestion];
-    const passageText = question.passageText || question.passage || 'No audio content available.';
-    
+    const passageText =
+      question.passageText || question.passage || 'No audio content available.';
+
     // Check if we have valid text to speak
-    if (!passageText || passageText.trim() === '' || passageText === 'No audio content available.') {
+    if (
+      !passageText ||
+      passageText.trim() === '' ||
+      passageText === 'No audio content available.'
+    ) {
       alert('No audio content available for this question.');
       setIsLoading(false);
       return;
@@ -490,12 +498,15 @@ const MockTest = () => {
       utterance.rate = 0.85; // Slightly slower for better comprehension
       utterance.pitch = 1.1; // Slightly higher pitch for clarity
       utterance.volume = 1;
-      
+
       // Try to use a better voice if available
       const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(voice => 
-        voice.lang.includes('en') && 
-        (voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Premium'))
+      const preferredVoice = voices.find(
+        (voice) =>
+          voice.lang.includes('en') &&
+          (voice.name.includes('Google') ||
+            voice.name.includes('Natural') ||
+            voice.name.includes('Premium'))
       );
       if (preferredVoice) {
         utterance.voice = preferredVoice;
@@ -518,7 +529,7 @@ const MockTest = () => {
           message: event.message,
           elapsedTime: event.elapsedTime,
           charIndex: event.charIndex,
-          name: event.name
+          name: event.name,
         });
         setIsPlaying(false);
         setIsLoading(false);
@@ -559,7 +570,7 @@ const MockTest = () => {
 
   const renderSkillIntroduction = () => {
     const intro = skillIntroductions[currentSection];
-    
+
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-8">
         <div className="max-w-4xl mx-auto">
@@ -621,36 +632,37 @@ const MockTest = () => {
       currentQuestion,
       questions: questions,
       currentSectionQuestions: questions[currentSection],
-      questionCount: questions[currentSection]?.length
+      questionCount: questions[currentSection]?.length,
     });
 
     if (!questions || !questions[currentSection]) {
       return <div className="text-center py-8">Loading questions...</div>;
     }
-    
+
     const currentQuestions = questions[currentSection];
     const question = currentQuestions[currentQuestion];
 
-    // Add null check for question
     if (!question) {
       return (
         <div className="text-center py-8">
-          <div className="text-red-600 font-semibold mb-2">Question not found...</div>
+          <div className="text-red-600 font-semibold mb-2">
+            Question not found...
+          </div>
           <div className="text-sm text-gray-600">
-            Section: {currentSection} | Question Index: {currentQuestion} | Total Questions: {currentQuestions.length}
+            Section: {currentSection} | Question Index: {currentQuestion} |
+            Total Questions: {currentQuestions.length}
           </div>
         </div>
       );
     }
 
-    // Debug: Log the question structure
     console.log('Rendering question:', {
       id: question.id,
       type: question.type,
       question: question.question,
       options: question.options,
       passage: question.passage,
-      passageText: question.passageText
+      passageText: question.passageText,
     });
 
     switch (currentSection) {
@@ -660,10 +672,14 @@ const MockTest = () => {
             {/* Audio Player Section */}
             <div className="bg-teal-50 rounded-xl p-6 border-2 border-teal-200">
               <div className="text-center mb-4">
-                <h3 className="text-lg font-bold text-teal-800 mb-2">🎧 Audio Player</h3>
-                <p className="text-sm text-teal-600">Listen to the passage and answer the question below</p>
+                <h3 className="text-lg font-bold text-teal-800 mb-2">
+                  🎧 Audio Player
+                </h3>
+                <p className="text-sm text-teal-600">
+                  Listen to the passage and answer the question below
+                </p>
               </div>
-              
+
               <div className="flex flex-col items-center gap-3">
                 <div className="flex items-center gap-4">
                   <button
@@ -682,23 +698,29 @@ const MockTest = () => {
                     <span role="img" aria-label="audio">
                       {isPlaying ? '⏸️' : '▶️'}
                     </span>
-                    {isLoading ? 'Loading...' : isPlaying ? 'Pause' : 'Play Audio'}
+                    {isLoading
+                      ? 'Loading...'
+                      : isPlaying
+                      ? 'Pause'
+                      : 'Play Audio'}
                   </button>
                 </div>
-                
+
                 {/* Play Count Display */}
                 <div className="text-sm text-teal-700">
                   Plays remaining: {MAX_PLAYS - playCount} of {MAX_PLAYS}
                 </div>
-                
+
                 {/* Audio Status */}
                 {isPlaying && (
                   <div className="flex items-center gap-2 text-teal-600">
                     <div className="animate-pulse">🔊</div>
-                    <span className="text-sm font-medium">Playing audio...</span>
+                    <span className="text-sm font-medium">
+                      Playing audio...
+                    </span>
                   </div>
                 )}
-                
+
                 {!isPlaying && playCount > 0 && (
                   <div className="text-sm text-gray-600">
                     Audio ready to play again
@@ -708,17 +730,24 @@ const MockTest = () => {
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-lg font-medium">{question.passageTitle || question.question || 'Passage not available'}</h4>
-              
+              <h4 className="text-lg font-medium">
+                {question.passageTitle ||
+                  question.question ||
+                  'Passage not available'}
+              </h4>
+
               {/* Render all questions for this passage */}
               {question.type === 'passage' && question.questions && (
                 <div className="space-y-6">
                   {question.questions.map((subQuestion, subIndex) => (
-                    <div key={`${question.id}-${subIndex}`} className="bg-gray-50 p-4 rounded-lg">
+                    <div
+                      key={`${question.id}-${subIndex}`}
+                      className="bg-gray-50 p-4 rounded-lg"
+                    >
                       <h5 className="font-semibold text-gray-800 mb-3">
                         Question {subIndex + 1}: {subQuestion.question}
                       </h5>
-                      
+
                       {subQuestion.options ? (
                         <div className="space-y-2">
                           {subQuestion.options.map((option, optionIndex) => (
@@ -730,7 +759,11 @@ const MockTest = () => {
                                 type="radio"
                                 name={`listening-${question.id}-${subIndex}`}
                                 value={optionIndex}
-                                checked={answers.listening[`${question.id}-${subIndex}`] === optionIndex}
+                                checked={
+                                  answers.listening[
+                                    `${question.id}-${subIndex}`
+                                  ] === optionIndex
+                                }
                                 onChange={(e) =>
                                   handleAnswer(
                                     'listening',
@@ -744,12 +777,20 @@ const MockTest = () => {
                             </label>
                           ))}
                         </div>
-                      ) : subQuestion.type === 'completion' || subQuestion.type === 'shortAnswer' ? (
+                      ) : subQuestion.type === 'completion' ||
+                        subQuestion.type === 'shortAnswer' ? (
                         <input
                           type="text"
-                          value={answers.listening[`${question.id}-${subIndex}`] || ''}
+                          value={
+                            answers.listening[`${question.id}-${subIndex}`] ||
+                            ''
+                          }
                           onChange={(e) =>
-                            handleAnswer('listening', `${question.id}-${subIndex}`, e.target.value)
+                            handleAnswer(
+                              'listening',
+                              `${question.id}-${subIndex}`,
+                              e.target.value
+                            )
                           }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
                           placeholder="Type your answer here..."
@@ -761,9 +802,17 @@ const MockTest = () => {
                               type="radio"
                               name={`listening-${question.id}-${subIndex}`}
                               value="true"
-                              checked={answers.listening[`${question.id}-${subIndex}`] === true}
+                              checked={
+                                answers.listening[
+                                  `${question.id}-${subIndex}`
+                                ] === true
+                              }
                               onChange={() =>
-                                handleAnswer('listening', `${question.id}-${subIndex}`, true)
+                                handleAnswer(
+                                  'listening',
+                                  `${question.id}-${subIndex}`,
+                                  true
+                                )
                               }
                               className="text-teal-600"
                             />
@@ -774,9 +823,17 @@ const MockTest = () => {
                               type="radio"
                               name={`listening-${question.id}-${subIndex}`}
                               value="false"
-                              checked={answers.listening[`${question.id}-${subIndex}`] === false}
+                              checked={
+                                answers.listening[
+                                  `${question.id}-${subIndex}`
+                                ] === false
+                              }
                               onChange={() =>
-                                handleAnswer('listening', `${question.id}-${subIndex}`, false)
+                                handleAnswer(
+                                  'listening',
+                                  `${question.id}-${subIndex}`,
+                                  false
+                                )
                               }
                               className="text-teal-600"
                             />
@@ -874,12 +931,16 @@ const MockTest = () => {
               <h3 className="text-xl font-semibold mb-4">
                 Speaking Part {question.part || 'Unknown'}
               </h3>
-              <h4 className="text-lg font-medium mb-4">{question.title || 'Speaking Question'}</h4>
+              <h4 className="text-lg font-medium mb-4">
+                {question.title || 'Speaking Question'}
+              </h4>
 
               <div className="space-y-4">
                 <div className="bg-white p-4 rounded-lg">
                   <h5 className="font-medium mb-2">Question:</h5>
-                  <p className="whitespace-pre-line">{question.question || 'Question not available'}</p>
+                  <p className="whitespace-pre-line">
+                    {question.question || 'Question not available'}
+                  </p>
                 </div>
 
                 {question.part === 2 && question.preparationTime && (
@@ -953,67 +1014,100 @@ const MockTest = () => {
                 <div className="bg-white p-4 rounded-lg">
                   <h4 className="font-medium mb-2">Passage:</h4>
                   <p className="text-gray-700 leading-relaxed">
-                    {question.passageText || question.passage || 'Passage not available'}
+                    {question.passageText ||
+                      question.passage ||
+                      'Passage not available'}
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-lg font-medium">{question.passageTitle || question.question || 'Passage not available'}</h4>
-                  
+                  <h4 className="text-lg font-medium">
+                    {question.passageTitle ||
+                      question.question ||
+                      'Passage not available'}
+                  </h4>
+
                   {/* Render all questions for this passage */}
                   {question.type === 'passage' && question.questions && (
                     <div className="space-y-6">
                       {question.questions.map((subQuestion, subIndex) => (
-                        <div key={`${question.id}-${subIndex}`} className="bg-gray-50 p-4 rounded-lg">
+                        <div
+                          key={`${question.id}-${subIndex}`}
+                          className="bg-gray-50 p-4 rounded-lg"
+                        >
                           <h5 className="font-semibold text-gray-800 mb-3">
-                            Question {subIndex + 1}: {subQuestion.text || subQuestion.question}
+                            Question {subIndex + 1}:{' '}
+                            {subQuestion.text || subQuestion.question}
                           </h5>
-                          
+
                           {subQuestion.options ? (
                             <div className="space-y-2">
-                              {subQuestion.options.map((option, optionIndex) => (
-                                <label
-                                  key={optionIndex}
-                                  className="flex items-center space-x-3 cursor-pointer"
-                                >
-                                  <input
-                                    type="radio"
-                                    name={`reading-${question.id}-${subIndex}`}
-                                    value={optionIndex}
-                                    checked={answers.reading[`${question.id}-${subIndex}`] === optionIndex}
-                                    onChange={(e) =>
-                                      handleAnswer(
-                                        'reading',
-                                        `${question.id}-${subIndex}`,
-                                        parseInt(e.target.value)
-                                      )
-                                    }
-                                    className="text-teal-600"
-                                  />
-                                  <span>{option}</span>
-                                </label>
-                              ))}
+                              {subQuestion.options.map(
+                                (option, optionIndex) => (
+                                  <label
+                                    key={optionIndex}
+                                    className="flex items-center space-x-3 cursor-pointer"
+                                  >
+                                    <input
+                                      type="radio"
+                                      name={`reading-${question.id}-${subIndex}`}
+                                      value={optionIndex}
+                                      checked={
+                                        answers.reading[
+                                          `${question.id}-${subIndex}`
+                                        ] === optionIndex
+                                      }
+                                      onChange={(e) =>
+                                        handleAnswer(
+                                          'reading',
+                                          `${question.id}-${subIndex}`,
+                                          parseInt(e.target.value)
+                                        )
+                                      }
+                                      className="text-teal-600"
+                                    />
+                                    <span>{option}</span>
+                                  </label>
+                                )
+                              )}
                             </div>
-                          ) : subQuestion.type === 'completion' || subQuestion.type === 'shortAnswer' ? (
+                          ) : subQuestion.type === 'completion' ||
+                            subQuestion.type === 'shortAnswer' ? (
                             <input
                               type="text"
-                              value={answers.reading[`${question.id}-${subIndex}`] || ''}
+                              value={
+                                answers.reading[`${question.id}-${subIndex}`] ||
+                                ''
+                              }
                               onChange={(e) =>
-                                handleAnswer('reading', `${question.id}-${subIndex}`, e.target.value)
+                                handleAnswer(
+                                  'reading',
+                                  `${question.id}-${subIndex}`,
+                                  e.target.value
+                                )
                               }
                               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
                               placeholder="Type your answer here..."
                             />
-                          ) : subQuestion.type === 'true_false' || subQuestion.type === 'true-false' ? (
+                          ) : subQuestion.type === 'true_false' ||
+                            subQuestion.type === 'true-false' ? (
                             <div className="space-y-2">
                               <label className="flex items-center space-x-3 cursor-pointer">
                                 <input
                                   type="radio"
                                   name={`reading-${question.id}-${subIndex}`}
                                   value="true"
-                                  checked={answers.reading[`${question.id}-${subIndex}`] === true}
+                                  checked={
+                                    answers.reading[
+                                      `${question.id}-${subIndex}`
+                                    ] === true
+                                  }
                                   onChange={() =>
-                                    handleAnswer('reading', `${question.id}-${subIndex}`, true)
+                                    handleAnswer(
+                                      'reading',
+                                      `${question.id}-${subIndex}`,
+                                      true
+                                    )
                                   }
                                   className="text-teal-600"
                                 />
@@ -1024,9 +1118,17 @@ const MockTest = () => {
                                   type="radio"
                                   name={`reading-${question.id}-${subIndex}`}
                                   value="false"
-                                  checked={answers.reading[`${question.id}-${subIndex}`] === false}
+                                  checked={
+                                    answers.reading[
+                                      `${question.id}-${subIndex}`
+                                    ] === false
+                                  }
                                   onChange={() =>
-                                    handleAnswer('reading', `${question.id}-${subIndex}`, false)
+                                    handleAnswer(
+                                      'reading',
+                                      `${question.id}-${subIndex}`,
+                                      false
+                                    )
                                   }
                                   className="text-teal-600"
                                 />
@@ -1042,32 +1144,35 @@ const MockTest = () => {
                   {/* Fallback for individual questions (if not passage type) */}
                   {question.type !== 'passage' && (
                     <>
-                      {question.type === 'multiple-choice' && question.options && (
-                        <div className="space-y-2">
-                          {question.options.map((option, index) => (
-                            <label
-                              key={index}
-                              className="flex items-center space-x-3 cursor-pointer"
-                            >
-                              <input
-                                type="radio"
-                                name={`reading-${question.id}`}
-                                value={index}
-                                checked={answers.reading[question.id] === index}
-                                onChange={(e) =>
-                                  handleAnswer(
-                                    'reading',
-                                    question.id,
-                                    parseInt(e.target.value)
-                                  )
-                                }
-                                className="text-teal-600"
-                              />
-                              <span>{option}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
+                      {question.type === 'multiple-choice' &&
+                        question.options && (
+                          <div className="space-y-2">
+                            {question.options.map((option, index) => (
+                              <label
+                                key={index}
+                                className="flex items-center space-x-3 cursor-pointer"
+                              >
+                                <input
+                                  type="radio"
+                                  name={`reading-${question.id}`}
+                                  value={index}
+                                  checked={
+                                    answers.reading[question.id] === index
+                                  }
+                                  onChange={(e) =>
+                                    handleAnswer(
+                                      'reading',
+                                      question.id,
+                                      parseInt(e.target.value)
+                                    )
+                                  }
+                                  className="text-teal-600"
+                                />
+                                <span>{option}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
 
                       {question.type === 'true-false' && (
                         <div className="space-y-2">
@@ -1111,8 +1216,6 @@ const MockTest = () => {
                           placeholder="Type your answer here..."
                         />
                       )}
-
-
                     </>
                   )}
                 </div>
@@ -1126,32 +1229,45 @@ const MockTest = () => {
           <div className="space-y-6">
             <div className="bg-green-50 p-6 rounded-lg">
               <h3 className="text-xl font-semibold mb-4">
-                Writing {question.type === 'task1' ? 'Task 1: Letter Writing' : 'Task 2: Essay Writing'}
+                Writing{' '}
+                {question.type === 'task1'
+                  ? 'Task 1: Letter Writing'
+                  : 'Task 2: Essay Writing'}
               </h3>
-              <h4 className="text-lg font-medium mb-4">{question.title || 'Writing Task'}</h4>
+              <h4 className="text-lg font-medium mb-4">
+                {question.title || 'Writing Task'}
+              </h4>
 
               <div className="space-y-4">
                 <div className="bg-white p-4 rounded-lg">
                   <h5 className="font-medium mb-2">Question:</h5>
-                  <p className="text-gray-700">{question.question || 'Question not available'}</p>
+                  <p className="text-gray-700">
+                    {question.question || 'Question not available'}
+                  </p>
 
                   {question.type === 'task1' && (
                     <div className="mt-4 p-3 bg-blue-50 rounded">
-                      <h6 className="font-medium text-blue-800 mb-2">Task 1: Letter Writing</h6>
+                      <h6 className="font-medium text-blue-800 mb-2">
+                        Task 1: Letter Writing
+                      </h6>
                       <p className="text-sm text-blue-700">
-                        Write a formal or informal letter based on the situation described above. 
-                        Remember to include appropriate greetings, body paragraphs, and closing.
+                        Write a formal or informal letter based on the situation
+                        described above. Remember to include appropriate
+                        greetings, body paragraphs, and closing.
                         <strong>Time: 20 minutes | Words: 150-200</strong>
                       </p>
                     </div>
                   )}
-                  
+
                   {question.type === 'task2' && (
                     <div className="mt-4 p-3 bg-green-50 rounded">
-                      <h6 className="font-medium text-green-800 mb-2">Task 2: Essay Writing</h6>
+                      <h6 className="font-medium text-green-800 mb-2">
+                        Task 2: Essay Writing
+                      </h6>
                       <p className="text-sm text-green-700">
-                        Write an essay responding to the given topic. Include an introduction, 
-                        body paragraphs with supporting arguments, and a conclusion.
+                        Write an essay responding to the given topic. Include an
+                        introduction, body paragraphs with supporting arguments,
+                        and a conclusion.
                         <strong>Time: 40 minutes | Words: 250-300</strong>
                       </p>
                     </div>
@@ -1251,7 +1367,9 @@ const MockTest = () => {
                     key={section.id}
                     className="bg-white p-6 rounded-lg border border-gray-200"
                   >
-                    <h3 className="text-lg font-semibold mb-2">{section.name}</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      {section.name}
+                    </h3>
                     <p className="text-gray-600 mb-2">{section.time}</p>
                     <p className="text-sm text-gray-500">
                       {section.questions} questions
@@ -1275,10 +1393,9 @@ const MockTest = () => {
                   : 'bg-teal-600 text-white hover:bg-teal-700'
               }`}
             >
-              {!questions || Object.keys(questions).length === 0 
-                ? 'Loading Questions...' 
-                : 'Start Mock Test'
-              }
+              {!questions || Object.keys(questions).length === 0
+                ? 'Loading Questions...'
+                : 'Start Mock Test'}
             </button>
           </div>
         </div>
@@ -1286,7 +1403,6 @@ const MockTest = () => {
     );
   }
 
-  // Show skill introduction if needed
   if (showingIntroduction) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -1356,7 +1472,6 @@ const MockTest = () => {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
           {showResults ? (
@@ -1370,22 +1485,23 @@ const MockTest = () => {
                 </p>
               </div>
 
-              {/* Overall Score */}
               <div className="bg-gradient-to-r from-teal-500 to-blue-600 rounded-xl p-6 mb-8 text-white text-center">
                 <h3 className="text-2xl font-bold mb-2">Overall Band Score</h3>
                 <div className="text-5xl font-bold mb-2">
                   {testResults?.overall.band.toFixed(1)}
                 </div>
                 <p className="text-teal-100">
-                  {testResults?.overall.band >= 7.0 ? 'Excellent!' : 
-                   testResults?.overall.band >= 6.0 ? 'Good!' : 
-                   testResults?.overall.band >= 5.0 ? 'Satisfactory' : 'Needs Improvement'}
+                  {testResults?.overall.band >= 7.0
+                    ? 'Excellent!'
+                    : testResults?.overall.band >= 6.0
+                    ? 'Good!'
+                    : testResults?.overall.band >= 5.0
+                    ? 'Satisfactory'
+                    : 'Needs Improvement'}
                 </p>
               </div>
 
-              {/* Individual Skills */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* Listening */}
                 <div className="bg-white border border-gray-200 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -1405,7 +1521,6 @@ const MockTest = () => {
                   </p>
                 </div>
 
-                {/* Reading */}
                 <div className="bg-white border border-gray-200 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -1425,7 +1540,6 @@ const MockTest = () => {
                   </p>
                 </div>
 
-                {/* Writing */}
                 <div className="bg-white border border-gray-200 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -1466,7 +1580,6 @@ const MockTest = () => {
                 </div>
               </div>
 
-              {/* Recommendations */}
               <div className="bg-gray-50 rounded-xl p-6 mb-8">
                 <h4 className="text-xl font-semibold text-gray-900 mb-4">
                   📋 Recommendations
@@ -1474,33 +1587,37 @@ const MockTest = () => {
                 <div className="space-y-3">
                   {testResults?.listening.band < 6.0 && (
                     <p className="text-gray-700">
-                      • <strong>Listening:</strong> Practice with audio materials, focus on note-taking skills
+                      • <strong>Listening:</strong> Practice with audio
+                      materials, focus on note-taking skills
                     </p>
                   )}
                   {testResults?.reading.band < 6.0 && (
                     <p className="text-gray-700">
-                      • <strong>Reading:</strong> Improve skimming and scanning techniques, expand vocabulary
+                      • <strong>Reading:</strong> Improve skimming and scanning
+                      techniques, expand vocabulary
                     </p>
                   )}
                   {testResults?.writing.band < 6.0 && (
                     <p className="text-gray-700">
-                      • <strong>Writing:</strong> Practice essay structure, work on grammar and coherence
+                      • <strong>Writing:</strong> Practice essay structure, work
+                      on grammar and coherence
                     </p>
                   )}
                   {testResults?.speaking.band < 6.0 && (
                     <p className="text-gray-700">
-                      • <strong>Speaking:</strong> Practice fluency, work on pronunciation and vocabulary
+                      • <strong>Speaking:</strong> Practice fluency, work on
+                      pronunciation and vocabulary
                     </p>
                   )}
                   {testResults?.overall.band >= 6.0 && (
                     <p className="text-green-700 font-semibold">
-                      • Great job! Consider taking more practice tests to maintain your performance.
+                      • Great job! Consider taking more practice tests to
+                      maintain your performance.
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   to="/"
@@ -1535,40 +1652,43 @@ const MockTest = () => {
               {renderQuestion()}
 
               <div className="flex justify-between mt-8">
-            <button
-              onClick={prevQuestion}
-              disabled={
-                !questions ||
-                (currentQuestion === 0 &&
-                sections.findIndex((s) => s.id === currentSection) === 0)
-              }
-              className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
+                <button
+                  onClick={prevQuestion}
+                  disabled={
+                    !questions ||
+                    (currentQuestion === 0 &&
+                      sections.findIndex((s) => s.id === currentSection) === 0)
+                  }
+                  className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
 
-            {(currentQuestion === questions[currentSection]?.length - 1 &&
-             sections.findIndex((s) => s.id === currentSection) === sections.length - 1) ? (
-              <button
-                onClick={submitTest}
-                className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold"
-              >
-                Submit Test
-              </button>
-            ) : (
-              <button
-                onClick={nextQuestion}
-                disabled={
-                  !questions ||
-                  (currentQuestion === questions[currentSection]?.length - 1 &&
-                  sections.findIndex((s) => s.id === currentSection) === sections.length - 1)
-                }
-                className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            )}
-          </div>
+                {currentQuestion === questions[currentSection]?.length - 1 &&
+                sections.findIndex((s) => s.id === currentSection) ===
+                  sections.length - 1 ? (
+                  <button
+                    onClick={submitTest}
+                    className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold"
+                  >
+                    Submit Test
+                  </button>
+                ) : (
+                  <button
+                    onClick={nextQuestion}
+                    disabled={
+                      !questions ||
+                      (currentQuestion ===
+                        questions[currentSection]?.length - 1 &&
+                        sections.findIndex((s) => s.id === currentSection) ===
+                          sections.length - 1)
+                    }
+                    className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>

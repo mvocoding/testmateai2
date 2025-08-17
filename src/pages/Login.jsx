@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-// const level = 'Guest';
-
 const Login = () => {
-  const [step, setStep] = useState('email'); // 'email' or 'otp'
+  const [step, setStep] = useState('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [errors, setErrors] = useState({});
