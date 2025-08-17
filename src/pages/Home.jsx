@@ -9,7 +9,7 @@ const Home = () => {
           Welcome to TestMate AI
         </h1>
         <p className="text-xl md:text-2xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
-          Master IELTS with{' '}
+          Master IELTS with
           <span className="text-teal-600 font-bold">AI-powered</span> learning.
           <br />
           Practice speaking, get instant feedback, and level up your English
@@ -23,7 +23,7 @@ const Home = () => {
               <h2 className="text-lg font-bold text-teal-700 flex items-center gap-2">
                 <span role="img" aria-label="game">
                   🎮
-                </span>{' '}
+                </span>
                 Gamified Features
               </h2>
               <ul className="list-disc list-inside text-gray-700 text-base pl-2">

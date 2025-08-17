@@ -61,14 +61,21 @@ const Writing = () => {
         wordCount
       );
       console.log('Received feedback:', feedback);
-      
+
       let processedFeedback = feedback;
       if (Array.isArray(feedback) && feedback.length > 0) {
         processedFeedback = feedback[0];
-        console.log('Extracted first item from feedback array:', processedFeedback);
+        console.log(
+          'Extracted first item from feedback array:',
+          processedFeedback
+        );
       }
-      
-      if (processedFeedback && typeof processedFeedback === 'object' && processedFeedback.sample_answer) {
+
+      if (
+        processedFeedback &&
+        typeof processedFeedback === 'object' &&
+        processedFeedback.sample_answer
+      ) {
         console.log('Setting AI feedback:', processedFeedback);
         setAiFeedback(processedFeedback);
 
@@ -80,7 +87,7 @@ const Writing = () => {
         }
 
         const score = processedFeedback.overall_score || 6.0;
-        const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+        const band = Math.round(score * 2) / 2;
         recordPracticeActivity('writing', score, band, {
           task: currentPrompts[currentPrompt],
           wordCount: wordCount,
@@ -91,14 +98,15 @@ const Writing = () => {
         setAiFeedback({
           overall_score: 6.0,
           overall_feedback: 'Demo feedback - Your essay shows good structure.',
-          sample_answer: 'This is a sample answer for the writing task. It demonstrates proper structure, vocabulary, and grammar.',
+          sample_answer:
+            'This is a sample answer for the writing task. It demonstrates proper structure, vocabulary, and grammar.',
           vocabulary_words: ['sample', 'vocabulary', 'words'],
           grammatical_range_accuracy: 'Grammar usage is generally correct.',
           detailed_analysis: {
             strengths: ['Good structure'],
             weaknesses: ['Could improve vocabulary'],
-            suggestions: ['Practice more']
-          }
+            suggestions: ['Practice more'],
+          },
         });
       }
     } catch (error) {
@@ -246,8 +254,6 @@ const Writing = () => {
                         </div>
                       </div>
                     )}
-
-                    
                   </div>
                 ) : (
                   <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">

@@ -166,7 +166,7 @@ const Login = () => {
                       <span className="flex items-center gap-2">
                         <span role="img" aria-label="mail">
                           📧
-                        </span>{' '}
+                        </span>
                         Send verification code
                       </span>
                     )}
@@ -217,7 +217,7 @@ const Login = () => {
                       <span className="flex items-center gap-2">
                         <span role="img" aria-label="key">
                           🔑
-                        </span>{' '}
+                        </span>
                         Verify code
                       </span>
                     )}
@@ -225,7 +225,7 @@ const Login = () => {
                 </div>
                 <div className="text-center space-y-2">
                   <p className="text-sm text-gray-600">
-                    Didn't receive the code?{' '}
+                    Didn't receive the code?
                     <button
                       type="button"
                       className="font-medium text-purple-600 hover:text-pink-500"
