@@ -6,13 +6,6 @@ const AskMeAnything = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  // const [studyPlanData, setStudyPlanData] = useState({
-  //   currentScore: '',
-  //   targetScore: '',
-  //   testDate: '',
-  //   hasPreviousTest: false,
-  //   lastTestScore: '',
-  // });
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -23,7 +16,7 @@ const AskMeAnything = () => {
   const inputRef = useRef(null);
   const audioRef = useRef(null);
   const voiceRecognitionRef = useRef(null);
-  
+
   // Refs for state variables to ensure event handlers have latest values
   const isContinuousRecordingRef = useRef(isContinuousRecording);
   const isProcessingResponseRef = useRef(isProcessingResponse);
@@ -37,15 +30,14 @@ const AskMeAnything = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Update refs when state changes
   useEffect(() => {
     isContinuousRecordingRef.current = isContinuousRecording;
   }, [isContinuousRecording]);
-  
+
   useEffect(() => {
     isProcessingResponseRef.current = isProcessingResponse;
   }, [isProcessingResponse]);
-  
+
   useEffect(() => {
     isAudioPlayingRef.current = isAudioPlaying;
   }, [isAudioPlaying]);
@@ -56,7 +48,6 @@ const AskMeAnything = () => {
     }
   }, []);
 
-  // Audio event listeners for voice chat
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -69,16 +60,17 @@ const AskMeAnything = () => {
       console.log('Audio ended - attempting to restart recognition');
       setIsAudioPlaying(false);
       setIsProcessingResponse(false);
-      
-      // Force restart recognition after audio finishes
+
       setTimeout(() => {
         if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
           try {
             console.log('Force restarting speech recognition after audio...');
             voiceRecognitionRef.current.start();
           } catch (error) {
-            console.error('Error restarting speech recognition after audio:', error);
-            // If restart fails, try to create a new recognition instance
+            console.error(
+              'Error restarting speech recognition after audio:',
+              error
+            );
             if (isContinuousRecordingRef.current) {
               console.log('Creating new speech recognition instance...');
               startContinuousVoiceChat();
@@ -87,17 +79,16 @@ const AskMeAnything = () => {
         } else {
           console.log('Cannot restart - conditions not met:', {
             isContinuousRecording: isContinuousRecordingRef.current,
-            hasVoiceRecognition: !!voiceRecognitionRef.current
+            hasVoiceRecognition: !!voiceRecognitionRef.current,
           });
         }
-      }, 1500); // Increased delay to ensure audio is completely finished
+      }, 1500);
     };
 
     const handleAudioError = () => {
       console.log('Audio error - attempting to restart recognition');
       setIsAudioPlaying(false);
       setIsProcessingResponse(false);
-      // Try to restart recognition even if audio fails
       if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
         setTimeout(() => {
           if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
@@ -105,7 +96,10 @@ const AskMeAnything = () => {
               console.log('Restarting speech recognition after audio error...');
               voiceRecognitionRef.current.start();
             } catch (error) {
-              console.error('Error restarting speech recognition after audio error:', error);
+              console.error(
+                'Error restarting speech recognition after audio error:',
+                error
+              );
             }
           }
         }, 1000);
@@ -123,35 +117,36 @@ const AskMeAnything = () => {
     };
   }, [isContinuousRecording, isProcessingResponse]);
 
-  // --- Voice Chat Logic ---
   const startVoiceChat = () => {
     setIsVoiceModalOpen(true);
   };
 
   const startContinuousVoiceChat = () => {
-    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    if (
+      !('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)
+    ) {
       alert('Speech recognition not supported in this browser.');
       return;
     }
-    
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     const recog = new SpeechRecognition();
     recog.lang = 'en-US';
     recog.interimResults = false;
     recog.maxAlternatives = 1;
-    recog.continuous = false; // Changed to false for better control
+    recog.continuous = false;
 
     recog.onstart = () => {
       console.log('Speech recognition started');
       setIsContinuousRecording(true);
       setIsRecording(true);
     };
-    
+
     recog.onend = () => {
       console.log('Speech recognition ended');
       setIsRecording(false);
-      
-      // Always try to restart if we're in continuous mode, regardless of other states
+
       if (isContinuousRecordingRef.current) {
         console.log('Attempting to restart speech recognition...');
         setTimeout(() => {
@@ -161,7 +156,6 @@ const AskMeAnything = () => {
               voiceRecognitionRef.current.start();
             } catch (error) {
               console.error('Error restarting speech recognition:', error);
-              // If restart fails, try to create a new recognition instance
               if (isContinuousRecordingRef.current) {
                 console.log('Creating new speech recognition instance...');
                 startContinuousVoiceChat();
@@ -170,39 +164,43 @@ const AskMeAnything = () => {
           } else {
             console.log('Cannot restart - conditions not met:', {
               isContinuousRecording: isContinuousRecordingRef.current,
-              hasVoiceRecognition: !!voiceRecognitionRef.current
+              hasVoiceRecognition: !!voiceRecognitionRef.current,
             });
           }
-        }, 1000); // Increased delay
+        }, 1000);
       } else {
         console.log('Not in continuous mode, not restarting');
       }
     };
-    
+
     recog.onresult = async (event) => {
       const transcript = event.results[event.results.length - 1][0].transcript;
       console.log('Voice input:', transcript);
-      
-      // Stop recording while processing
+
       setIsProcessingResponse(true);
       if (voiceRecognitionRef.current) {
         voiceRecognitionRef.current.stop();
       }
-      
-      // Send message and get AI response
+
       await handleSendMessage(transcript, true);
-      
-      // Don't restart here - let the audio event listeners handle it
     };
-    
+
     recog.onerror = (event) => {
       console.error('Voice recognition error:', event.error);
       setIsRecording(false);
       if (event.error === 'no-speech') {
-        // For no-speech errors, try to restart after a short delay
-        if (isContinuousRecordingRef.current && !isProcessingResponseRef.current && !isAudioPlayingRef.current) {
+        if (
+          isContinuousRecordingRef.current &&
+          !isProcessingResponseRef.current &&
+          !isAudioPlayingRef.current
+        ) {
           setTimeout(() => {
-            if (isContinuousRecordingRef.current && !isProcessingResponseRef.current && !isAudioPlayingRef.current && voiceRecognitionRef.current) {
+            if (
+              isContinuousRecordingRef.current &&
+              !isProcessingResponseRef.current &&
+              !isAudioPlayingRef.current &&
+              voiceRecognitionRef.current
+            ) {
               try {
                 console.log('Restarting after no-speech error...');
                 voiceRecognitionRef.current.start();
@@ -217,7 +215,7 @@ const AskMeAnything = () => {
         alert('Voice recognition error: ' + event.error);
       }
     };
-    
+
     voiceRecognitionRef.current = recog;
     recog.start();
   };
@@ -244,7 +242,6 @@ const AskMeAnything = () => {
     setIsVoiceModalOpen(false);
   };
 
-  // Cleanup speech recognition when component unmounts
   useEffect(() => {
     return () => {
       if (voiceRecognitionRef.current) {
@@ -254,9 +251,9 @@ const AskMeAnything = () => {
     };
   }, []);
 
-  // Override handleSendMessage to optionally take input and voice flag
   const handleSendMessage = async (overrideInput, isVoice = false) => {
-    const messageToSend = overrideInput !== undefined ? overrideInput : inputMessage;
+    const messageToSend =
+      overrideInput !== undefined ? overrideInput : inputMessage;
     if (!messageToSend.trim() || isLoading) return;
 
     const userMessage = {
@@ -278,15 +275,15 @@ const AskMeAnything = () => {
           'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
       };
 
-      // Check if this is a study plan conversation
-      const isStudyPlanConversation = messages.some(msg => 
-        msg.text.includes("Have you taken an IELTS test before") || 
-        msg.text.includes("What was your last IELTS score") ||
-        msg.text.includes("What is your target band score") ||
-        msg.text.includes("When is your test date")
+      const isStudyPlanConversation = messages.some(
+        (msg) =>
+          msg.text.includes('Have you taken an IELTS test before') ||
+          msg.text.includes('What was your last IELTS score') ||
+          msg.text.includes('What is your target band score') ||
+          msg.text.includes('When is your test date')
       );
 
-      const systemPrompt = isStudyPlanConversation 
+      const systemPrompt = isStudyPlanConversation
         ? `You are an IELTS TestMate AI assistant helping to create a personalized study plan. You are currently in a conversation flow to gather information. Ask one question at a time and be conversational. The flow should be:
 1. Ask if they've taken IELTS before (Yes/No)
 2. If Yes: Ask for their last score
@@ -320,9 +317,9 @@ Never respond with plain text or any other format.`;
               },
             ],
           },
-          ...messages.map(msg => ({
+          ...messages.map((msg) => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
-            content: [{ type: 'text', text: msg.text }]
+            content: [{ type: 'text', text: msg.text }],
           })),
           { role: 'user', content: [{ type: 'text', text: messageToSend }] },
         ],
@@ -342,15 +339,18 @@ Never respond with plain text or any other format.`;
 
       const data = await response.json();
       const rawContent = data.choices[0].message.content;
-      
+
       // Parse the response - should always be JSON with "response" field
       let aiResponse;
       try {
         const parsedContent = JSON.parse(rawContent);
-        aiResponse = parsedContent.response || "I'm sorry, I couldn't process that response properly.";
+        aiResponse =
+          parsedContent.response ||
+          "I'm sorry, I couldn't process that response properly.";
       } catch (error) {
         console.error('Error parsing AI response:', error);
-        aiResponse = "I'm sorry, I encountered an error processing your request. Please try again.";
+        aiResponse =
+          "I'm sorry, I encountered an error processing your request. Please try again.";
       }
 
       const aiMessage = {
@@ -361,36 +361,30 @@ Never respond with plain text or any other format.`;
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-      
-             // Voice: fetch and play audio
-       if (isVoice) {
-         try {
-           const audioUrl = await fetchAudioFromAPI(aiResponse);
-           if (audioRef.current) {
-             audioRef.current.src = audioUrl;
-             setIsAudioPlaying(true);
-             audioRef.current.play();
-           }
-         } catch (err) {
-           console.error('Failed to fetch or play audio:', err);
-           // Don't show alert for continuous voice chat
-           if (!isContinuousRecording) {
-             alert('Failed to fetch or play audio: ' + err.message);
-           }
-           // Reset processing state if audio fails
-           setIsProcessingResponse(false);
-         }
-       } else {
-         // If not voice, reset processing state immediately
-         setIsProcessingResponse(false);
-       }
+      if (isVoice) {
+        try {
+          const audioUrl = await fetchAudioFromAPI(aiResponse);
+          if (audioRef.current) {
+            audioRef.current.src = audioUrl;
+            setIsAudioPlaying(true);
+            audioRef.current.play();
+          }
+        } catch (err) {
+          console.error('Failed to fetch or play audio:', err);
+          if (!isContinuousRecording) {
+            alert('Failed to fetch or play audio: ' + err.message);
+          }
+          setIsProcessingResponse(false);
+        }
+      } else {
+        setIsProcessingResponse(false);
+      }
 
-      // Check if study plan data is complete and generate plan
       const updatedMessages = [...messages, userMessage, aiMessage];
       if (checkIfStudyPlanComplete(updatedMessages)) {
         const data = extractStudyPlanData(updatedMessages);
         setIsGeneratingPlan(true);
-        
+
         try {
           const plan = await generateStudyPlan({
             currentScore: data.currentScore,
@@ -401,7 +395,32 @@ Never respond with plain text or any other format.`;
           if (plan) {
             const planMessage = {
               id: Date.now() + 2,
-              text: `📚 **Your Personalized Study Plan**\n\n**Summary:** ${plan.summary || 'Personalized study plan to help you achieve your target score'}\n\n**Current Score:** ${data.currentScore} | **Target Score:** ${data.targetScore}\n**Study Duration:** ${plan.weeks || '8'} weeks\n\n**Key Recommendations:**\n${plan.recommendations?.map(rec => `• ${rec}`).join('\n') || '• Practice regularly with focused exercises\n• Review your weak areas consistently\n• Take mock tests to track progress\n• Seek feedback on your performance'}\n\n**Focus Areas:**\n${plan.focus_areas?.map(area => `• ${area.skill}: ${area.reason}`).join('\n') || '• Listening: Improve comprehension skills\n• Reading: Enhance speed and accuracy\n• Writing: Develop clear structure and vocabulary\n• Speaking: Build fluency and confidence'}\n\n**Weekly Schedule:**\n${plan.weekly_schedule?.map(week => `Week ${week.week}: ${week.focus} - ${week.tasks?.join(', ')}`).join('\n') || 'Week 1: Foundation - Review basics, assess current level\nWeek 2: Listening Focus - Practice with various accents\nWeek 3: Reading Focus - Improve skimming and scanning\nWeek 4: Writing Focus - Essay structure and vocabulary'}`,
+              text: `📚 **Your Personalized Study Plan**\n\n**Summary:** ${
+                plan.summary ||
+                'Personalized study plan to help you achieve your target score'
+              }\n\n**Current Score:** ${
+                data.currentScore
+              } | **Target Score:** ${data.targetScore}\n**Study Duration:** ${
+                plan.weeks || '8'
+              } weeks\n\n**Key Recommendations:**\n${
+                plan.recommendations?.map((rec) => `• ${rec}`).join('\n') ||
+                '• Practice regularly with focused exercises\n• Review your weak areas consistently\n• Take mock tests to track progress\n• Seek feedback on your performance'
+              }\n\n**Focus Areas:**\n${
+                plan.focus_areas
+                  ?.map((area) => `• ${area.skill}: ${area.reason}`)
+                  .join('\n') ||
+                '• Listening: Improve comprehension skills\n• Reading: Enhance speed and accuracy\n• Writing: Develop clear structure and vocabulary\n• Speaking: Build fluency and confidence'
+              }\n\n**Weekly Schedule:**\n${
+                plan.weekly_schedule
+                  ?.map(
+                    (week) =>
+                      `Week ${week.week}: ${week.focus} - ${week.tasks?.join(
+                        ', '
+                      )}`
+                  )
+                  .join('\n') ||
+                'Week 1: Foundation - Review basics, assess current level\nWeek 2: Listening Focus - Practice with various accents\nWeek 3: Reading Focus - Improve skimming and scanning\nWeek 4: Writing Focus - Essay structure and vocabulary'
+              }`,
               sender: 'ai',
               timestamp: new Date().toLocaleTimeString(),
             };
@@ -453,13 +472,15 @@ Never respond with plain text or any other format.`;
       const msg = messages[i];
       if (msg.sender === 'user') {
         const text = msg.text.toLowerCase();
-        
-        // Check for previous test response
-        if (text.includes('yes') && i > 0 && messages[i-1].text.includes('Have you taken an IELTS test before')) {
+
+        if (
+          text.includes('yes') &&
+          i > 0 &&
+          messages[i - 1].text.includes('Have you taken an IELTS test before')
+        ) {
           data.hasPreviousTest = true;
         }
-        
-        // Extract scores (look for numbers like 6.5, 7.0, etc.)
+
         const scoreMatch = text.match(/(\d+\.?\d*)/);
         if (scoreMatch) {
           const score = parseFloat(scoreMatch[1]);
@@ -473,15 +494,16 @@ Never respond with plain text or any other format.`;
             }
           }
         }
-        
-        // Extract date (look for date patterns)
-        const dateMatch = text.match(/(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})|(\d{4}-\d{2}-\d{2})/);
+
+        const dateMatch = text.match(
+          /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})|(\d{4}-\d{2}-\d{2})/
+        );
         if (dateMatch && !data.testDate) {
           data.testDate = dateMatch[0];
         }
       }
     }
-    
+
     return data;
   };
 
@@ -490,29 +512,32 @@ Never respond with plain text or any other format.`;
     return data.currentScore && data.targetScore && data.testDate;
   };
 
-  // Fetch audio from our proxy server
-  const fetchAudioFromAPI = async (text, rate = "100%", voice_id = "6889b660662160e2caad5e3f") => {
-    const api_url = "http://localhost:3001/api/audio";
-    
+  const fetchAudioFromAPI = async (
+    text,
+    rate = '100%',
+    voice_id = '6889b660662160e2caad5e3f'
+  ) => {
+    const api_url = 'http://localhost:3001/api/audio';
+
     try {
       const response = await fetch(api_url, {
         method: 'POST',
         headers: {
-          "content-type": "application/json",
+          'content-type': 'application/json',
         },
         body: JSON.stringify({
           text,
           rate,
-          voice_id
+          voice_id,
         }),
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.audioUrl) {
         return result.audioUrl;
       } else {
@@ -589,8 +614,18 @@ Never respond with plain text or any other format.`;
                   onClick={startStudyPlanConversation}
                   className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                   Create Study Plan
                 </button>
@@ -702,23 +737,43 @@ Never respond with plain text or any other format.`;
         <div className="border-t border-gray-200 bg-white px-6 py-4">
           <div className="mx-auto">
             <div className="flex gap-3">
-                             <button
-                 onClick={startVoiceChat}
-                 className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
-                 title="Start Voice Chat"
-               >
-                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                 </svg>
-                 Voice Chat
-               </button>
+              <button
+                onClick={startVoiceChat}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+                title="Start Voice Chat"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                  />
+                </svg>
+                Voice Chat
+              </button>
               <button
                 onClick={startStudyPlanConversation}
                 className="bg-teal-100 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-200 transition-colors flex items-center gap-2 text-sm"
                 title="Create Study Plan"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
                 Study Plan
               </button>
@@ -755,110 +810,161 @@ Never respond with plain text or any other format.`;
               </div>
             </div>
           </div>
-                     {/* Audio element for playback */}
-           <audio ref={audioRef} controls style={{ display: 'none' }} />
-         </div>
-       </div>
+          <audio ref={audioRef} controls style={{ display: 'none' }} />
+        </div>
+      </div>
 
-       {/* Voice Chat Modal */}
-       {isVoiceModalOpen && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-           <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 relative">
-             {/* Close button */}
-             <button
-               onClick={closeVoiceModal}
-               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-             >
-               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-               </svg>
-             </button>
+      {isVoiceModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 relative">
+            <button
+              onClick={closeVoiceModal}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
 
-             <div className="text-center">
-               <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                 <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                 </svg>
-               </div>
+            <div className="text-center">
+              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg
+                  className="w-10 h-10 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                  />
+                </svg>
+              </div>
 
-               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                 Voice Chat
-               </h2>
-               
-                               <p className="text-gray-600 mb-8">
-                  {isContinuousRecording 
-                    ? isProcessingResponse 
-                      ? "Processing your message and generating response..."
-                      : isAudioPlaying
-                        ? "Playing AI response... Please wait."
-                        : "I'm listening... Speak naturally and I'll respond by voice."
-                    : "Click the button below to start a continuous voice conversation."
-                  }
-                </p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Voice Chat
+              </h2>
 
-               <div className="space-y-4">
-                 {!isContinuousRecording ? (
-                   <button
-                     onClick={startContinuousVoiceChat}
-                     className="bg-purple-600 text-white px-8 py-4 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center gap-3 w-full"
-                   >
-                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                     </svg>
-                     Start Voice Chat
-                   </button>
-                 ) : (
-                   <div className="space-y-4">
-                     <div className="flex items-center justify-center">
-                       <div className={`w-16 h-16 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-gray-300'}`}>
-                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                         </svg>
-                       </div>
-                     </div>
-                     
-                                           <p className="text-sm text-gray-500">
-                        {isProcessingResponse ? 'Processing response...' : isAudioPlaying ? 'Playing AI response...' : isRecording ? 'Listening...' : 'Ready...'}
-                      </p>
-                     
-                                           <div className="flex gap-2">
-                        <button
-                          onClick={stopContinuousVoiceChat}
-                          className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
+              <p className="text-gray-600 mb-8">
+                {isContinuousRecording
+                  ? isProcessingResponse
+                    ? 'Processing your message and generating response...'
+                    : isAudioPlaying
+                    ? 'Playing AI response... Please wait.'
+                    : "I'm listening... Speak naturally and I'll respond by voice."
+                  : 'Click the button below to start a continuous voice conversation.'}
+              </p>
+
+              <div className="space-y-4">
+                {!isContinuousRecording ? (
+                  <button
+                    onClick={startContinuousVoiceChat}
+                    className="bg-purple-600 text-white px-8 py-4 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center gap-3 w-full"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                      />
+                    </svg>
+                    Start Voice Chat
+                  </button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center">
+                      <div
+                        className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                          isRecording
+                            ? 'bg-red-500 animate-pulse'
+                            : 'bg-gray-300'
+                        }`}
+                      >
+                        <svg
+                          className="w-8 h-8 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
                         >
-                          Stop Recording
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (voiceRecognitionRef.current && isContinuousRecordingRef.current) {
-                              try {
-                                console.log('Manual restart...');
-                                voiceRecognitionRef.current.start();
-                              } catch (error) {
-                                console.error('Manual restart failed:', error);
-                              }
-                            }
-                          }}
-                          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                          Restart
-                        </button>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                          />
+                        </svg>
                       </div>
-                   </div>
-                 )}
-               </div>
+                    </div>
 
-               <div className="mt-6 text-xs text-gray-500">
-                 <p>• Speak clearly and naturally</p>
-                 <p>• I'll respond with voice after each message</p>
-                 <p>• Click "Stop Recording" to pause</p>
-               </div>
-             </div>
-           </div>
-         </div>
-       )}
-     </div>
-   );
- };
+                    <p className="text-sm text-gray-500">
+                      {isProcessingResponse
+                        ? 'Processing response...'
+                        : isAudioPlaying
+                        ? 'Playing AI response...'
+                        : isRecording
+                        ? 'Listening...'
+                        : 'Ready...'}
+                    </p>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={stopContinuousVoiceChat}
+                        className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        Stop Recording
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (
+                            voiceRecognitionRef.current &&
+                            isContinuousRecordingRef.current
+                          ) {
+                            try {
+                              console.log('Manual restart...');
+                              voiceRecognitionRef.current.start();
+                            } catch (error) {
+                              console.error('Manual restart failed:', error);
+                            }
+                          }
+                        }}
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Restart
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 text-xs text-gray-500">
+                <p>• Speak clearly and naturally</p>
+                <p>• I'll respond with voice after each message</p>
+                <p>• Click "Stop Recording" to pause</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default AskMeAnything;

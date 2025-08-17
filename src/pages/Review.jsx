@@ -27,8 +27,6 @@ const Review = () => {
       return;
     }
 
-    console.log('Starting quiz with vocabulary words:', vocabularyWords);
-
     setIsLoading(true);
     try {
       const quiz = await generateVocabularyQuiz(vocabularyWords);
@@ -85,9 +83,6 @@ const Review = () => {
   };
 
   const currentQuestion = currentQuiz?.questions?.[currentQuestionIndex];
-  console.log('Current quiz:', currentQuiz);
-  console.log('Current question index:', currentQuestionIndex);
-  console.log('Current question:', currentQuestion);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
