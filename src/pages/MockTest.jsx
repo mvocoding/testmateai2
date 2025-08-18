@@ -12,10 +12,10 @@ const MockTest = () => {
     writing: {},
   });
   const [timeRemaining, setTimeRemaining] = useState({
-    listening: 30 * 60, // 30 minutes
-    speaking: 15 * 60, // 15 minutes
-    reading: 60 * 60, // 60 minutes
-    writing: 60 * 60, // 60 minutes
+    listening: 30 * 60,
+    speaking: 15 * 60,
+    reading: 60 * 60,
+    writing: 60 * 60,
   });
   const [isTestStarted, setIsTestStarted] = useState(false);
   const [showingIntroduction, setShowingIntroduction] = useState(false);
@@ -121,7 +121,7 @@ const MockTest = () => {
       reading: { percentage: readingScore, band: readingBand },
       writing: { percentage: writingScore, band: writingBand },
       speaking: { percentage: speakingScore, band: speakingBand },
-      overall: { band: Math.round(overallBand * 2) / 2 }, // Round to nearest 0.5
+      overall: { band: Math.round(overallBand * 2) / 2 },
     };
   };
 
@@ -404,7 +404,6 @@ const MockTest = () => {
         }
       }
     } else {
-      // Move to previous section
       const sectionIndex = sections.findIndex((s) => s.id === currentSection);
       if (sectionIndex > 0) {
         const prevSection = sections[sectionIndex - 1].id;
@@ -465,7 +464,6 @@ const MockTest = () => {
     setIsRecording(false);
   };
 
-  // Audio functions for listening section
   const startListening = () => {
     if (playCount >= MAX_PLAYS) {
       alert(`You can only play the audio ${MAX_PLAYS} times.`);
@@ -477,7 +475,6 @@ const MockTest = () => {
     const passageText =
       question.passageText || question.passage || 'No audio content available.';
 
-    // Check if we have valid text to speak
     if (
       !passageText ||
       passageText.trim() === '' ||
@@ -495,11 +492,10 @@ const MockTest = () => {
 
       console.log('Creating speech utterance with text:', passageText);
       const utterance = new SpeechSynthesisUtterance(passageText);
-      utterance.rate = 0.85; // Slightly slower for better comprehension
-      utterance.pitch = 1.1; // Slightly higher pitch for clarity
+      utterance.rate = 0.85;
+      utterance.pitch = 1.1;
       utterance.volume = 1;
 
-      // Try to use a better voice if available
       const voices = window.speechSynthesis.getVoices();
       const preferredVoice = voices.find(
         (voice) =>
@@ -669,7 +665,6 @@ const MockTest = () => {
       case 'listening':
         return (
           <div className="space-y-6">
-            {/* Audio Player Section */}
             <div className="bg-teal-50 rounded-xl p-6 border-2 border-teal-200">
               <div className="text-center mb-4">
                 <h3 className="text-lg font-bold text-teal-800 mb-2">

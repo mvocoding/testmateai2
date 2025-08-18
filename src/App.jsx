@@ -18,8 +18,7 @@ import AskMeAnything from './pages/AskMeAnything';
 import MockTest from './pages/MockTest';
 import Review from './pages/Review';
 import { AskMeButton } from './components/AskMeButton';
-import { getUser } from './services/dataService';
-import './App.css';
+import { getUser, logout } from './services/dataService';
 
 const skills = [
   { name: 'Speaking', path: '/speaking', color: 'from-blue-400 to-cyan-400' },
@@ -60,40 +59,23 @@ function SkillSidebar() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const loadUserData = () => {
-      const userData = getUser();
-      setUser(userData);
+    let mounted = true;
+    const loadUserData = async () => {
+      const userData = await getUser();
+      if (mounted) setUser(userData);
     };
 
     loadUserData();
-
-    const handleStorageChange = () => {
-      loadUserData();
-    };
 
     const handleUserDataUpdate = () => {
       loadUserData();
     };
 
-    const pollInterval = setInterval(() => {
-      const currentUser = getUser();
-      if (
-        currentUser &&
-        (!user ||
-          currentUser.xp !== user.xp ||
-          currentUser.level !== user.level)
-      ) {
-        setUser(currentUser);
-      }
-    }, 2000);
-
-    window.addEventListener('storage', handleStorageChange);
     window.addEventListener('userDataUpdated', handleUserDataUpdate);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      mounted = false;
       window.removeEventListener('userDataUpdated', handleUserDataUpdate);
-      clearInterval(pollInterval);
     };
   }, []);
 
@@ -102,20 +84,31 @@ function SkillSidebar() {
   const totalXP = 100;
   const xpPercent = (xp / totalXP) * 100;
 
-  const handleLogout = () => {
-    navigate('/');
+  const shortName = (fullName) => {
+    if (!fullName || typeof fullName !== 'string') return 'student';
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'student';
+    if (parts.length === 1) return parts[0].toUpperCase();
+    const firstInitial = parts[0][0]?.toUpperCase?.() || '';
+    const lastName = parts[parts.length - 1]?.toUpperCase?.() || '';
+    const value = `${firstInitial}.${lastName}`.trim();
+    return value || 'student';
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate('/');
+    }
   };
 
   return (
     <aside className="h-screen w-56 bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-xl border-r border-white/50 flex flex-col items-center py-2 fixed left-0 top-0 z-40 shadow-2xl">
-      <div className="mb-2  text-2xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent tracking-tight">
-        {user?.name || 'Student'}
-      </div>
-
       <div className="w-full p-2 ">
         <div className="flex items-center gap-3 mb-2">
           <span className="m-auto inline-block bg-purple-600 text-white text-base font-bold px-4 py-1 rounded-full shadow">
-            🏅 Level {level}
+            🏅 {shortName(user?.name.toUpperCase())}
           </span>
           <span
             onClick={handleLogout}
@@ -123,12 +116,6 @@ function SkillSidebar() {
           >
             🔚
           </span>
-        </div>
-        <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
-          <div
-            className="absolute left-0 top-0 h-3 bg-gradient-to-r from-pink-400 to-purple-500 transition-all duration-700"
-            style={{ width: `${xpPercent}%` }}
-          ></div>
         </div>
       </div>
       <div className="w-full p-2">

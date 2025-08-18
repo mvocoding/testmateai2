@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Spin } from '../components/Spin';
+import { login, verifyOTP } from '../services/dataService';
 
 const Login = () => {
   const [step, setStep] = useState('email');
@@ -64,11 +65,16 @@ const Login = () => {
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await login(email);
       setStep('otp');
       setErrors({});
-    }, 1500);
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      setErrors({ email: 'Failed to send verification code. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleVerifyOtp = async (e) => {
@@ -77,10 +83,16 @@ const Login = () => {
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const otpString = otp.join('');
+      await verifyOTP(email, otpString);
       navigate('/dashboard');
-    }, 1500);
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      setErrors({ otp: 'Invalid verification code. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackToEmail = () => {

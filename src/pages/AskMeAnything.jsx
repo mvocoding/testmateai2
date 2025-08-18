@@ -17,7 +17,6 @@ const AskMeAnything = () => {
   const audioRef = useRef(null);
   const voiceRecognitionRef = useRef(null);
 
-  // Refs for state variables to ensure event handlers have latest values
   const isContinuousRecordingRef = useRef(isContinuousRecording);
   const isProcessingResponseRef = useRef(isProcessingResponse);
   const isAudioPlayingRef = useRef(isAudioPlaying);
@@ -57,30 +56,19 @@ const AskMeAnything = () => {
     };
 
     const handleAudioEnd = () => {
-      console.log('Audio ended - attempting to restart recognition');
       setIsAudioPlaying(false);
       setIsProcessingResponse(false);
 
       setTimeout(() => {
         if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
           try {
-            console.log('Force restarting speech recognition after audio...');
             voiceRecognitionRef.current.start();
           } catch (error) {
-            console.error(
-              'Error restarting speech recognition after audio:',
-              error
-            );
             if (isContinuousRecordingRef.current) {
-              console.log('Creating new speech recognition instance...');
               startContinuousVoiceChat();
             }
           }
         } else {
-          console.log('Cannot restart - conditions not met:', {
-            isContinuousRecording: isContinuousRecordingRef.current,
-            hasVoiceRecognition: !!voiceRecognitionRef.current,
-          });
         }
       }, 1500);
     };
@@ -93,14 +81,8 @@ const AskMeAnything = () => {
         setTimeout(() => {
           if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
             try {
-              console.log('Restarting speech recognition after audio error...');
               voiceRecognitionRef.current.start();
-            } catch (error) {
-              console.error(
-                'Error restarting speech recognition after audio error:',
-                error
-              );
-            }
+            } catch (error) {}
           }
         }, 1000);
       }
@@ -152,12 +134,9 @@ const AskMeAnything = () => {
         setTimeout(() => {
           if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
             try {
-              console.log('Restarting speech recognition...');
               voiceRecognitionRef.current.start();
             } catch (error) {
-              console.error('Error restarting speech recognition:', error);
               if (isContinuousRecordingRef.current) {
-                console.log('Creating new speech recognition instance...');
                 startContinuousVoiceChat();
               }
             }
@@ -169,13 +148,11 @@ const AskMeAnything = () => {
           }
         }, 1000);
       } else {
-        console.log('Not in continuous mode, not restarting');
       }
     };
 
     recog.onresult = async (event) => {
       const transcript = event.results[event.results.length - 1][0].transcript;
-      console.log('Voice input:', transcript);
 
       setIsProcessingResponse(true);
       if (voiceRecognitionRef.current) {
@@ -186,7 +163,6 @@ const AskMeAnything = () => {
     };
 
     recog.onerror = (event) => {
-      console.error('Voice recognition error:', event.error);
       setIsRecording(false);
       if (event.error === 'no-speech') {
         if (
@@ -270,9 +246,6 @@ const AskMeAnything = () => {
     try {
       const headers = {
         'content-type': 'application/json',
-        authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-        'user-agent':
-          'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
       };
 
       const isStudyPlanConversation = messages.some(
@@ -305,53 +278,24 @@ IMPORTANT: You must ALWAYS respond with a JSON object in this exact format:
 
 Never respond with plain text or any other format.`;
 
-      const payload = {
-        temperature: 0,
-        messages: [
-          {
-            role: 'system',
-            content: [
-              {
-                type: 'text',
-                text: systemPrompt,
-              },
-            ],
-          },
-          ...messages.map((msg) => ({
-            role: msg.sender === 'user' ? 'user' : 'assistant',
-            content: [{ type: 'text', text: msg.text }],
-          })),
-          { role: 'user', content: [{ type: 'text', text: messageToSend }] },
-        ],
-        model: 'vertex_ai/gemini-2.0-flash-001',
-        response_format: { type: 'json_object' },
-      };
+      const payload = { prompt: `${systemPrompt}\n\nUser: ${messageToSend}` };
 
-      const response = await fetch(process.env.REACT_APP_API_URL, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        'https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text',
+        {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('API request failed');
       }
 
       const data = await response.json();
-      const rawContent = data.choices[0].message.content;
-
-      // Parse the response - should always be JSON with "response" field
-      let aiResponse;
-      try {
-        const parsedContent = JSON.parse(rawContent);
-        aiResponse =
-          parsedContent.response ||
-          "I'm sorry, I couldn't process that response properly.";
-      } catch (error) {
-        console.error('Error parsing AI response:', error);
-        aiResponse =
-          "I'm sorry, I encountered an error processing your request. Please try again.";
-      }
+      const aiResponse =
+        data?.data?.response || "I'm sorry, I couldn't process that response.";
 
       const aiMessage = {
         id: Date.now() + 1,

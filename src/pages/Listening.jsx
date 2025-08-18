@@ -83,9 +83,12 @@ const Listening = () => {
     );
   }
 
-  const LISTENING_LEVELS = listeningData;
-  const currentLevel = LISTENING_LEVELS[selectedLevel];
-  const currentPassages = currentLevel.passages;
+  // Handle the API data structure
+  const LISTENING_LEVELS = listeningData?.passages || [];
+  // Filter passages based on selected question type
+  const currentPassages = LISTENING_LEVELS.filter(passage => 
+    passage.questionType === selectedLevel
+  );
 
   const startListening = () => {
     if (playCount >= MAX_PLAYS) {
@@ -95,6 +98,12 @@ const Listening = () => {
 
     setIsLoading(true);
     const passage = currentPassages[currentPassage];
+
+    if (!passage || !passage.text) {
+      alert('No audio text available for this passage.');
+      setIsLoading(false);
+      return;
+    }
 
     if ('speechSynthesis' in window) {
       if (speechRef.current) {
@@ -169,6 +178,8 @@ const Listening = () => {
 
   const calculateScore = () => {
     const passage = currentPassages[currentPassage];
+    if (!passage || !passage.questions) return 0;
+    
     let correct = 0;
     let total = passage.questions.length;
 
@@ -320,14 +331,15 @@ const Listening = () => {
           .map((note) => (typeof note === 'string' ? note : note.word || ''))
           .filter((word) => word);
         if (words.length > 0) {
-          saveVocabularyWords(words);
+          await saveVocabularyWords(words);
+          window.dispatchEvent(new CustomEvent('userDataUpdated'));
         }
       }
 
       // Record practice activity
       const score = feedback.overall_score || 6.0;
       const band = Math.round(score * 2) / 2; // Round to nearest 0.5
-      recordPracticeActivity('listening', score, band, {
+      await recordPracticeActivity('listening', score, band, {
         passage: passage.title,
         questionsAnswered: Object.keys(answers).length,
         totalQuestions: questions.length,
@@ -365,8 +377,36 @@ const Listening = () => {
   };
 
   const passage = currentPassages[currentPassage];
-  const questions = passage.questions;
+  const questions = passage?.questions || [];
+  
+  // Safety check for passage
+  if (!passage) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-700 mb-4">
+            Passage not found
+          </div>
+          <p className="text-gray-600">Please try selecting a different passage.</p>
+        </div>
+      </div>
+    );
+  }
   // Removed single question selection
+
+  // If no passages found for selected type, show message
+  if (currentPassages.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-700 mb-4">
+            No passages available for this question type
+          </div>
+          <p className="text-gray-600">Please select a different question type.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">
@@ -378,11 +418,11 @@ const Listening = () => {
             </h1>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {Object.entries(LISTENING_LEVELS).map(([key, level]) => (
+            {listeningData?.questionTypes?.map((type, index) => (
               <button
-                key={key}
+                key={type.type}
                 onClick={() => {
-                  setSelectedLevel(key);
+                  setSelectedLevel(type.type);
                   setCurrentPassage(0);
                   setAnswers({});
                   setShowResults(false);
@@ -393,16 +433,20 @@ const Listening = () => {
                   setIsTimerActive(false);
                 }}
                 className={`px-4 py-3 rounded-xl font-semibold transition-all duration-200 text-sm ${
-                  selectedLevel === key
+                  selectedLevel === type.type
                     ? 'bg-teal-600 text-white shadow-lg'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 <div className="text-center">
-                  <div className="font-bold">{level.name}</div>
+                  <div className="font-bold">{type.name}</div>
                 </div>
               </button>
-            ))}
+            )) || (
+              <div className="col-span-4 text-center text-gray-600">
+                Loading question types...
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -412,7 +456,7 @@ const Listening = () => {
           <div className="mb-4 text-center">
             <div className="text-center mb-4">
               <h2 className="text-2xl font-bold text-teal-700 mb-2">
-                {currentLevel.name}
+                {listeningData?.questionTypes?.find(type => type.type === selectedLevel)?.name || 'Listening Practice'}
               </h2>
             </div>
             <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl p-2">

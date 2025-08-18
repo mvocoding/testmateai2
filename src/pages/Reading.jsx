@@ -139,13 +139,14 @@ const Reading = () => {
           .map((note) => (typeof note === 'string' ? note : note.word || ''))
           .filter((word) => word);
         if (words.length > 0) {
-          saveVocabularyWords(words);
+          await saveVocabularyWords(words);
+          window.dispatchEvent(new CustomEvent('userDataUpdated'));
         }
       }
 
       const score = feedback.overall_score || 6.0;
       const band = Math.round(score * 2) / 2; // Round to nearest 0.5
-      recordPracticeActivity('reading', score, band, {
+      await recordPracticeActivity('reading', score, band, {
         passage: selectedPassage.title,
         questionsAnswered: Object.keys(answers).length,
         totalQuestions: currentQuestions.length,

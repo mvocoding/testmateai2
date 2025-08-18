@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { generateSpeakingFeedback, recordPracticeActivity } from '../utils';
+import { generateSpeakingFeedback, recordPracticeActivity, saveVocabularyWords } from '../utils';
 import dataService from '../services/dataService';
 
 const SpeakingTest = () => {
@@ -42,16 +42,16 @@ const SpeakingTest = () => {
 
   const SPEAKING_PARTS = speakingData;
 
-const XP_PER_BAND = 5;
-const XP_TO_LEVEL_UP = 100;
+  const XP_PER_BAND = 5;
+  const XP_TO_LEVEL_UP = 100;
 
-const FEEDBACK_TABS = [
-  { key: 'general', label: 'General' },
-  { key: 'grammar', label: 'Grammar' },
-  { key: 'vocabulary', label: 'Vocabulary' },
-  { key: 'coherence', label: 'Coherence' },
-  { key: 'suggestions', label: 'Suggestions' },
-];
+  const FEEDBACK_TABS = [
+    { key: 'general', label: 'General' },
+    { key: 'grammar', label: 'Grammar' },
+    { key: 'vocabulary', label: 'Vocabulary' },
+    { key: 'coherence', label: 'Coherence' },
+    { key: 'suggestions', label: 'Suggestions' },
+  ];
 
   const currentQuestions = SPEAKING_PARTS[selectedPart].questions;
 
@@ -86,11 +86,25 @@ const FEEDBACK_TABS = [
       // Record practice activity
       const score = aiFeedback.band || 6.0;
       const band = Math.round(score * 2) / 2; // Round to nearest 0.5
-      recordPracticeActivity('speaking', score, band, {
+      await recordPracticeActivity('speaking', score, band, {
         question: currentQuestions[currentQ],
         transcript: result,
-        feedback: aiFeedback.comment
+        feedback: aiFeedback.comment,
       });
+      try {
+        if (Array.isArray(aiFeedback?.words)) {
+          const wordsToSave = aiFeedback.words
+            .map((w) => (typeof w === 'string' ? w : w?.word))
+            .filter(Boolean)
+            .slice(0, 20);
+          if (wordsToSave.length) {
+            await saveVocabularyWords(wordsToSave);
+            window.dispatchEvent(new CustomEvent('userDataUpdated'));
+          }
+        }
+      } catch (e) {
+        console.error('Failed to save speaking vocabulary:', e);
+      }
     };
     recognition.onerror = function () {
       setIsListening(false);
@@ -115,8 +129,6 @@ const FEEDBACK_TABS = [
       setTimeout(() => setShowLevelUp(false), 2000);
     }
   }
-
-  // const xpPercent = Math.min(100, (xp / XP_TO_LEVEL_UP) * 100);
 
   return (
     <div className="bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">

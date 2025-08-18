@@ -13,12 +13,23 @@ const Review = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const loadVocabularyWords = () => {
-      const vocabulary = getVocabulary();
-      setVocabularyWords(vocabulary.map((v) => v.word));
+    let mounted = true;
+    const loadVocabularyWords = async () => {
+      const vocabulary = await getVocabulary();
+      if (mounted) {
+        setVocabularyWords(
+          (Array.isArray(vocabulary) ? vocabulary : []).map((v) => v.word)
+        );
+      }
     };
 
     loadVocabularyWords();
+    const onUpdate = () => loadVocabularyWords();
+    window.addEventListener('userDataUpdated', onUpdate);
+    return () => {
+      mounted = false;
+      window.removeEventListener('userDataUpdated', onUpdate);
+    };
   }, []);
 
   const startQuiz = async () => {
@@ -135,8 +146,8 @@ const Review = () => {
                     key={index}
                     className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4 text-center hover:shadow-md transition-all duration-200"
                   >
-                    <div className="text-purple-800 font-semibold text-lg">
-                      {word}
+                    <div className="text-purple-800 font-semibold text-base">
+                      {word.toUpperCase()}
                     </div>
                     <div className="text-purple-600 text-sm mt-1">
                       Word #{index + 1}

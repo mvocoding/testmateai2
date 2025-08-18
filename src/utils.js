@@ -5,30 +5,11 @@ export const generateTextResponse = async (inputMessage, setMessages, setIsLoadi
   try {
     const headers = {
       'content-type': 'application/json',
-      authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-      'user-agent':
-        'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
     };
 
-    const payload = {
-      temperature: 0,
-      messages: [
-        {
-          role: 'system',
-          content: [
-            {
-              type: 'text',
-              text: 'You are an IELTS TestMate AI assistant. Help users with IELTS preparation, answer questions about the test format, provide study tips, and assist with practice questions. You can also help users create personalized study plans. If users ask about study plans, guide them to use the study plan form or provide general study advice. Be friendly, encouraging, and knowledgeable about IELTS.',
-            },
-          ],
-        },
-        { role: 'user', content: [{ type: 'text', text: inputMessage }] },
-      ],
-      model: 'vertex_ai/gemini-2.0-flash-001',
-      response_format: { type: 'json_object' },
-    };
+    const payload = { prompt: inputMessage };
 
-    const response = await fetch(process.env.REACT_APP_API_URL, {
+    const response = await fetch('https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(payload),
@@ -39,8 +20,7 @@ export const generateTextResponse = async (inputMessage, setMessages, setIsLoadi
     }
 
     const data = await response.json();
-    const rawContent = data.choices[0].message.content;
-    const aiResponse = JSON.parse(rawContent).response;
+    const aiResponse = data?.data?.response ?? '';
 
     const aiMessage = {
       id: Date.now() + 1,
@@ -66,12 +46,7 @@ export const generateTextResponse = async (inputMessage, setMessages, setIsLoadi
 
 export const generateStudyPlan = async ({ currentScore, targetScore, testDate }) => {
   try {
-    const headers = {
-      'content-type': 'application/json',
-      authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-      'user-agent':
-        'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
-    };
+    const headers = { 'content-type': 'application/json' };
 
     const prompt = `You are an IELTS study coach AI.
 A student wants to improve their IELTS score.
@@ -112,25 +87,9 @@ Create a detailed, actionable study plan in JSON format with the following struc
 
 Make the plan realistic and achievable. Include specific tasks like "Practice 2 listening passages daily", "Complete 3 reading exercises", "Write 2 essays per week", etc.`;
 
-    const payload = {
-      temperature: 0.4,
-      messages: [
-        {
-          role: 'system',
-          content: [
-            {
-              type: 'text',
-              text: 'You are an IELTS study coach AI. Provide detailed, actionable study plans in JSON format.',
-            },
-          ],
-        },
-        { role: 'user', content: [{ type: 'text', text: prompt }] },
-      ],
-      model: 'vertex_ai/gemini-2.0-flash-001',
-      response_format: { type: 'json_object' },
-    };
+    const payload = { prompt };
 
-    const response = await fetch(process.env.REACT_APP_API_URL, {
+    const response = await fetch('https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(payload),
@@ -141,8 +100,7 @@ Make the plan realistic and achievable. Include specific tasks like "Practice 2 
     }
 
     const data = await response.json();
-    const rawContent = data.choices[0].message.content;
-    const studyPlan = JSON.parse(rawContent);
+    const studyPlan = data?.data ? data.data : null;
     
     return studyPlan;
   } catch (error) {
@@ -153,12 +111,7 @@ Make the plan realistic and achievable. Include specific tasks like "Practice 2 
 
 export const generateSpeakingFeedback = async (question, transcript) => {
   try {
-    const headers = {
-      'content-type': 'application/json',
-      authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-      'user-agent':
-        'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
-    };
+    const headers = { 'content-type': 'application/json' };
 
     const prompt = `You are an IELTS speaking examiner and pronunciation coach.
 Evaluate this answer for the question: "${question}"
@@ -174,27 +127,12 @@ Return a JSON with:
 - pronunciation_tips: [personalized tips for improving pronunciation]
 - grammar_feedback: (detailed feedback on grammar mistakes and how to fix them)
 - vocabulary_feedback: (feedback on vocabulary range and suggestions for better word choices)
-- coherence_feedback: (feedback on organization and logical flow)`;
+- coherence_feedback: (feedback on organization and logical flow)
+- xp: (integer 5..20 computed from band, where 5 ≈ band 4-5, 10 ≈ band 6, 15 ≈ band 7-8, 20 ≈ band 8.5-9)`;
 
-    const payload = {
-      temperature: 0.4,
-      messages: [
-        {
-          role: 'system',
-          content: [
-            {
-              type: 'text',
-              text: 'You are an IELTS speaking examiner and pronunciation coach. Provide detailed feedback in JSON format.',
-            },
-          ],
-        },
-        { role: 'user', content: [{ type: 'text', text: prompt }] },
-      ],
-      model: 'vertex_ai/gemini-2.0-flash-001',
-      response_format: { type: 'json_object' },
-    };
+    const payload = { prompt };
 
-    const response = await fetch(process.env.REACT_APP_API_URL, {
+    const response = await fetch('https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(payload),
@@ -205,8 +143,7 @@ Return a JSON with:
     }
 
     const data = await response.json();
-    const rawContent = data.choices[0].message.content;
-    const feedback = JSON.parse(rawContent);
+    const feedback = data?.data ? data.data : null;
     
     return feedback;
   } catch (error) {
@@ -235,12 +172,7 @@ Return a JSON with:
 
 export const generateListeningFeedback = async (passage, questions, userAnswers) => {
   try {
-    const headers = {
-      'content-type': 'application/json',
-      authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-      'user-agent':
-        'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
-    };
+    const headers = { 'content-type': 'application/json' };
 
     const prompt = `You are an IELTS listening examiner and coach.
 Analyze the student's answers for this listening passage and provide detailed feedback.
@@ -274,27 +206,12 @@ Return a JSON with:
 - listening_strategies: [specific strategies for improving listening skills]
 - vocabulary_notes: [important vocabulary from the passage with definitions]
 - common_mistakes: [common listening mistakes and how to avoid them]
-- improvement_tips: [personalized tips for better listening performance]`;
+- improvement_tips: [personalized tips for better listening performance]
+- xp: (integer 5..20 computed from overall_score, where 5 ≈ band 4-5, 10 ≈ band 6, 15 ≈ band 7-8, 20 ≈ band 8.5-9)`;
 
-    const payload = {
-      temperature: 0.4,
-      messages: [
-        {
-          role: 'system',
-          content: [
-            {
-              type: 'text',
-              text: 'You are an IELTS listening examiner and coach. Provide detailed analysis and feedback in JSON format.',
-            },
-          ],
-        },
-        { role: 'user', content: [{ type: 'text', text: prompt }] },
-      ],
-      model: 'vertex_ai/gemini-2.0-flash-001',
-      response_format: { type: 'json_object' },
-    };
+    const payload = { prompt };
 
-    const response = await fetch(process.env.REACT_APP_API_URL, {
+    const response = await fetch('https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(payload),
@@ -305,8 +222,7 @@ Return a JSON with:
     }
 
     const data = await response.json();
-    const rawContent = data.choices[0].message.content;
-    const feedback = JSON.parse(rawContent);
+    const feedback = data?.data ? data.data : null;
     
     return feedback;
   } catch (error) {
@@ -361,12 +277,7 @@ export const generateReadingFeedback = async (passage, questions, userAnswers) =
       userAnswers
     });
 
-    const headers = {
-      'content-type': 'application/json',
-      authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-      'user-agent':
-        'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
-    };
+    const headers = { 'content-type': 'application/json' };
 
          const prompt = `You are an IELTS reading examiner and coach.
      Analyze the student's answers for this reading passage and provide detailed feedback.
@@ -401,27 +312,12 @@ Return a JSON with:
 - vocabulary_notes: [important vocabulary from the passage with definitions]
 - common_mistakes: [common reading mistakes and how to avoid them]
 - improvement_tips: [personalized tips for better reading performance]
-- skimming_scanning_tips: [tips for effective skimming and scanning]`;
+- skimming_scanning_tips: [tips for effective skimming and scanning]
+- xp: (integer 5..20 computed from overall_score, where 5 ≈ band 4-5, 10 ≈ band 6, 15 ≈ band 7-8, 20 ≈ band 8.5-9)`;
 
-    const payload = {
-      temperature: 0.4,
-      messages: [
-        {
-          role: 'system',
-          content: [
-            {
-              type: 'text',
-              text: 'You are an IELTS reading examiner and coach. Provide detailed analysis and feedback in JSON format.',
-            },
-          ],
-        },
-        { role: 'user', content: [{ type: 'text', text: prompt }] },
-      ],
-      model: 'vertex_ai/gemini-2.0-flash-001',
-      response_format: { type: 'json_object' },
-    };
+    const payload = { prompt };
 
-    const response = await fetch(process.env.REACT_APP_API_URL, {
+    const response = await fetch('https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(payload),
@@ -432,8 +328,7 @@ Return a JSON with:
     }
 
     const data = await response.json();
-    const rawContent = data.choices[0].message.content;
-    const feedback = JSON.parse(rawContent);
+    const feedback = data?.data ? data.data : null;
     
     return feedback;
   } catch (error) {
@@ -480,12 +375,7 @@ Return a JSON with:
 
 export const generateWritingFeedback = async (task, userEssay, wordCount) => {
   try {
-    const headers = {
-      'content-type': 'application/json',
-      authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-      'user-agent':
-        'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
-    };
+    const headers = { 'content-type': 'application/json' };
 
     const prompt = `You are an IELTS writing examiner and coach.
 Evaluate this essay for the writing task and provide detailed feedback.
@@ -512,27 +402,12 @@ Return a JSON with:
     original: string,
     suggested: string,
     reason: string
-  }] (based on comparing student's vocabulary with sample answer vocabulary)`;
+  }] (based on comparing student's vocabulary with sample answer vocabulary)
+- xp: (integer 5..20 computed from overall_score, where 5 ≈ band 4-5, 10 ≈ band 6, 15 ≈ band 7-8, 20 ≈ band 8.5-9)`;
 
-    const payload = {
-      temperature: 0.4,
-      messages: [
-        {
-          role: 'system',
-          content: [
-            {
-              type: 'text',
-              text: 'You are an IELTS writing examiner and coach. Provide detailed analysis and feedback in JSON format.',
-            },
-          ],
-        },
-        { role: 'user', content: [{ type: 'text', text: prompt }] },
-      ],
-      model: 'vertex_ai/gemini-2.0-flash-001',
-      response_format: { type: 'json_object' },
-    };
+    const payload = { prompt };
 
-    const response = await fetch(process.env.REACT_APP_API_URL, {
+    const response = await fetch('https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(payload),
@@ -543,28 +418,7 @@ Return a JSON with:
     }
 
     const data = await response.json();
-    const rawContent = data.choices[0].message.content;
-    
-    // Handle different response formats
-    let feedback;
-    try {
-      // First try to parse as direct JSON
-      feedback = JSON.parse(rawContent);
-    } catch (parseError) {
-      console.log('Direct JSON parse failed, trying to extract from content:', rawContent);
-      try {
-        // If that fails, try to extract JSON from the content
-        const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          feedback = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error('No valid JSON found in response');
-        }
-      } catch (extractError) {
-        console.error('Failed to extract JSON from response:', extractError);
-        throw new Error('Invalid response format');
-      }
-    }
+    const feedback = data?.data ? data.data : null;
     
     console.log('Parsed feedback:', feedback);
     return feedback;
@@ -641,12 +495,7 @@ In conclusion, while there are valid arguments on both sides, the evidence sugge
 
 export const generateVocabularyQuiz = async (vocabularyWords) => {
   try {
-    const headers = {
-      'content-type': 'application/json',
-      authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
-      'user-agent':
-        'Enlight/1.4 (com.lightricks.Apollo; build:123; iOS 18.5.0) Alamofire/5.8.0',
-    };
+    const headers = { 'content-type': 'application/json' };
 
     const prompt = `You are an IELTS vocabulary quiz generator.
 Create a multiple-choice quiz based on these vocabulary words: ${vocabularyWords.join(', ')}
@@ -663,25 +512,9 @@ Return a JSON with:
     explanation: string
   }]`;
 
-    const payload = {
-      temperature: 0.4,
-      messages: [
-        {
-          role: 'system',
-          content: [
-            {
-              type: 'text',
-              text: 'You are an IELTS vocabulary quiz generator. Create engaging multiple-choice questions in JSON format.',
-            },
-          ],
-        },
-        { role: 'user', content: [{ type: 'text', text: prompt }] },
-      ],
-      model: 'vertex_ai/gemini-2.0-flash-001',
-      response_format: { type: 'json_object' },
-    };
+    const payload = { prompt };
 
-    const response = await fetch(process.env.REACT_APP_API_URL, {
+    const response = await fetch('https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(payload),
@@ -692,19 +525,14 @@ Return a JSON with:
     }
 
          const data = await response.json();
-     const rawContent = data.choices[0].message.content;
-     const quiz = JSON.parse(rawContent);
+     const quiz = data?.data ? data.data : null;
      
-     // Handle case where AI returns array directly instead of object with questions property
      if (Array.isArray(quiz)) {
        return { questions: quiz };
      }
      
      return quiz;
   } catch (error) {
-    console.error('Error generating vocabulary quiz:', error);
-    // Return demo quiz with realistic definitions
-    console.log('Using demo quiz for words:', vocabularyWords);
     const demoDefinitions = {
       'sophisticated': {
         correct: 'Complex and refined in character',
@@ -759,7 +587,6 @@ Return a JSON with:
             explanation: `"${word}" means "${demo.correct}". This word is commonly used in academic and professional contexts.`
           };
         } else {
-          // Fallback for words not in demo definitions
           return {
             word: word,
             question: `What is the meaning of "${word}"?`,
@@ -780,29 +607,26 @@ Return a JSON with:
   }
 };
 
-// Function to save vocabulary words from test results
-export const saveVocabularyWords = (words) => {
+export const saveVocabularyWords = async (words) => {
   try {
-    const addedWords = addVocabulary(words);
-    return addedWords.map(w => w.word);
+    const addedWords = await addVocabulary(words);
+    return Array.isArray(addedWords) ? addedWords.map((w) => w.word || w) : [];
   } catch (error) {
     console.error('Error saving vocabulary words:', error);
     return [];
   }
 };
 
-// Function to get vocabulary words from localStorage
-export const getVocabularyWords = () => {
+export const getVocabularyWords = async () => {
   try {
-    const vocabulary = getVocabulary();
-    return vocabulary.map(v => v.word);
+    const vocabulary = await getVocabulary();
+    return Array.isArray(vocabulary) ? vocabulary.map((v) => v.word) : [];
   } catch (error) {
     console.error('Error getting vocabulary words:', error);
     return [];
   }
 };
 
-// Function to record practice activity and add XP
 export const recordPracticeActivity = (type, score, band, details = {}) => {
   try {
     return addPracticeActivity(type, score, band, details);

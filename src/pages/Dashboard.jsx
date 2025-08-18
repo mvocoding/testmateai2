@@ -69,15 +69,22 @@ const Dashboard = () => {
   const [generatingPlan, setGeneratingPlan] = useState(false);
 
   useEffect(() => {
-    const loadDashboardData = () => {
-      const data = getDashboardData();
-      const userData = getUser();
+    let mounted = true;
+    const loadDashboardData = async () => {
+      const [data, userData] = await Promise.all([getDashboardData(), getUser()]);
+      if (!mounted) return;
       setDashboardData(data);
       setUser(userData);
       setLoading(false);
     };
 
     loadDashboardData();
+    const onUpdate = () => loadDashboardData();
+    window.addEventListener('userDataUpdated', onUpdate);
+    return () => {
+      mounted = false;
+      window.removeEventListener('userDataUpdated', onUpdate);
+    };
   }, []);
 
   if (loading) {
@@ -120,12 +127,6 @@ const Dashboard = () => {
           <h1 className="text-4xl font-bold text-purple-700 mb-2">
             Welcome back, {user?.name || 'Student'}!
           </h1>
-          <button
-            onClick={resetData}
-            className="mt-2 text-sm text-red-500 hover:text-red-700 underline"
-          >
-            Reset Data (Testing)
-          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
