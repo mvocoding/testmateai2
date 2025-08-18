@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Icon from '../../components/Icon';
 
 const TestHeader = ({ currentSectionName, currentQuestionIndex, totalQuestions, timeText }) => {
   return (
@@ -7,9 +8,7 @@ const TestHeader = ({ currentSectionName, currentQuestionIndex, totalQuestions, 
       <div className="mx-auto flex justify-between items-center">
         <div className="flex items-center gap-4">
           <Link to="/" className="text-teal-600 hover:text-teal-700">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
+            <Icon name="arrow-left" className="w-6 h-6" />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">IELTS Mock Test</h1>
         </div>

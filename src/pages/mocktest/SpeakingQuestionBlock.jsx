@@ -1,4 +1,5 @@
 import React from 'react';
+import Icon from '../../components/Icon';
 
 const SpeakingQuestionBlock = ({ question, answersSection, isRecording, startRecording, stopRecording }) => {
   if (!question) return null;
@@ -29,9 +30,7 @@ const SpeakingQuestionBlock = ({ question, answersSection, isRecording, startRec
                 disabled={isRecording}
                 className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
+                <Icon name="mic" className="w-5 h-5" />
                 {isRecording ? 'Recording...' : 'Start Recording'}
               </button>
 

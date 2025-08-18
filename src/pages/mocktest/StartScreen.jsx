@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Icon from '../../components/Icon';
 
 const StartScreen = ({ sections, questions, onStart }) => {
   return (
@@ -8,9 +9,7 @@ const StartScreen = ({ sections, questions, onStart }) => {
         <div className="mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Link to="/" className="text-teal-600 hover:text-teal-700">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+              <Icon name="arrow-left" className="w-6 h-6" />
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">IELTS Mock Test</h1>
           </div>
@@ -20,9 +19,7 @@ const StartScreen = ({ sections, questions, onStart }) => {
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-2xl mx-auto text-center">
           <div className="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-8">
-            <svg className="w-12 h-12 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+            <Icon name="document" className="w-12 h-12 text-teal-600" />
           </div>
 
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Complete IELTS Mock Test</h2>
