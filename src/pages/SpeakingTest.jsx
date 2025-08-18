@@ -19,7 +19,6 @@ const SpeakingTest = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [speakingData, setSpeakingData] = useState(null);
 
-  // Load speaking data
   useEffect(() => {
     const loadSpeakingData = async () => {
       try {

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import dataService from '../services/dataService';
- 
+
 import ListeningQuestionBlock from './mocktest/ListeningQuestionBlock';
 import ReadingQuestionBlock from './mocktest/ReadingQuestionBlock';
 import WritingQuestionBlock from './mocktest/WritingQuestionBlock';
@@ -13,8 +13,6 @@ import skillIntroductions from './mocktest/skillIntroductions';
 import submitMockTest from './mocktest/submitTest';
 import { cancelSpeech, getPreferredVoice } from './mocktest/audioHelpers';
 import { formatTime } from './mocktest/format';
-
- 
 
 const MockTest = () => {
   const [currentSection, setCurrentSection] = useState('listening');
@@ -73,14 +71,26 @@ const MockTest = () => {
     setIsSubmitting(true);
     setSubmitProgress(0);
 
-    const listeningPassages = Array.isArray(questions.listening) ? questions.listening : [];
-    const readingPassages = Array.isArray(questions.reading) ? questions.reading : [];
-    const speakingItems = Array.isArray(questions.speaking) ? questions.speaking : [];
-    const writingItems = Array.isArray(questions.writing) ? questions.writing : [];
+    const listeningPassages = Array.isArray(questions.listening)
+      ? questions.listening
+      : [];
+    const readingPassages = Array.isArray(questions.reading)
+      ? questions.reading
+      : [];
+    const speakingItems = Array.isArray(questions.speaking)
+      ? questions.speaking
+      : [];
+    const writingItems = Array.isArray(questions.writing)
+      ? questions.writing
+      : [];
 
     const total =
-      listeningPassages.filter((p) => p && Array.isArray(p.questions) && p.questions.length > 0).length +
-      readingPassages.filter((p) => p && Array.isArray(p.questions) && p.questions.length > 0).length +
+      listeningPassages.filter(
+        (p) => p && Array.isArray(p.questions) && p.questions.length > 0
+      ).length +
+      readingPassages.filter(
+        (p) => p && Array.isArray(p.questions) && p.questions.length > 0
+      ).length +
       speakingItems.length +
       writingItems.length;
     setTotalSubmitTasks(total);
@@ -387,8 +397,6 @@ const MockTest = () => {
       setIsPlaying(false);
     }
   };
-
-  
 
   const renderQuestion = () => {
     if (!questions || !questions[currentSection]) {

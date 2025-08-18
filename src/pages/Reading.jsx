@@ -132,9 +132,8 @@ const Reading = () => {
           window.dispatchEvent(new CustomEvent('userDataUpdated'));
         }
       }
-
       const score = feedback.overall_score || 6.0;
-      const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+      const band = Math.round(score * 2) / 2;
       await recordPracticeActivity('reading', score, band, {
         passage: selectedPassage.title,
         questionsAnswered: Object.keys(answers).length,
