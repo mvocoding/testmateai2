@@ -4,17 +4,25 @@ import { Link } from 'react-router-dom';
 const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal-50 via-white to-white relative overflow-hidden flex flex-col">
-      {/* background decor */}
-      <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 w-[42rem] h-[42rem] rounded-full bg-gradient-to-br from-teal-400/20 to-emerald-400/20 blur-3xl" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-28 -left-28 w-[42rem] h-[42rem] rounded-full bg-gradient-to-tr from-sky-400/20 to-indigo-400/20 blur-3xl" />
-      <div aria-hidden className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70rem] h-[70rem] rounded-full bg-gradient-to-b from-white/0 via-teal-100/30 to-white/0 blur-2xl" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 -right-24 w-[42rem] h-[42rem] rounded-full bg-gradient-to-br from-teal-400/20 to-emerald-400/20 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-28 -left-28 w-[42rem] h-[42rem] rounded-full bg-gradient-to-tr from-sky-400/20 to-indigo-400/20 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70rem] h-[70rem] rounded-full bg-gradient-to-b from-white/0 via-teal-100/30 to-white/0 blur-2xl"
+      />
       <div className="text-center mb-10 p-10">
         <h1 className="text-5xl md:text-7xl font-black text-teal-700 mb-4 drop-shadow-lg">
           Welcome to TestMate AI
         </h1>
         <p className="text-xl md:text-2xl text-gray-700 font-medium max-w-2xl mx-auto leading-relaxed">
           Master IELTS with
-          <span className="text-teal-600 font-bold">AI-powered</span> learning.
+          <span className="text-teal-600 font-bold"> AI-powered</span> learning.
           <br />
           Practice speaking, get instant feedback, and level up your English
           skills in a gamified adventure!
