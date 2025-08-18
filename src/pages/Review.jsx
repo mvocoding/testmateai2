@@ -4,17 +4,17 @@ import { getVocabulary } from '../services/dataService';
 
 const Review = () => {
   const [vocabularyWords, setVocabularyWords] = useState([]);
-  const [isQuizMode, setIsQuizMode] = useState(false);
-  const [currentQuiz, setCurrentQuiz] = useState(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isAnswered, setIsAnswered] = useState(false);
+  const [quizMode, setQuizMode] = useState(false);
+  const [quiz, setQuiz] = useState(null);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [answer, setAnswer] = useState(null);
+  const [answered, setAnswered] = useState(false);
   const [score, setScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    const loadVocabularyWords = async () => {
+    const loadWords = async () => {
       const vocabulary = await getVocabulary();
       if (mounted) {
         setVocabularyWords(
@@ -23,8 +23,8 @@ const Review = () => {
       }
     };
 
-    loadVocabularyWords();
-    const onUpdate = () => loadVocabularyWords();
+    loadWords();
+    const onUpdate = () => loadWords();
     window.addEventListener('userDataUpdated', onUpdate);
     return () => {
       mounted = false;
@@ -38,7 +38,7 @@ const Review = () => {
       return;
     }
 
-    setIsLoading(true);
+    setLoading(true);
     try {
       const quiz = await generateVocabularyQuiz(vocabularyWords);
       if (
@@ -50,50 +50,50 @@ const Review = () => {
         throw new Error('Invalid quiz structure received');
       }
 
-      setCurrentQuiz(quiz);
-      setCurrentQuestionIndex(0);
-      setSelectedAnswer(null);
-      setIsAnswered(false);
+      setQuiz(quiz);
+      setQuestionIndex(0);
+      setAnswer(null);
+      setAnswered(false);
       setScore(0);
-      setIsQuizMode(true);
+      setQuizMode(true);
     } catch (error) {
       alert('Failed to generate quiz. Please try again.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleAnswerSelect = (answer) => {
-    if (isAnswered || !currentQuiz?.questions?.[currentQuestionIndex]) return;
-    setSelectedAnswer(answer);
-    setIsAnswered(true);
+  const selectAnswer = (value) => {
+    if (answered || !quiz?.questions?.[questionIndex]) return;
+    setAnswer(value);
+    setAnswered(true);
 
-    if (answer === currentQuiz.questions[currentQuestionIndex].correct_answer) {
+    if (value === quiz.questions[questionIndex].correct_answer) {
       setScore(score + 1);
     }
   };
 
-  const nextQuestion = () => {
-    if (currentQuestionIndex < (currentQuiz?.questions?.length || 0) - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer(null);
-      setIsAnswered(false);
+  const next = () => {
+    if (questionIndex < (quiz?.questions?.length || 0) - 1) {
+      setQuestionIndex(questionIndex + 1);
+      setAnswer(null);
+      setAnswered(false);
     } else {
-      setIsQuizMode(false);
-      setCurrentQuiz(null);
+      setQuizMode(false);
+      setQuiz(null);
     }
   };
 
-  const resetQuiz = () => {
-    setIsQuizMode(false);
-    setCurrentQuiz(null);
-    setCurrentQuestionIndex(0);
-    setSelectedAnswer(null);
-    setIsAnswered(false);
+  const exit = () => {
+    setQuizMode(false);
+    setQuiz(null);
+    setQuestionIndex(0);
+    setAnswer(null);
+    setAnswered(false);
     setScore(0);
   };
 
-  const currentQuestion = currentQuiz?.questions?.[currentQuestionIndex];
+  const currentQuestion = quiz?.questions?.[questionIndex];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -107,7 +107,7 @@ const Review = () => {
           </p>
         </div>
 
-        {!isQuizMode ? (
+        {!quizMode ? (
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">
@@ -115,10 +115,10 @@ const Review = () => {
               </h2>
               <button
                 onClick={startQuiz}
-                disabled={isLoading || vocabularyWords.length === 0}
+                disabled={loading || vocabularyWords.length === 0}
                 className="bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-700 hover:to-purple-500 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-200"
               >
-                {isLoading ? (
+                {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                     Generating Quiz...
@@ -165,17 +165,17 @@ const Review = () => {
                   Vocabulary Quiz
                 </h2>
                 <p className="text-gray-600">
-                  Question {currentQuestionIndex + 1} of{' '}
-                  {currentQuiz?.questions?.length || 0}
+                  Question {questionIndex + 1} of{' '}
+                  {quiz?.questions?.length || 0}
                 </p>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-purple-600">
-                  Score: {score}/{currentQuiz?.questions?.length || 0}
+                  Score: {score}/{quiz?.questions?.length || 0}
                 </div>
                 <div className="text-sm text-gray-500">
                   {Math.round(
-                    (score / (currentQuiz?.questions?.length || 1)) * 100
+                    (score / (quiz?.questions?.length || 1)) * 100
                   )}
                   %
                 </div>
@@ -187,8 +187,8 @@ const Review = () => {
                 className="bg-gradient-to-r from-purple-600 to-purple-400 h-2 rounded-full transition-all duration-300"
                 style={{
                   width: `${
-                    ((currentQuestionIndex + 1) /
-                      (currentQuiz?.questions?.length || 1)) *
+                    ((questionIndex + 1) /
+                      (quiz?.questions?.length || 1)) *
                     100
                   }%`,
                 }}
@@ -212,7 +212,7 @@ const Review = () => {
                 <div className="text-center text-gray-600">
                   <p>No question available. Please try again.</p>
                   <button
-                    onClick={resetQuiz}
+                    onClick={startQuiz}
                     className="mt-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
                   >
                     Restart Quiz
@@ -226,16 +226,16 @@ const Review = () => {
                 {currentQuestion.options.map((option, index) => (
                   <button
                     key={index}
-                    onClick={() => handleAnswerSelect(option)}
-                    disabled={isAnswered}
+                    onClick={() => selectAnswer(option)}
+                    disabled={answered}
                     className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                      isAnswered
+                      answered
                         ? option === currentQuestion.correct_answer
                           ? 'bg-green-100 border-green-400 text-green-800'
-                          : option === selectedAnswer
+                          : option === answer
                           ? 'bg-red-100 border-red-400 text-red-800'
                           : 'bg-gray-100 border-gray-300 text-gray-600'
-                        : selectedAnswer === option
+                        : answer === option
                         ? 'bg-purple-100 border-purple-400 text-purple-800'
                         : 'bg-white border-gray-300 text-gray-700 hover:bg-purple-50 hover:border-purple-300'
                     }`}
@@ -243,13 +243,13 @@ const Review = () => {
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-sm font-bold ${
-                          isAnswered
+                          answered
                             ? option === currentQuestion.correct_answer
                               ? 'bg-green-500 border-green-500 text-white'
-                              : option === selectedAnswer
+                              : option === answer
                               ? 'bg-red-500 border-red-500 text-white'
                               : 'bg-gray-300 border-gray-300 text-gray-600'
-                            : selectedAnswer === option
+                            : answer === option
                             ? 'bg-purple-500 border-purple-500 text-white'
                             : 'bg-white border-gray-400 text-gray-600'
                         }`}
@@ -269,28 +269,28 @@ const Review = () => {
               </div>
             )}
 
-            {isAnswered && currentQuestion && (
+            {answered && currentQuestion && (
               <div
                 className={`p-4 rounded-xl mb-6 ${
-                  selectedAnswer === currentQuestion.correct_answer
+                  answer === currentQuestion.correct_answer
                     ? 'bg-green-100 border border-green-300'
                     : 'bg-red-100 border border-red-300'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">
-                    {selectedAnswer === currentQuestion.correct_answer
+                    {answer === currentQuestion.correct_answer
                       ? '✅'
                       : '❌'}
                   </span>
                   <span
                     className={`font-semibold ${
-                      selectedAnswer === currentQuestion.correct_answer
+                      answer === currentQuestion.correct_answer
                         ? 'text-green-800'
                         : 'text-red-800'
                     }`}
                   >
-                    {selectedAnswer === currentQuestion.correct_answer
+                    {answer === currentQuestion.correct_answer
                       ? 'Correct!'
                       : 'Incorrect'}
                   </span>
@@ -309,19 +309,19 @@ const Review = () => {
 
             <div className="flex justify-between">
               <button
-                onClick={resetQuiz}
+                onClick={exit}
                 className="bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-700 transition-colors"
               >
                 Exit Quiz
               </button>
 
-              {isAnswered && (
+              {answered && (
                 <button
-                  onClick={nextQuestion}
+                  onClick={next}
                   className="bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-700 hover:to-purple-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-200"
                 >
-                  {currentQuestionIndex <
-                  (currentQuiz?.questions?.length || 0) - 1
+                  {questionIndex <
+                  (quiz?.questions?.length || 0) - 1
                     ? 'Next Question'
                     : 'Finish Quiz'}
                 </button>

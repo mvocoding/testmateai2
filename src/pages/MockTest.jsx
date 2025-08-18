@@ -1,6 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import dataService from '../services/dataService';
+import { generateSpeakingFeedback, generateWritingFeedback, generateListeningFeedback, generateReadingFeedback } from '../utils';
+import ListeningQuestionBlock from './mocktest/ListeningQuestionBlock';
+import ReadingQuestionBlock from './mocktest/ReadingQuestionBlock';
+import WritingQuestionBlock from './mocktest/WritingQuestionBlock';
+import SpeakingQuestionBlock from './mocktest/SpeakingQuestionBlock';
+import StartScreen from './mocktest/StartScreen';
+import SectionIntro from './mocktest/SectionIntro';
+import TestHeader from './mocktest/TestHeader';
+import ResultsView from './mocktest/ResultsView';
 
 const MockTest = () => {
   const [currentSection, setCurrentSection] = useState('listening');
@@ -37,99 +46,198 @@ const MockTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [playCount, setPlayCount] = useState(0);
   const [speechRef] = useState(useRef(null));
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState(0);
+  const [totalSubmitTasks, setTotalSubmitTasks] = useState(0);
+  const [aiFeedback, setAiFeedback] = useState({
+    listening: [],
+    reading: [],
+    speaking: [],
+    writing: []
+  });
+  const [activeAnalysisTab, setActiveAnalysisTab] = useState('listening');
+  
+  const cancelSpeech = () => {
+    if (speechRef.current) {
+      window.speechSynthesis.cancel();
+    }
+  };
 
-  const MAX_PLAYS = 2;
+  const resetListening = () => {
+    setPlayCount(0);
+    setIsPlaying(false);
+    setIsLoading(false);
+    cancelSpeech();
+  };
 
-  const calculateSectionScore = (sectionId) => {
-    const sectionAnswers = answers[sectionId] || {};
-    const sectionQuestions = questions[sectionId] || [];
-    let correctAnswers = 0;
-    let totalQuestions = 0;
+  const getPreferredVoice = (voices) =>
+    voices.find(
+      (voice) =>
+        voice.lang.includes('en') &&
+        (voice.name.includes('Google') ||
+          voice.name.includes('Natural') ||
+          voice.name.includes('Premium'))
+    );
 
-    sectionQuestions.forEach((question, index) => {
-      if (question.type === 'passage' && question.questions) {
-        question.questions.forEach((subQuestion, subIndex) => {
-          totalQuestions++;
-          const answerKey = `${question.id}-${subIndex}`;
-          const userAnswer = sectionAnswers[answerKey];
+  const submitTest = async () => {
+    setIsSubmitting(true);
+    setSubmitProgress(0);
+    let listeningBand = 0;
+    let readingBand = 0;
+    let listeningPercentage = 0;
+    let readingPercentage = 0;
+    let speakingBand = 0;
+    let writingBand = 0;
 
-          if (subQuestion.correct !== undefined) {
-            if (userAnswer === subQuestion.correct) {
-              correctAnswers++;
+    try {
+      const listeningPassages = Array.isArray(questions.listening) ? questions.listening : [];
+      const readingPassages = Array.isArray(questions.reading) ? questions.reading : [];
+      const speakingItems = Array.isArray(questions.speaking) ? questions.speaking : [];
+      const writingItems = Array.isArray(questions.writing) ? questions.writing : [];
+
+      const listeningTasks = listeningPassages
+        .filter((p) => p && Array.isArray(p.questions) && p.questions.length > 0)
+        .map((p) => {
+          const userAnswersById = {};
+          p.questions.forEach((q, idx) => {
+            const key = `${p.id}-${idx}`;
+            const val = answers.listening?.[key];
+            if (val !== undefined) {
+              if (Array.isArray(q.options) && q.options.length > 0 && typeof val === 'number') {
+                userAnswersById[q.id] = q.options[val];
+              } else {
+                userAnswersById[q.id] = val;
+              }
             }
-          } else if (subQuestion.answer) {
-            if (
-              userAnswer &&
-              userAnswer.toString().toLowerCase().trim() ===
-                subQuestion.answer.toString().toLowerCase().trim()
-            ) {
-              correctAnswers++;
-            }
-          }
+          });
+          const passageMeta = { text: p.passage || p.passageText || '', title: p.passageTitle || p.title || '' };
+          const normalizedQs = p.questions.map((q) => ({
+            ...q,
+            question: q.question || q.text || '',
+          }));
+          return generateListeningFeedback(passageMeta, normalizedQs, userAnswersById);
         });
-      } else {
-        totalQuestions++;
-        const userAnswer = sectionAnswers[question.id];
 
-        if (question.correct !== undefined) {
-          if (userAnswer === question.correct) {
-            correctAnswers++;
-          }
-        } else if (question.answer) {
-          if (
-            userAnswer &&
-            userAnswer.toString().toLowerCase().trim() ===
-              question.answer.toString().toLowerCase().trim()
-          ) {
-            correctAnswers++;
-          }
+      const readingTasks = readingPassages
+        .filter((p) => p && Array.isArray(p.questions) && p.questions.length > 0)
+        .map((p) => {
+          const userAnswersByIndex = p.questions.map((q, idx) => {
+            const key = `${p.id}-${idx}`;
+            return answers.reading?.[key];
+          });
+          const passageMeta = { text: p.passage || p.passageText || '', title: p.passageTitle || p.title || '' };
+          const normalizedQs = p.questions.map((q) => ({
+            ...q,
+            text: q.text || q.question || '',
+            question: q.question || q.text || '',
+          }));
+          return generateReadingFeedback(passageMeta, normalizedQs, userAnswersByIndex);
+        });
+
+      const speakingTasks = speakingItems.map((q) => {
+        const transcript = (answers.speaking?.[q.id] || '').toString();
+        return generateSpeakingFeedback(q.question || '', transcript);
+      });
+
+      const writingTasks = writingItems.map((q) => {
+        const essay = (answers.writing?.[q.id] || '').toString();
+        const wordCount = essay.trim().split(/\s+/).filter(Boolean).length;
+        return generateWritingFeedback(q.question || q.title || '', essay, wordCount);
+      });
+
+      const total = listeningTasks.length + readingTasks.length + speakingTasks.length + writingTasks.length;
+      setTotalSubmitTasks(total);
+
+      const increment = () => setSubmitProgress((prev) => prev + 1);
+      const track = (p) => p.then((res) => { increment(); return res; }).catch(() => { increment(); return null; });
+
+      const [listeningFbs, readingFbs, speakingFbs, writingFbs] = await Promise.all([
+        Promise.all(listeningTasks.map(track)),
+        Promise.all(readingTasks.map(track)),
+        Promise.all(speakingTasks.map(track)),
+        Promise.all(writingTasks.map(track))
+      ]);
+
+      setAiFeedback({
+        listening: (listeningFbs || []).filter(Boolean),
+        reading: (readingFbs || []).filter(Boolean),
+        speaking: (speakingFbs || []).filter(Boolean),
+        writing: (writingFbs || []).filter(Boolean)
+      });
+
+      const listeningBands = [];
+      const listeningPercents = [];
+      (listeningFbs || []).forEach((fb) => {
+        if (!fb) return;
+        const bandVal = typeof fb?.overall_score === 'number' ? fb.overall_score : Number(fb?.overall_score) || 0;
+        if (!isNaN(bandVal) && bandVal > 0) listeningBands.push(bandVal);
+        if (Array.isArray(fb?.question_analysis)) {
+          const totalQ = fb.question_analysis.length;
+          const correct = fb.question_analysis.filter((qa) => qa.is_correct).length;
+          listeningPercents.push(totalQ > 0 ? (correct / totalQ) * 100 : 0);
         }
-      }
-    });
+      });
+      listeningBand = listeningBands.length > 0 ? listeningBands.reduce((a, b) => a + b, 0) / listeningBands.length : 0;
+      listeningPercentage = listeningPercents.length > 0 ? listeningPercents.reduce((a, b) => a + b, 0) / listeningPercents.length : 0;
 
-    return totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
-  };
+      const readingBands = [];
+      const readingPercents = [];
+      (readingFbs || []).forEach((fb) => {
+        if (!fb) return;
+        const bandVal = typeof fb?.overall_score === 'number' ? fb.overall_score : Number(fb?.overall_score) || 0;
+        if (!isNaN(bandVal) && bandVal > 0) readingBands.push(bandVal);
+        if (Array.isArray(fb?.question_analysis)) {
+          const totalQ = fb.question_analysis.length;
+          const correct = fb.question_analysis.filter((qa) => qa.is_correct).length;
+          readingPercents.push(totalQ > 0 ? (correct / totalQ) * 100 : 0);
+        }
+      });
+      readingBand = readingBands.length > 0 ? readingBands.reduce((a, b) => a + b, 0) / readingBands.length : 0;
+      readingPercentage = readingPercents.length > 0 ? readingPercents.reduce((a, b) => a + b, 0) / readingPercents.length : 0;
 
-  const calculateOverallScore = () => {
-    const listeningScore = calculateSectionScore('listening');
-    const readingScore = calculateSectionScore('reading');
-    const writingScore = calculateSectionScore('writing');
-    const speakingScore = calculateSectionScore('speaking');
+      const speakingBands = [];
+      (speakingFbs || []).forEach((fb) => {
+        if (!fb) return;
+        const bandVal = typeof fb?.band === 'number' ? fb.band : Number(fb?.band) || 0;
+        if (!isNaN(bandVal) && bandVal > 0) speakingBands.push(bandVal);
+      });
+      const writingBands = [];
+      (writingFbs || []).forEach((fb) => {
+        if (!fb) return;
+        const bandVal = typeof fb?.overall_score === 'number' ? fb.overall_score : (typeof fb?.band === 'number' ? fb.band : Number(fb?.band) || 0);
+        if (!isNaN(bandVal) && bandVal > 0) writingBands.push(bandVal);
+      });
 
-    const convertToBandScore = (percentage) => {
-      if (percentage >= 90) return 9.0;
-      if (percentage >= 80) return 8.0;
-      if (percentage >= 70) return 7.0;
-      if (percentage >= 60) return 6.0;
-      if (percentage >= 50) return 5.0;
-      if (percentage >= 40) return 4.0;
-      if (percentage >= 30) return 3.0;
-      if (percentage >= 20) return 2.0;
-      return 1.0;
+      speakingBand = speakingBands.length > 0 ? speakingBands.reduce((a, b) => a + b, 0) / speakingBands.length : 0;
+      writingBand = writingBands.length > 0 ? writingBands.reduce((a, b) => a + b, 0) / writingBands.length : 0;
+    } catch (e) {}
+
+    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+    const derivedPercentageFromBand = (band) => clamp(band * 10, 0, 100);
+
+    const results = {
+      listening: { percentage: listeningPercentage || derivedPercentageFromBand(listeningBand), band: listeningBand || 1.0 },
+      reading: { percentage: readingPercentage || derivedPercentageFromBand(readingBand), band: readingBand || 1.0 },
+      writing: {
+        percentage: derivedPercentageFromBand(writingBand),
+        band: writingBand || 1.0,
+      },
+      speaking: {
+        percentage: derivedPercentageFromBand(speakingBand),
+        band: speakingBand || 1.0,
+      },
+      overall: {
+        band: Math.round(((listeningBand + readingBand + (writingBand || 1.0) + (speakingBand || 1.0)) / 4) * 2) / 2,
+      },
     };
 
-    const listeningBand = convertToBandScore(listeningScore);
-    const readingBand = convertToBandScore(readingScore);
-    const writingBand = convertToBandScore(writingScore);
-    const speakingBand = convertToBandScore(speakingScore);
-
-    const overallBand =
-      (listeningBand + readingBand + writingBand + speakingBand) / 4;
-
-    return {
-      listening: { percentage: listeningScore, band: listeningBand },
-      reading: { percentage: readingScore, band: readingBand },
-      writing: { percentage: writingScore, band: writingBand },
-      speaking: { percentage: speakingScore, band: speakingBand },
-      overall: { band: Math.round(overallBand * 2) / 2 },
-    };
-  };
-
-  const submitTest = () => {
-    const results = calculateOverallScore();
+    try {
     setTestResults(results);
     setIsTestCompleted(true);
     setShowResults(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const generateFeedback = (skill, score) => {
@@ -158,7 +266,6 @@ const MockTest = () => {
     }
   };
 
-  // Skill introductions
   const skillIntroductions = {
     listening: {
       title: 'Listening Section',
@@ -221,30 +328,33 @@ const MockTest = () => {
   useEffect(() => {
     const loadTestData = async () => {
       try {
-        const mockTest = await dataService.fetchMockTest(1); // Load first mock test
-        if (mockTest) {
-          setSections(mockTest.sections);
+        const availableTests = await dataService.getMockTests(1);
+        const selectedTest = Array.isArray(availableTests) && availableTests.length > 0
+          ? availableTests[0]
+          : null;
+
+        if (selectedTest && Array.isArray(selectedTest.sections)) {
+          setSections(selectedTest.sections);
 
           const newTimeRemaining = {};
-          mockTest.sections.forEach((section) => {
+          selectedTest.sections.forEach((section) => {
             const minutes = parseInt(section.time.split(' ')[0]);
             newTimeRemaining[section.id] = minutes * 60;
           });
           setTimeRemaining(newTimeRemaining);
 
           const generatedQuestions = {};
-          for (const section of mockTest.sections) {
+          for (const section of selectedTest.sections) {
             const sectionQuestions = await dataService.fetchMockTestQuestions(
-              1,
-              section.id
+              selectedTest.id,
+              section.id,
+              Number(section.questions) || undefined
             );
             generatedQuestions[section.id] = sectionQuestions || [];
           }
           setQuestions(generatedQuestions);
         }
-      } catch (error) {
-        console.error('Error loading mock test data:', error);
-      }
+      } catch (error) {}
     };
 
     loadTestData();
@@ -290,12 +400,7 @@ const MockTest = () => {
     setIsTestStarted(true);
     setShowingIntroduction(true);
     setAnswers({});
-    setPlayCount(0);
-    setIsPlaying(false);
-    setIsLoading(false);
-    if (speechRef.current) {
-      window.speechSynthesis.cancel();
-    }
+    resetListening();
   };
 
   const startSection = () => {
@@ -311,10 +416,6 @@ const MockTest = () => {
   };
 
   const handleAnswer = (section, questionId, answer) => {
-    console.log(
-      `Setting answer for ${section}, question ${questionId}:`,
-      answer
-    );
     setAnswers((prev) => ({
       ...prev,
       [section]: {
@@ -363,12 +464,7 @@ const MockTest = () => {
       clearCurrentQuestionAnswers();
       setCurrentQuestion((prev) => prev + 1);
       if (currentSection === 'listening') {
-        setPlayCount(0);
-        setIsPlaying(false);
-        setIsLoading(false);
-        if (speechRef.current) {
-          window.speechSynthesis.cancel();
-        }
+        resetListening();
       }
     } else {
       // Move to next section
@@ -379,12 +475,7 @@ const MockTest = () => {
         setCurrentQuestion(0);
         setShowingIntroduction(true);
         clearSectionAnswers(nextSection);
-        setPlayCount(0);
-        setIsPlaying(false);
-        setIsLoading(false);
-        if (speechRef.current) {
-          window.speechSynthesis.cancel();
-        }
+        resetListening();
       }
     }
   };
@@ -396,12 +487,7 @@ const MockTest = () => {
       clearCurrentQuestionAnswers();
       setCurrentQuestion((prev) => prev - 1);
       if (currentSection === 'listening') {
-        setPlayCount(0);
-        setIsPlaying(false);
-        setIsLoading(false);
-        if (speechRef.current) {
-          window.speechSynthesis.cancel();
-        }
+        resetListening();
       }
     } else {
       const sectionIndex = sections.findIndex((s) => s.id === currentSection);
@@ -410,12 +496,7 @@ const MockTest = () => {
         setCurrentSection(prevSection);
         setCurrentQuestion(questions[prevSection].length - 1);
         clearSectionAnswers(prevSection);
-        setPlayCount(0);
-        setIsPlaying(false);
-        setIsLoading(false);
-        if (speechRef.current) {
-          window.speechSynthesis.cancel();
-        }
+        resetListening();
       }
     }
   };
@@ -465,10 +546,7 @@ const MockTest = () => {
   };
 
   const startListening = () => {
-    if (playCount >= MAX_PLAYS) {
-      alert(`You can only play the audio ${MAX_PLAYS} times.`);
-      return;
-    }
+    
 
     setIsLoading(true);
     const question = questions.listening[currentQuestion];
@@ -486,24 +564,15 @@ const MockTest = () => {
     }
 
     if ('speechSynthesis' in window) {
-      if (speechRef.current) {
-        window.speechSynthesis.cancel();
-      }
+      cancelSpeech();
 
-      console.log('Creating speech utterance with text:', passageText);
       const utterance = new SpeechSynthesisUtterance(passageText);
       utterance.rate = 0.85;
       utterance.pitch = 1.1;
       utterance.volume = 1;
 
       const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(
-        (voice) =>
-          voice.lang.includes('en') &&
-          (voice.name.includes('Google') ||
-            voice.name.includes('Natural') ||
-            voice.name.includes('Premium'))
-      );
+      const preferredVoice = getPreferredVoice(voices);
       if (preferredVoice) {
         utterance.voice = preferredVoice;
       }
@@ -518,29 +587,15 @@ const MockTest = () => {
         setIsPlaying(false);
       };
 
-      utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
-        console.error('Error details:', {
-          error: event.error,
-          message: event.message,
-          elapsedTime: event.elapsedTime,
-          charIndex: event.charIndex,
-          name: event.name,
-        });
+      utterance.onerror = () => {
         setIsPlaying(false);
         setIsLoading(false);
-        // Don't show alert for common errors, just log them
-        if (event.error !== 'interrupted' && event.error !== 'canceled') {
-          alert('Error playing audio. Please try again.');
-        }
       };
 
       speechRef.current = utterance;
-      console.log('Starting speech synthesis...');
       try {
         window.speechSynthesis.speak(utterance);
       } catch (error) {
-        console.error('Error starting speech synthesis:', error);
         setIsPlaying(false);
         setIsLoading(false);
         alert('Error starting audio playback. Please try again.');
@@ -553,7 +608,7 @@ const MockTest = () => {
 
   const stopListening = () => {
     if (speechRef.current) {
-      window.speechSynthesis.cancel();
+      cancelSpeech();
       setIsPlaying(false);
     }
   };
@@ -564,73 +619,7 @@ const MockTest = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const renderSkillIntroduction = () => {
-    const intro = skillIntroductions[currentSection];
-
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12">
-            <div className="text-center mb-8">
-              <div className="text-6xl mb-4">{intro.icon}</div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                {intro.title}
-              </h1>
-              <div className="bg-teal-100 text-teal-800 px-4 py-2 rounded-full inline-block font-semibold">
-                Duration: {intro.duration}
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="bg-gray-50 p-6 rounded-xl">
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  What to Expect
-                </h2>
-                <p className="text-gray-700 leading-relaxed text-lg">
-                  {intro.description}
-                </p>
-              </div>
-
-              <div className="bg-blue-50 p-6 rounded-xl">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Tips for Success
-                </h2>
-                <ul className="space-y-3">
-                  {intro.tips.map((tip, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">
-                        {index + 1}
-                      </div>
-                      <span className="text-gray-700">{tip}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="text-center pt-6">
-                <button
-                  onClick={startSection}
-                  className="bg-teal-600 text-white px-8 py-4 rounded-xl hover:bg-teal-700 transition-colors text-lg font-semibold shadow-lg"
-                >
-                  Start {intro.title}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const renderQuestion = () => {
-    console.log('renderQuestion called:', {
-      currentSection,
-      currentQuestion,
-      questions: questions,
-      currentSectionQuestions: questions[currentSection],
-      questionCount: questions[currentSection]?.length,
-    });
-
     if (!questions || !questions[currentSection]) {
       return <div className="text-center py-8">Loading questions...</div>;
     }
@@ -652,648 +641,50 @@ const MockTest = () => {
       );
     }
 
-    console.log('Rendering question:', {
-      id: question.id,
-      type: question.type,
-      question: question.question,
-      options: question.options,
-      passage: question.passage,
-      passageText: question.passageText,
-    });
-
     switch (currentSection) {
       case 'listening':
         return (
-          <div className="space-y-6">
-            <div className="bg-teal-50 rounded-xl p-6 border-2 border-teal-200">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-bold text-teal-800 mb-2">
-                  🎧 Audio Player
-                </h3>
-                <p className="text-sm text-teal-600">
-                  Listen to the passage and answer the question below
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={isPlaying ? stopListening : startListening}
-                    disabled={isLoading || playCount >= MAX_PLAYS}
-                    className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${
-                      isPlaying
-                        ? 'bg-red-500 hover:bg-red-600'
-                        : 'bg-teal-500 hover:bg-teal-600'
-                    } ${
-                      isLoading || playCount >= MAX_PLAYS
-                        ? 'opacity-50 cursor-not-allowed'
-                        : ''
-                    }`}
-                  >
-                    <span role="img" aria-label="audio">
-                      {isPlaying ? '⏸️' : '▶️'}
-                    </span>
-                    {isLoading
-                      ? 'Loading...'
-                      : isPlaying
-                      ? 'Pause'
-                      : 'Play Audio'}
-                  </button>
-                </div>
-
-                {/* Play Count Display */}
-                <div className="text-sm text-teal-700">
-                  Plays remaining: {MAX_PLAYS - playCount} of {MAX_PLAYS}
-                </div>
-
-                {/* Audio Status */}
-                {isPlaying && (
-                  <div className="flex items-center gap-2 text-teal-600">
-                    <div className="animate-pulse">🔊</div>
-                    <span className="text-sm font-medium">
-                      Playing audio...
-                    </span>
-                  </div>
-                )}
-
-                {!isPlaying && playCount > 0 && (
-                  <div className="text-sm text-gray-600">
-                    Audio ready to play again
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-lg font-medium">
-                {question.passageTitle ||
-                  question.question ||
-                  'Passage not available'}
-              </h4>
-
-              {/* Render all questions for this passage */}
-              {question.type === 'passage' && question.questions && (
-                <div className="space-y-6">
-                  {question.questions.map((subQuestion, subIndex) => (
-                    <div
-                      key={`${question.id}-${subIndex}`}
-                      className="bg-gray-50 p-4 rounded-lg"
-                    >
-                      <h5 className="font-semibold text-gray-800 mb-3">
-                        Question {subIndex + 1}: {subQuestion.question}
-                      </h5>
-
-                      {subQuestion.options ? (
-                        <div className="space-y-2">
-                          {subQuestion.options.map((option, optionIndex) => (
-                            <label
-                              key={optionIndex}
-                              className="flex items-center space-x-3 cursor-pointer"
-                            >
-                              <input
-                                type="radio"
-                                name={`listening-${question.id}-${subIndex}`}
-                                value={optionIndex}
-                                checked={
-                                  answers.listening[
-                                    `${question.id}-${subIndex}`
-                                  ] === optionIndex
-                                }
-                                onChange={(e) =>
-                                  handleAnswer(
-                                    'listening',
-                                    `${question.id}-${subIndex}`,
-                                    parseInt(e.target.value)
-                                  )
-                                }
-                                className="text-teal-600"
-                              />
-                              <span>{option}</span>
-                            </label>
-                          ))}
-                        </div>
-                      ) : subQuestion.type === 'completion' ||
-                        subQuestion.type === 'shortAnswer' ? (
-                        <input
-                          type="text"
-                          value={
-                            answers.listening[`${question.id}-${subIndex}`] ||
-                            ''
-                          }
-                          onChange={(e) =>
-                            handleAnswer(
-                              'listening',
-                              `${question.id}-${subIndex}`,
-                              e.target.value
-                            )
-                          }
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                          placeholder="Type your answer here..."
-                        />
-                      ) : subQuestion.type === 'true_false' ? (
-                        <div className="space-y-2">
-                          <label className="flex items-center space-x-3 cursor-pointer">
-                            <input
-                              type="radio"
-                              name={`listening-${question.id}-${subIndex}`}
-                              value="true"
-                              checked={
-                                answers.listening[
-                                  `${question.id}-${subIndex}`
-                                ] === true
-                              }
-                              onChange={() =>
-                                handleAnswer(
-                                  'listening',
-                                  `${question.id}-${subIndex}`,
-                                  true
-                                )
-                              }
-                              className="text-teal-600"
-                            />
-                            <span>True</span>
-                          </label>
-                          <label className="flex items-center space-x-3 cursor-pointer">
-                            <input
-                              type="radio"
-                              name={`listening-${question.id}-${subIndex}`}
-                              value="false"
-                              checked={
-                                answers.listening[
-                                  `${question.id}-${subIndex}`
-                                ] === false
-                              }
-                              onChange={() =>
-                                handleAnswer(
-                                  'listening',
-                                  `${question.id}-${subIndex}`,
-                                  false
-                                )
-                              }
-                              className="text-teal-600"
-                            />
-                            <span>False</span>
-                          </label>
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Fallback for individual questions (if not passage type) */}
-              {question.type !== 'passage' && (
-                <>
-                  {question.type === 'multiple-choice' && question.options && (
-                    <div className="space-y-2">
-                      {question.options.map((option, index) => (
-                        <label
-                          key={index}
-                          className="flex items-center space-x-3 cursor-pointer"
-                        >
-                          <input
-                            type="radio"
-                            name={`listening-${question.id}`}
-                            value={index}
-                            checked={answers.listening[question.id] === index}
-                            onChange={(e) =>
-                              handleAnswer(
-                                'listening',
-                                question.id,
-                                parseInt(e.target.value)
-                              )
-                            }
-                            className="text-teal-600"
-                          />
-                          <span>{option}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-
-                  {question.type === 'fill-blank' && (
-                    <input
-                      type="text"
-                      value={answers.listening[question.id] || ''}
-                      onChange={(e) =>
-                        handleAnswer('listening', question.id, e.target.value)
-                      }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                      placeholder="Type your answer here..."
-                    />
-                  )}
-
-                  {question.type === 'true-false' && (
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name={`listening-${question.id}`}
-                          value="true"
-                          checked={answers.listening[question.id] === true}
-                          onChange={() =>
-                            handleAnswer('listening', question.id, true)
-                          }
-                          className="text-teal-600"
-                        />
-                        <span>True</span>
-                      </label>
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name={`listening-${question.id}`}
-                          value="false"
-                          checked={answers.listening[question.id] === false}
-                          onChange={() =>
-                            handleAnswer('listening', question.id, false)
-                          }
-                          className="text-teal-600"
-                        />
-                        <span>False</span>
-                      </label>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
+          <ListeningQuestionBlock
+            question={question}
+            answersSection={answers.listening}
+            onAnswer={(id, val) => handleAnswer('listening', id, val)}
+            startListening={startListening}
+            stopListening={stopListening}
+            isPlaying={isPlaying}
+            isLoading={isLoading}
+            playCount={playCount}
+            
+          />
         );
 
       case 'speaking':
         return (
-          <div className="space-y-6">
-            <div className="bg-purple-50 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4">
-                Speaking Part {question.part || 'Unknown'}
-              </h3>
-              <h4 className="text-lg font-medium mb-4">
-                {question.title || 'Speaking Question'}
-              </h4>
-
-              <div className="space-y-4">
-                <div className="bg-white p-4 rounded-lg">
-                  <h5 className="font-medium mb-2">Question:</h5>
-                  <p className="whitespace-pre-line">
-                    {question.question || 'Question not available'}
-                  </p>
-                </div>
-
-                {question.part === 2 && question.preparationTime && (
-                  <div className="bg-yellow-50 p-4 rounded-lg">
-                    <h5 className="font-medium mb-2">
-                      Preparation Time: {question.preparationTime} seconds
-                    </h5>
-                    <p className="text-sm text-gray-600">
-                      You have {question.preparationTime} seconds to prepare
-                      your answer.
-                    </p>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <div className="flex gap-4">
-                    <button
-                      onClick={startSpeakingRecording}
-                      disabled={isRecording}
-                      className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-                        />
-                      </svg>
-                      {isRecording ? 'Recording...' : 'Start Recording'}
-                    </button>
-
-                    {isRecording && (
-                      <button
-                        onClick={stopSpeakingRecording}
-                        className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700"
-                      >
-                        Stop Recording
-                      </button>
-                    )}
-                  </div>
-
-                  {answers.speaking[question.id] && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h5 className="font-medium mb-2">Your Answer:</h5>
-                      <p className="text-gray-700">
-                        {answers.speaking[question.id]}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <SpeakingQuestionBlock
+            question={question}
+            answersSection={answers.speaking}
+            isRecording={isRecording}
+            startRecording={startSpeakingRecording}
+            stopRecording={stopSpeakingRecording}
+          />
         );
 
       case 'reading':
         return (
-          <div className="space-y-6">
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4">
-                Reading Passage {currentQuestion + 1}
-              </h3>
-
-              <div className="space-y-4">
-                <div className="bg-white p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">Passage:</h4>
-                  <p className="text-gray-700 leading-relaxed">
-                    {question.passageText ||
-                      question.passage ||
-                      'Passage not available'}
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="text-lg font-medium">
-                    {question.passageTitle ||
-                      question.question ||
-                      'Passage not available'}
-                  </h4>
-
-                  {/* Render all questions for this passage */}
-                  {question.type === 'passage' && question.questions && (
-                    <div className="space-y-6">
-                      {question.questions.map((subQuestion, subIndex) => (
-                        <div
-                          key={`${question.id}-${subIndex}`}
-                          className="bg-gray-50 p-4 rounded-lg"
-                        >
-                          <h5 className="font-semibold text-gray-800 mb-3">
-                            Question {subIndex + 1}:{' '}
-                            {subQuestion.text || subQuestion.question}
-                          </h5>
-
-                          {subQuestion.options ? (
-                            <div className="space-y-2">
-                              {subQuestion.options.map(
-                                (option, optionIndex) => (
-                                  <label
-                                    key={optionIndex}
-                                    className="flex items-center space-x-3 cursor-pointer"
-                                  >
-                                    <input
-                                      type="radio"
-                                      name={`reading-${question.id}-${subIndex}`}
-                                      value={optionIndex}
-                                      checked={
-                                        answers.reading[
-                                          `${question.id}-${subIndex}`
-                                        ] === optionIndex
-                                      }
-                                      onChange={(e) =>
-                                        handleAnswer(
-                                          'reading',
-                                          `${question.id}-${subIndex}`,
-                                          parseInt(e.target.value)
-                                        )
-                                      }
-                                      className="text-teal-600"
-                                    />
-                                    <span>{option}</span>
-                                  </label>
-                                )
-                              )}
-                            </div>
-                          ) : subQuestion.type === 'completion' ||
-                            subQuestion.type === 'shortAnswer' ? (
-                            <input
-                              type="text"
-                              value={
-                                answers.reading[`${question.id}-${subIndex}`] ||
-                                ''
-                              }
-                              onChange={(e) =>
-                                handleAnswer(
-                                  'reading',
-                                  `${question.id}-${subIndex}`,
-                                  e.target.value
-                                )
-                              }
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                              placeholder="Type your answer here..."
-                            />
-                          ) : subQuestion.type === 'true_false' ||
-                            subQuestion.type === 'true-false' ? (
-                            <div className="space-y-2">
-                              <label className="flex items-center space-x-3 cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name={`reading-${question.id}-${subIndex}`}
-                                  value="true"
-                                  checked={
-                                    answers.reading[
-                                      `${question.id}-${subIndex}`
-                                    ] === true
-                                  }
-                                  onChange={() =>
-                                    handleAnswer(
-                                      'reading',
-                                      `${question.id}-${subIndex}`,
-                                      true
-                                    )
-                                  }
-                                  className="text-teal-600"
-                                />
-                                <span>True</span>
-                              </label>
-                              <label className="flex items-center space-x-3 cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name={`reading-${question.id}-${subIndex}`}
-                                  value="false"
-                                  checked={
-                                    answers.reading[
-                                      `${question.id}-${subIndex}`
-                                    ] === false
-                                  }
-                                  onChange={() =>
-                                    handleAnswer(
-                                      'reading',
-                                      `${question.id}-${subIndex}`,
-                                      false
-                                    )
-                                  }
-                                  className="text-teal-600"
-                                />
-                                <span>False</span>
-                              </label>
-                            </div>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Fallback for individual questions (if not passage type) */}
-                  {question.type !== 'passage' && (
-                    <>
-                      {question.type === 'multiple-choice' &&
-                        question.options && (
-                          <div className="space-y-2">
-                            {question.options.map((option, index) => (
-                              <label
-                                key={index}
-                                className="flex items-center space-x-3 cursor-pointer"
-                              >
-                                <input
-                                  type="radio"
-                                  name={`reading-${question.id}`}
-                                  value={index}
-                                  checked={
-                                    answers.reading[question.id] === index
-                                  }
-                                  onChange={(e) =>
-                                    handleAnswer(
-                                      'reading',
-                                      question.id,
-                                      parseInt(e.target.value)
-                                    )
-                                  }
-                                  className="text-teal-600"
-                                />
-                                <span>{option}</span>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-
-                      {question.type === 'true-false' && (
-                        <div className="space-y-2">
-                          <label className="flex items-center space-x-3 cursor-pointer">
-                            <input
-                              type="radio"
-                              name={`reading-${question.id}`}
-                              value="true"
-                              checked={answers.reading[question.id] === true}
-                              onChange={() =>
-                                handleAnswer('reading', question.id, true)
-                              }
-                              className="text-teal-600"
-                            />
-                            <span>True</span>
-                          </label>
-                          <label className="flex items-center space-x-3 cursor-pointer">
-                            <input
-                              type="radio"
-                              name={`reading-${question.id}`}
-                              value="false"
-                              checked={answers.reading[question.id] === false}
-                              onChange={() =>
-                                handleAnswer('reading', question.id, false)
-                              }
-                              className="text-teal-600"
-                            />
-                            <span>False</span>
-                          </label>
-                        </div>
-                      )}
-
-                      {question.type === 'fill-blank' && (
-                        <input
-                          type="text"
-                          value={answers.reading[question.id] || ''}
-                          onChange={(e) =>
-                            handleAnswer('reading', question.id, e.target.value)
-                          }
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                          placeholder="Type your answer here..."
-                        />
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <ReadingQuestionBlock
+            question={{ ...question, index: currentQuestion }}
+            answersSection={answers.reading}
+            onAnswer={(id, val) => handleAnswer('reading', id, val)}
+          />
         );
 
       case 'writing':
         return (
-          <div className="space-y-6">
-            <div className="bg-green-50 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4">
-                Writing{' '}
-                {question.type === 'task1'
-                  ? 'Task 1: Letter Writing'
-                  : 'Task 2: Essay Writing'}
-              </h3>
-              <h4 className="text-lg font-medium mb-4">
-                {question.title || 'Writing Task'}
-              </h4>
-
-              <div className="space-y-4">
-                <div className="bg-white p-4 rounded-lg">
-                  <h5 className="font-medium mb-2">Question:</h5>
-                  <p className="text-gray-700">
-                    {question.question || 'Question not available'}
-                  </p>
-
-                  {question.type === 'task1' && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded">
-                      <h6 className="font-medium text-blue-800 mb-2">
-                        Task 1: Letter Writing
-                      </h6>
-                      <p className="text-sm text-blue-700">
-                        Write a formal or informal letter based on the situation
-                        described above. Remember to include appropriate
-                        greetings, body paragraphs, and closing.
-                        <strong>Time: 20 minutes | Words: 150-200</strong>
-                      </p>
-                    </div>
-                  )}
-
-                  {question.type === 'task2' && (
-                    <div className="mt-4 p-3 bg-green-50 rounded">
-                      <h6 className="font-medium text-green-800 mb-2">
-                        Task 2: Essay Writing
-                      </h6>
-                      <p className="text-sm text-green-700">
-                        Write an essay responding to the given topic. Include an
-                        introduction, body paragraphs with supporting arguments,
-                        and a conclusion.
-                        <strong>Time: 40 minutes | Words: 250-300</strong>
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Time limit: {formatTime(question.timeLimit)}</span>
-                    <span>Word limit: {question.wordLimit}</span>
-                  </div>
-
-                  <textarea
-                    value={answers.writing[question.id] || ''}
-                    onChange={(e) =>
-                      handleAnswer('writing', question.id, e.target.value)
-                    }
-                    className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 resize-none"
-                    placeholder="Write your answer here..."
-                  />
-
-                  <div className="text-sm text-gray-600">
-                    Word count:{' '}
-                    {answers.writing[question.id]
-                      ?.split(/\s+/)
-                      .filter((word) => word.length > 0).length || 0}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <WritingQuestionBlock
+            question={question}
+            answersSection={answers.writing}
+            onAnswer={(id, val) => handleAnswer('writing', id, val)}
+            formatTime={formatTime}
+          />
         );
 
       default:
@@ -1303,348 +694,57 @@ const MockTest = () => {
 
   if (!isTestStarted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="text-teal-600 hover:text-teal-700">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                  />
-                </svg>
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">
-                IELTS Mock Test
-              </h1>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 flex items-center justify-center">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-8">
-              <svg
-                className="w-12 h-12 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Complete IELTS Mock Test
-            </h2>
-            <p className="text-gray-600 mb-8">
-              This mock test includes all four sections: Listening, Speaking,
-              Reading, and Writing. Total duration: 2 hours 45 minutes
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {sections.length > 0 ? (
-                sections.map((section) => (
-                  <div
-                    key={section.id}
-                    className="bg-white p-6 rounded-lg border border-gray-200"
-                  >
-                    <h3 className="text-lg font-semibold mb-2">
-                      {section.name}
-                    </h3>
-                    <p className="text-gray-600 mb-2">{section.time}</p>
-                    <p className="text-sm text-gray-500">
-                      {section.questions} questions
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-2 text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading test sections...</p>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={startTest}
-              disabled={!questions || Object.keys(questions).length === 0}
-              className={`px-8 py-4 rounded-lg transition-colors text-lg font-semibold ${
-                !questions || Object.keys(questions).length === 0
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-teal-600 text-white hover:bg-teal-700'
-              }`}
-            >
-              {!questions || Object.keys(questions).length === 0
-                ? 'Loading Questions...'
-                : 'Start Mock Test'}
-            </button>
-          </div>
-        </div>
-      </div>
+      <StartScreen sections={sections} questions={questions} onStart={startTest} />
     );
   }
 
   if (showingIntroduction) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="text-teal-600 hover:text-teal-700">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                  />
-                </svg>
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">
-                IELTS Mock Test
-              </h1>
-            </div>
-          </div>
-        </div>
-        {renderSkillIntroduction()}
-      </div>
+      <SectionIntro intro={skillIntroductions[currentSection]} onStart={startSection} />
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-teal-600 hover:text-teal-700">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">
-              IELTS Mock Test
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-600">
-              {sections.find((s) => s.id === currentSection)?.name} - Question{' '}
-              {currentQuestion + 1} of {questions[currentSection]?.length || 0}
-            </div>
-            <div className="bg-red-100 text-red-800 px-3 py-1 rounded-lg font-medium">
-              {formatTime(timeRemaining[currentSection])}
-            </div>
-          </div>
-        </div>
-      </div>
+      <TestHeader
+        currentSectionName={sections.find((s) => s.id === currentSection)?.name}
+        currentQuestionIndex={currentQuestion + 1}
+        totalQuestions={questions[currentSection]?.length || 0}
+        timeText={formatTime(timeRemaining[currentSection])}
+      />
 
       <div className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
           {showResults ? (
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  🎉 Test Results
-                </h2>
-                <p className="text-gray-600">
-                  Here's how you performed in each section
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-r from-teal-500 to-blue-600 rounded-xl p-6 mb-8 text-white text-center">
-                <h3 className="text-2xl font-bold mb-2">Overall Band Score</h3>
-                <div className="text-5xl font-bold mb-2">
-                  {testResults?.overall.band.toFixed(1)}
-                </div>
-                <p className="text-teal-100">
-                  {testResults?.overall.band >= 7.0
-                    ? 'Excellent!'
-                    : testResults?.overall.band >= 6.0
-                    ? 'Good!'
-                    : testResults?.overall.band >= 5.0
-                    ? 'Satisfactory'
-                    : 'Needs Improvement'}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-white border border-gray-200 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-xl font-semibold text-gray-900 flex items-center">
-                      🎧 Listening
-                    </h4>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-teal-600">
-                        {testResults?.listening.band.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {testResults?.listening.percentage.toFixed(1)}%
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 text-sm">
-                    {generateFeedback('Listening', testResults?.listening)}
-                  </p>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-xl font-semibold text-gray-900 flex items-center">
-                      📖 Reading
-                    </h4>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-teal-600">
-                        {testResults?.reading.band.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {testResults?.reading.percentage.toFixed(1)}%
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 text-sm">
-                    {generateFeedback('Reading', testResults?.reading)}
-                  </p>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-xl font-semibold text-gray-900 flex items-center">
-                      ✍️ Writing
-                    </h4>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-teal-600">
-                        {testResults?.writing.band.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {testResults?.writing.percentage.toFixed(1)}%
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 text-sm">
-                    {generateFeedback('Writing', testResults?.writing)}
-                  </p>
-                </div>
-
-                {/* Speaking */}
-                <div className="bg-white border border-gray-200 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-xl font-semibold text-gray-900 flex items-center">
-                      🗣️ Speaking
-                    </h4>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-teal-600">
-                        {testResults?.speaking.band.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {testResults?.speaking.percentage.toFixed(1)}%
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 text-sm">
-                    {generateFeedback('Speaking', testResults?.speaking)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                <h4 className="text-xl font-semibold text-gray-900 mb-4">
-                  📋 Recommendations
-                </h4>
-                <div className="space-y-3">
-                  {testResults?.listening.band < 6.0 && (
-                    <p className="text-gray-700">
-                      • <strong>Listening:</strong> Practice with audio
-                      materials, focus on note-taking skills
-                    </p>
-                  )}
-                  {testResults?.reading.band < 6.0 && (
-                    <p className="text-gray-700">
-                      • <strong>Reading:</strong> Improve skimming and scanning
-                      techniques, expand vocabulary
-                    </p>
-                  )}
-                  {testResults?.writing.band < 6.0 && (
-                    <p className="text-gray-700">
-                      • <strong>Writing:</strong> Practice essay structure, work
-                      on grammar and coherence
-                    </p>
-                  )}
-                  {testResults?.speaking.band < 6.0 && (
-                    <p className="text-gray-700">
-                      • <strong>Speaking:</strong> Practice fluency, work on
-                      pronunciation and vocabulary
-                    </p>
-                  )}
-                  {testResults?.overall.band >= 6.0 && (
-                    <p className="text-green-700 font-semibold">
-                      • Great job! Consider taking more practice tests to
-                      maintain your performance.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/"
-                  className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 font-semibold text-center"
-                >
-                  Back to Dashboard
-                </Link>
-                <button
-                  onClick={() => {
-                    setShowResults(false);
-                    setIsTestCompleted(false);
-                    setTestResults(null);
-                    setAnswers({
-                      listening: {},
-                      speaking: {},
-                      reading: {},
-                      writing: {},
-                    });
-                    setCurrentSection('listening');
-                    setCurrentQuestion(0);
-                    setIsTestStarted(false);
-                    setShowingIntroduction(true);
-                  }}
-                  className="bg-gray-600 text-white px-8 py-3 rounded-lg hover:bg-gray-700 font-semibold"
-                >
-                  Take Another Test
-                </button>
-              </div>
-            </div>
+            <ResultsView
+              testResults={testResults}
+              aiFeedback={aiFeedback}
+              activeTab={activeAnalysisTab}
+              onChangeTab={(tab) => setActiveAnalysisTab(tab)}
+              onRetake={() => {
+                setShowResults(false);
+                setIsTestCompleted(false);
+                setTestResults(null);
+                setAnswers({ listening: {}, speaking: {}, reading: {}, writing: {} });
+                setCurrentSection('listening');
+                setCurrentQuestion(0);
+                setIsTestStarted(false);
+                setShowingIntroduction(true);
+              }}
+            />
           ) : (
             <>
-              {renderQuestion()}
+              {isSubmitting ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+                  <p className="text-gray-700 font-medium mb-2">Analyzing your answers...</p>
+                  <p className="text-sm text-gray-500">
+                    {submitProgress}/{totalSubmitTasks} tasks completed
+                  </p>
+                </div>
+              ) : (
+                renderQuestion()
+              )}
 
               <div className="flex justify-between mt-8">
                 <button
@@ -1659,7 +759,7 @@ const MockTest = () => {
                   Previous
                 </button>
 
-                {currentQuestion === questions[currentSection]?.length - 1 &&
+                {!isSubmitting && currentQuestion === questions[currentSection]?.length - 1 &&
                 sections.findIndex((s) => s.id === currentSection) ===
                   sections.length - 1 ? (
                   <button

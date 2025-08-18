@@ -13,7 +13,7 @@ const Writing = () => {
   const [submitted, setSubmitted] = useState(false);
   const [writingData, setWritingData] = useState(null);
   const [aiFeedback, setAiFeedback] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('sample_answer');
 
   useEffect(() => {
@@ -40,19 +40,19 @@ const Writing = () => {
     );
   }
 
-  const WRITING_PARTS = writingData;
-  const currentPrompts = WRITING_PARTS[selectedTask].prompts;
+  const writingParts = writingData;
+  const currentPrompts = writingParts[selectedTask].prompts;
 
-  const FEEDBACK_TABS = [
+  const feedbackTabs = [
     { key: 'sample_answer', label: 'Sample Answer' },
     { key: 'vocabulary', label: 'Vocabulary' },
   ];
 
-  const handleSubmit = async (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
 
-    setIsAnalyzing(true);
+    setIsLoading(true);
     try {
       const wordCount = answer.trim().split(/\s+/).length;
       const feedback = await generateWritingFeedback(
@@ -60,38 +60,21 @@ const Writing = () => {
         answer,
         wordCount
       );
-      console.log('Received feedback:', feedback);
+      let feedbackData = Array.isArray(feedback) && feedback.length > 0 ? feedback[0] : feedback;
 
-      let processedFeedback = feedback;
-      if (Array.isArray(feedback) && feedback.length > 0) {
-        processedFeedback = feedback[0];
-        console.log(
-          'Extracted first item from feedback array:',
-          processedFeedback
-        );
-      }
+      if (feedbackData && typeof feedbackData === 'object' && feedbackData.sample_answer) {
+        setAiFeedback(feedbackData);
 
-      if (
-        processedFeedback &&
-        typeof processedFeedback === 'object' &&
-        processedFeedback.sample_answer
-      ) {
-        console.log('Setting AI feedback:', processedFeedback);
-        setAiFeedback(processedFeedback);
-
-        if (
-          processedFeedback.vocabulary_words &&
-          Array.isArray(processedFeedback.vocabulary_words)
-        ) {
-          saveVocabularyWords(processedFeedback.vocabulary_words);
+        if (feedbackData.vocabulary_words && Array.isArray(feedbackData.vocabulary_words)) {
+          saveVocabularyWords(feedbackData.vocabulary_words);
         }
 
-        const score = processedFeedback.overall_score || 6.0;
+        const score = feedbackData.overall_score || 6.0;
         const band = Math.round(score * 2) / 2;
         recordPracticeActivity('writing', score, band, {
           task: currentPrompts[currentPrompt],
-          wordCount: wordCount,
-          feedback: processedFeedback.overall_feedback,
+          wordCount,
+          feedback: feedbackData.overall_feedback,
         });
       } else {
         console.error('Invalid feedback structure:', feedback);
@@ -113,7 +96,7 @@ const Writing = () => {
       console.error('Error generating AI feedback:', error);
       setAiFeedback(null);
     } finally {
-      setIsAnalyzing(false);
+      setIsLoading(false);
     }
   };
 
@@ -127,7 +110,7 @@ const Writing = () => {
             </h1>
           </div>
           <div className="flex gap-3 justify-center">
-            {Object.entries(WRITING_PARTS).map(([key, task]) => (
+            {Object.entries(writingParts).map(([key, task]) => (
               <button
                 key={key}
                 onClick={() => {
@@ -160,7 +143,7 @@ const Writing = () => {
         <div className="flex-1">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
             {!submitted ? (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+              <form onSubmit={onSubmit} className="flex flex-col gap-6">
                 <div className="text-lg font-semibold text-gray-800 mb-2">
                   {currentPrompts[currentPrompt]}
                 </div>
@@ -187,7 +170,7 @@ const Writing = () => {
                   <div className="text-2xl font-bold text-teal-700 mb-4">
                     Answer Submitted! 📝
                   </div>
-                  {isAnalyzing && (
+                  {isLoading && (
                     <div className="text-purple-600 text-center font-semibold animate-pulse mb-4">
                       Analyzing your essay...
                     </div>
@@ -197,7 +180,7 @@ const Writing = () => {
                 {aiFeedback && typeof aiFeedback === 'object' ? (
                   <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
                     <div className="flex mb-4 w-full overflow-x-auto border-b border-orange-200">
-                      {FEEDBACK_TABS.map((tab) => (
+                      {feedbackTabs.map((tab) => (
                         <button
                           key={tab.key}
                           className={`flex-1 min-w-0 px-3 py-2 rounded-t-lg font-semibold border-b-2 transition-colors whitespace-nowrap text-sm ${

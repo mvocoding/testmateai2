@@ -41,15 +41,15 @@ const Reading = () => {
     );
   }
 
-  const READING_PASSAGES = readingData;
+  const readingPassages = readingData;
 
-  const FEEDBACK_TABS = [
+  const feedbackTabs = [
     { key: 'summary', label: 'Passage Summary' },
     { key: 'analysis', label: 'Question Analysis' },
     { key: 'vocabulary', label: 'Vocabulary' },
   ];
 
-  const currentType = READING_PASSAGES[selectedLevel];
+  const currentType = readingPassages[selectedLevel];
   const currentPassages = currentType.passages;
   const selectedPassage = currentPassages[currentPassage];
   const currentQuestions = selectedPassage.questions;
@@ -83,17 +83,6 @@ const Reading = () => {
     const percentage = (correctAnswers / currentQuestions.length) * 100;
     setScore(percentage);
     setShowResults(true);
-
-    // Debug logging
-    console.log('Reading Submit Debug:', {
-      selectedPassage,
-      currentQuestions,
-      answers,
-      passageForAI: {
-        text: selectedPassage.passage,
-        title: selectedPassage.title,
-      },
-    });
 
     setIsAnalyzing(true);
     try {
@@ -159,7 +148,10 @@ const Reading = () => {
     }
   };
 
-  const handleTryAgain = () => {
+  const resetPracticeState = (nextIndex) => {
+    if (typeof nextIndex === 'number') {
+      setCurrentPassage(nextIndex);
+    }
     setAnswers({});
     setShowResults(false);
     setScore(0);
@@ -167,14 +159,13 @@ const Reading = () => {
     setActiveTab('summary');
   };
 
+  const handleTryAgain = () => {
+    resetPracticeState();
+  };
+
   const nextPassage = () => {
     if (currentPassage < currentPassages.length - 1) {
-      setCurrentPassage(currentPassage + 1);
-      setAnswers({});
-      setShowResults(false);
-      setScore(0);
-      setAiFeedback(null);
-      setActiveTab('summary');
+      resetPracticeState(currentPassage + 1);
     }
   };
 
@@ -192,18 +183,13 @@ const Reading = () => {
       <div className="mx-auto p-6">
         <div className="mb-6">
           <div className="flex gap-3 flex-wrap">
-            {Object.keys(READING_PASSAGES).map((level) => (
+            {Object.keys(readingPassages).map((level) => (
               <button
                 key={level}
                 type="button"
                 onClick={() => {
                   setSelectedLevel(level);
-                  setCurrentPassage(0);
-                  setAnswers({});
-                  setShowResults(false);
-                  setScore(0);
-                  setAiFeedback(null);
-                  setActiveTab('summary');
+                  resetPracticeState(0);
                 }}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                   selectedLevel === level
@@ -211,7 +197,7 @@ const Reading = () => {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {READING_PASSAGES[level].name}
+                {readingPassages[level].name}
               </button>
             ))}
           </div>
@@ -341,7 +327,7 @@ const Reading = () => {
                     {aiFeedback && (
                       <div className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
                         <div className="flex mb-4 w-full overflow-x-auto border-b border-green-200">
-                          {FEEDBACK_TABS.map((tab) => (
+                          {feedbackTabs.map((tab) => (
                             <button
                               key={tab.key}
                               type="button"
@@ -532,12 +518,7 @@ const Reading = () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-teal-100'
                   }`}
                   onClick={() => {
-                    setCurrentPassage(idx);
-                    setAnswers({});
-                    setShowResults(false);
-                    setScore(0);
-                    setAiFeedback(null);
-                    setActiveTab('summary');
+                    resetPracticeState(idx);
                   }}
                 >
                   Question {idx + 1}

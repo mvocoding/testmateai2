@@ -1,10 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { generateStudyPlan } from '../utils';
+import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { generateStudyPlan as generateStudyPlanFromUtils } from "../utils";
+
+// constants
+const TEXT_API_URL = "https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text";
+const AUDIO_API_URL = "http://localhost:3001/api/audio";
+const DEFAULT_VOICE_ID = "6889b660662160e2caad5e3f";
 
 const AskMeAnything = () => {
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
+  const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -31,15 +36,9 @@ const AskMeAnything = () => {
 
   useEffect(() => {
     isContinuousRecordingRef.current = isContinuousRecording;
-  }, [isContinuousRecording]);
-
-  useEffect(() => {
     isProcessingResponseRef.current = isProcessingResponse;
-  }, [isProcessingResponse]);
-
-  useEffect(() => {
     isAudioPlayingRef.current = isAudioPlaying;
-  }, [isAudioPlaying]);
+  }, [isContinuousRecording, isProcessingResponse, isAudioPlaying]);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -74,7 +73,7 @@ const AskMeAnything = () => {
     };
 
     const handleAudioError = () => {
-      console.log('Audio error - attempting to restart recognition');
+      console.log("Audio error - attempting to restart recognition");
       setIsAudioPlaying(false);
       setIsProcessingResponse(false);
       if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
@@ -105,32 +104,32 @@ const AskMeAnything = () => {
 
   const startContinuousVoiceChat = () => {
     if (
-      !('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)
+      !("webkitSpeechRecognition" in window || "SpeechRecognition" in window)
     ) {
-      alert('Speech recognition not supported in this browser.');
+      alert("Speech recognition not supported in this browser.");
       return;
     }
 
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
     const recog = new SpeechRecognition();
-    recog.lang = 'en-US';
+    recog.lang = "en-US";
     recog.interimResults = false;
     recog.maxAlternatives = 1;
     recog.continuous = false;
 
     recog.onstart = () => {
-      console.log('Speech recognition started');
+      console.log("Speech recognition started");
       setIsContinuousRecording(true);
       setIsRecording(true);
     };
 
     recog.onend = () => {
-      console.log('Speech recognition ended');
+      console.log("Speech recognition ended");
       setIsRecording(false);
 
       if (isContinuousRecordingRef.current) {
-        console.log('Attempting to restart speech recognition...');
+        console.log("Attempting to restart speech recognition...");
         setTimeout(() => {
           if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
             try {
@@ -141,13 +140,12 @@ const AskMeAnything = () => {
               }
             }
           } else {
-            console.log('Cannot restart - conditions not met:', {
+            console.log("Cannot restart - conditions not met:", {
               isContinuousRecording: isContinuousRecordingRef.current,
               hasVoiceRecognition: !!voiceRecognitionRef.current,
             });
           }
         }, 1000);
-      } else {
       }
     };
 
@@ -164,7 +162,7 @@ const AskMeAnything = () => {
 
     recog.onerror = (event) => {
       setIsRecording(false);
-      if (event.error === 'no-speech') {
+      if (event.error === "no-speech") {
         if (
           isContinuousRecordingRef.current &&
           !isProcessingResponseRef.current &&
@@ -178,17 +176,17 @@ const AskMeAnything = () => {
               voiceRecognitionRef.current
             ) {
               try {
-                console.log('Restarting after no-speech error...');
+                console.log("Restarting after no-speech error...");
                 voiceRecognitionRef.current.start();
               } catch (error) {
-                console.error('Error restarting after no-speech:', error);
+                console.error("Error restarting after no-speech:", error);
               }
             }
           }, 1000);
         }
       } else {
         setIsContinuousRecording(false);
-        alert('Voice recognition error: ' + event.error);
+        alert("Voice recognition error: " + event.error);
       }
     };
 
@@ -235,25 +233,25 @@ const AskMeAnything = () => {
     const userMessage = {
       id: Date.now(),
       text: messageToSend,
-      sender: 'user',
+      sender: "user",
       timestamp: new Date().toLocaleTimeString(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setInputMessage('');
+    setInputMessage("");
     setIsLoading(true);
 
     try {
       const headers = {
-        'content-type': 'application/json',
+        "content-type": "application/json",
       };
 
       const isStudyPlanConversation = messages.some(
         (msg) =>
-          msg.text.includes('Have you taken an IELTS test before') ||
-          msg.text.includes('What was your last IELTS score') ||
-          msg.text.includes('What is your target band score') ||
-          msg.text.includes('When is your test date')
+          msg.text.includes("Have you taken an IELTS test before") ||
+          msg.text.includes("What was your last IELTS score") ||
+          msg.text.includes("What is your target band score") ||
+          msg.text.includes("When is your test date")
       );
 
       const systemPrompt = isStudyPlanConversation
@@ -281,16 +279,16 @@ Never respond with plain text or any other format.`;
       const payload = { prompt: `${systemPrompt}\n\nUser: ${messageToSend}` };
 
       const response = await fetch(
-        'https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text',
+        TEXT_API_URL,
         {
-          method: 'POST',
+          method: "POST",
           headers: headers,
           body: JSON.stringify(payload),
         }
       );
 
       if (!response.ok) {
-        throw new Error('API request failed');
+        throw new Error("API request failed");
       }
 
       const data = await response.json();
@@ -300,7 +298,7 @@ Never respond with plain text or any other format.`;
       const aiMessage = {
         id: Date.now() + 1,
         text: aiResponse,
-        sender: 'ai',
+        sender: "ai",
         timestamp: new Date().toLocaleTimeString(),
       };
 
@@ -314,9 +312,9 @@ Never respond with plain text or any other format.`;
             audioRef.current.play();
           }
         } catch (err) {
-          console.error('Failed to fetch or play audio:', err);
+          console.error("Failed to fetch or play audio:", err);
           if (!isContinuousRecording) {
-            alert('Failed to fetch or play audio: ' + err.message);
+            alert("Failed to fetch or play audio: " + err.message);
           }
           setIsProcessingResponse(false);
         }
@@ -330,13 +328,17 @@ Never respond with plain text or any other format.`;
         setIsGeneratingPlan(true);
 
         try {
-          const plan = await generateStudyPlan({
+          const plan = await generateStudyPlanFromUtils({
             currentScore: data.currentScore,
             targetScore: data.targetScore,
             testDate: data.testDate,
           });
 
           if (plan) {
+            try {
+              localStorage.setItem('testmate_study_plan', JSON.stringify(plan));
+              try { window.dispatchEvent(new CustomEvent('userDataUpdated')); } catch {}
+            } catch {}
             const planMessage = {
               id: Date.now() + 2,
               text: `📚 **Your Personalized Study Plan**\n\n**Summary:** ${
@@ -371,17 +373,17 @@ Never respond with plain text or any other format.`;
             setMessages((prev) => [...prev, planMessage]);
           }
         } catch (error) {
-          console.error('Error generating study plan:', error);
+          console.error("Error generating study plan:", error);
         } finally {
           setIsGeneratingPlan(false);
         }
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
       const errorMessage = {
         id: Date.now() + 1,
         text: "Sorry, I'm having trouble connecting right now. Please try again later.",
-        sender: 'ai',
+        sender: "ai",
         timestamp: new Date().toLocaleTimeString(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -398,7 +400,7 @@ Never respond with plain text or any other format.`;
     const initialMessage = {
       id: Date.now(),
       text: "I'd love to help you create a personalized study plan! Let me ask you a few questions to get started.\n\nHave you taken an IELTS test before? (Yes/No)",
-      sender: 'ai',
+      sender: "ai",
       timestamp: new Date().toLocaleTimeString(),
     };
     setMessages([initialMessage]);
@@ -414,13 +416,13 @@ Never respond with plain text or any other format.`;
 
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i];
-      if (msg.sender === 'user') {
+      if (msg.sender === "user") {
         const text = msg.text.toLowerCase();
 
         if (
-          text.includes('yes') &&
+          text.includes("yes") &&
           i > 0 &&
-          messages[i - 1].text.includes('Have you taken an IELTS test before')
+          messages[i - 1].text.includes("Have you taken an IELTS test before")
         ) {
           data.hasPreviousTest = true;
         }
@@ -458,16 +460,16 @@ Never respond with plain text or any other format.`;
 
   const fetchAudioFromAPI = async (
     text,
-    rate = '100%',
-    voice_id = '6889b660662160e2caad5e3f'
+    rate = "100%",
+    voice_id = DEFAULT_VOICE_ID
   ) => {
-    const api_url = 'http://localhost:3001/api/audio';
+    const api_url = AUDIO_API_URL;
 
     try {
       const response = await fetch(api_url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'content-type': 'application/json',
+          "content-type": "application/json",
         },
         body: JSON.stringify({
           text,
@@ -485,10 +487,10 @@ Never respond with plain text or any other format.`;
       if (result.success && result.audioUrl) {
         return result.audioUrl;
       } else {
-        throw new Error(`API error: ${result.error || 'Unknown error'}`);
+        throw new Error(`API error: ${result.error || "Unknown error"}`);
       }
     } catch (error) {
-      console.error('Error fetching audio from API:', error);
+      console.error("Error fetching audio from API:", error);
       throw error;
     }
   };

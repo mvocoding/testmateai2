@@ -7,8 +7,8 @@ import {
 } from '../utils';
 
 const Listening = () => {
-  const [selectedLevel, setSelectedLevel] = useState('multipleChoice');
-  const [currentPassage, setCurrentPassage] = useState(0);
+  const [selectedQuestionType, setSelectedQuestionType] = useState('multipleChoice');
+  const [currentPassageIndex, setCurrentPassageIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
@@ -26,7 +26,7 @@ const Listening = () => {
   const speechRef = useRef(null);
   const timerRef = useRef(null);
 
-  const MAX_PLAYS = 2;
+  
   const TIME_LIMIT = 300; 
 
   const FEEDBACK_TABS = [
@@ -34,15 +34,14 @@ const Listening = () => {
     { key: 'analysis', label: 'Question Analysis' },
     { key: 'vocabulary', label: 'Vocabulary' },
   ];
+  const DEFAULT_TAB = 'transcription';
 
   useEffect(() => {
     const loadListeningData = async () => {
       try {
         const data = await dataService.getPracticeQuestions('listening');
         setListeningData(data);
-      } catch (error) {
-        console.error('Error loading listening data:', error);
-      }
+      } catch (error) {}
     };
 
     loadListeningData();
@@ -87,17 +86,37 @@ const Listening = () => {
   const LISTENING_LEVELS = listeningData?.passages || [];
   // Filter passages based on selected question type
   const currentPassages = LISTENING_LEVELS.filter(passage => 
-    passage.questionType === selectedLevel
+    passage.questionType === selectedQuestionType
   );
 
-  const startListening = () => {
-    if (playCount >= MAX_PLAYS) {
-      alert(`You can only play the audio ${MAX_PLAYS} times.`);
-      return;
+  const resetPassageState = () => {
+    setAnswers({});
+    setShowResults(false);
+    setAiFeedback(null);
+    setActiveTab(DEFAULT_TAB);
+    setPlayCount(0);
+    setTimeRemaining(0);
+    setIsTimerActive(false);
+    if (speechRef.current) {
+      window.speechSynthesis.cancel();
     }
+  };
+
+  const handleSelectQuestionType = (type) => {
+    setSelectedQuestionType(type);
+    setCurrentPassageIndex(0);
+    resetPassageState();
+  };
+
+  const handleSelectPassage = (idx) => {
+    setCurrentPassageIndex(idx);
+    resetPassageState();
+  };
+
+  const startListening = () => {
 
     setIsLoading(true);
-    const passage = currentPassages[currentPassage];
+    const passage = currentPassages[currentPassageIndex];
 
     if (!passage || !passage.text) {
       alert('No audio text available for this passage.');
@@ -163,21 +182,17 @@ const Listening = () => {
   };
 
   const handleAnswerChange = (questionId, value) => {
-    console.log(
-      `handleAnswerChange: questionId = ${questionId}, value = ${value}, type = ${typeof value}`
-    );
     setAnswers((prev) => {
       const newAnswers = {
         ...prev,
         [questionId]: value,
       };
-      console.log('New answers object:', newAnswers);
       return newAnswers;
     });
   };
 
   const calculateScore = () => {
-    const passage = currentPassages[currentPassage];
+    const passage = currentPassages[currentPassageIndex];
     if (!passage || !passage.questions) return 0;
     
     let correct = 0;
@@ -212,27 +227,11 @@ const Listening = () => {
     setScore(finalScore);
     setShowResults(true);
 
-    console.log('Answers object:', answers);
-    console.log('Questions:', questions);
-
     setIsAnalyzing(true);
     try {
       const formattedAnswers = {};
       questions.forEach((question, idx) => {
         const userAnswer = answers[question.id];
-        console.log(
-          `Question ${
-            question.id
-          }: userAnswer = ${userAnswer}, type = ${typeof userAnswer}`
-        );
-        console.log(`Question options:`, question.options);
-        console.log(`Question type: ${question.type}`);
-        console.log(`Has options: ${!!question.options}`);
-        console.log(
-          `User answer check: ${
-            userAnswer !== undefined && userAnswer !== null
-          }`
-        );
 
         if (
           question.options &&
@@ -240,26 +239,16 @@ const Listening = () => {
           userAnswer !== null
         ) {
           formattedAnswers[question.id] = question.options[userAnswer];
-          console.log(
-            `Formatted answer for ${question.id}: ${
-              formattedAnswers[question.id]
-            }`
-          );
         } else {
           formattedAnswers[question.id] = userAnswer;
-          console.log(`Using raw answer for ${question.id}: ${userAnswer}`);
         }
       });
-
-      console.log('Formatted answers:', formattedAnswers);
 
       const feedback = await generateListeningFeedback(
         passage,
         questions,
         formattedAnswers
       );
-
-      console.log('AI Feedback received:', feedback);
 
       const correctedFeedback = {
         ...feedback,
@@ -280,8 +269,6 @@ const Listening = () => {
                 userAnswer !== null
                   ? question.options[userAnswer]
                   : 'No answer provided';
-              console.log(`  Actual correct answer: ${actualCorrectAnswer}`);
-              console.log(`  Actual student answer: ${actualStudentAnswer}`);
             } else {
               actualCorrectAnswer = question.answer || question.correct;
               actualStudentAnswer = userAnswer || 'No answer provided';
@@ -310,15 +297,9 @@ const Listening = () => {
               student_answer: actualStudentAnswer,
               is_correct: isActuallyCorrect,
             };
-            console.log(
-              `Corrected analysis for question ${idx + 1}:`,
-              correctedAnalysis
-            );
             return correctedAnalysis;
           }) || [],
       };
-
-      console.log('Final corrected feedback:', correctedFeedback);
 
       setAiFeedback(correctedFeedback);
 
@@ -346,7 +327,6 @@ const Listening = () => {
         feedback: feedback.overall_feedback,
       });
     } catch (error) {
-      console.error('Error generating AI feedback:', error);
       setAiFeedback(null);
     } finally {
       setIsAnalyzing(false);
@@ -354,19 +334,9 @@ const Listening = () => {
   };
 
   const handleNextPassage = () => {
-    if (currentPassage < currentPassages.length - 1) {
-      setCurrentPassage((prev) => prev + 1);
-      setAnswers({});
-      setShowResults(false);
-      setAiFeedback(null);
-      setActiveTab('transcription');
-      setPlayCount(0);
-      setTimeRemaining(0);
-      setIsTimerActive(false);
-      // Removed setCurrentQuestion(0) since all questions are shown at once
-      if (speechRef.current) {
-        window.speechSynthesis.cancel();
-      }
+    if (currentPassageIndex < currentPassages.length - 1) {
+      setCurrentPassageIndex((prev) => prev + 1);
+      resetPassageState();
     }
   };
 
@@ -376,7 +346,7 @@ const Listening = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const passage = currentPassages[currentPassage];
+  const passage = currentPassages[currentPassageIndex];
   const questions = passage?.questions || [];
   
   // Safety check for passage
@@ -421,19 +391,9 @@ const Listening = () => {
             {listeningData?.questionTypes?.map((type, index) => (
               <button
                 key={type.type}
-                onClick={() => {
-                  setSelectedLevel(type.type);
-                  setCurrentPassage(0);
-                  setAnswers({});
-                  setShowResults(false);
-                  setAiFeedback(null);
-                  setActiveTab('transcription');
-                  setPlayCount(0);
-                  setTimeRemaining(0);
-                  setIsTimerActive(false);
-                }}
+                onClick={() => handleSelectQuestionType(type.type)}
                 className={`px-4 py-3 rounded-xl font-semibold transition-all duration-200 text-sm ${
-                  selectedLevel === type.type
+                  selectedQuestionType === type.type
                     ? 'bg-teal-600 text-white shadow-lg'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
@@ -456,7 +416,7 @@ const Listening = () => {
           <div className="mb-4 text-center">
             <div className="text-center mb-4">
               <h2 className="text-2xl font-bold text-teal-700 mb-2">
-                {listeningData?.questionTypes?.find(type => type.type === selectedLevel)?.name || 'Listening Practice'}
+                {listeningData?.questionTypes?.find(type => type.type === selectedQuestionType)?.name || 'Listening Practice'}
               </h2>
             </div>
             <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl p-2">
@@ -478,16 +438,12 @@ const Listening = () => {
                 <div className="flex items-center gap-4">
                   <button
                     onClick={isPlaying ? stopListening : startListening}
-                    disabled={isLoading || playCount >= MAX_PLAYS}
+                    disabled={isLoading}
                     className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${
                       isPlaying
                         ? 'bg-red-500 hover:bg-red-600'
                         : 'bg-teal-500 hover:bg-teal-600'
-                    } ${
-                      isLoading || playCount >= MAX_PLAYS
-                        ? 'opacity-50 cursor-not-allowed'
-                        : ''
-                    }`}
+                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <span role="img" aria-label="audio">
                       {isPlaying ? '⏸️' : '▶️'}
@@ -500,9 +456,7 @@ const Listening = () => {
                   </button>
                 </div>
 
-                <div className="text-sm text-teal-700">
-                  Plays remaining: {MAX_PLAYS - playCount} of {MAX_PLAYS}
-                </div>
+                
 
                 {isPlaying && (
                   <div className="flex items-center gap-2 text-teal-600">
@@ -599,7 +553,7 @@ const Listening = () => {
                   Your Score: Band {score}
                 </div>
                 <div className="text-lg text-gray-600">
-                  Passage {currentPassage + 1} of {currentPassages.length}
+                  Passage {currentPassageIndex + 1} of {currentPassages.length}
                 </div>
                 {isAnalyzing && (
                   <div className="text-purple-600 text-center font-semibold animate-pulse">
@@ -749,7 +703,7 @@ const Listening = () => {
               )}
 
               <div className="text-center">
-                {currentPassage < currentPassages.length - 1 ? (
+                {currentPassageIndex < currentPassages.length - 1 ? (
                   <button
                     onClick={handleNextPassage}
                     className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
@@ -773,21 +727,9 @@ const Listening = () => {
             {currentPassages.map((p, idx) => (
               <button
                 key={p.id}
-                onClick={() => {
-                  setCurrentPassage(idx);
-                  setAnswers({});
-                  setShowResults(false);
-                  setAiFeedback(null);
-                  setActiveTab('transcription');
-                  setPlayCount(0);
-                  setTimeRemaining(0);
-                  setIsTimerActive(false);
-                  if (speechRef.current) {
-                    window.speechSynthesis.cancel();
-                  }
-                }}
+                onClick={() => handleSelectPassage(idx)}
                 className={`w-full text-left px-4 py-2 rounded-lg font-semibold transition-all duration-150 mb-1 ${
-                  currentPassage === idx
+                  currentPassageIndex === idx
                     ? 'bg-teal-500 text-white shadow'
                     : 'bg-gray-100 text-gray-700 hover:bg-teal-100'
                 }`}

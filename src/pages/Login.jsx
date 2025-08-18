@@ -4,14 +4,14 @@ import { Spin } from '../components/Spin';
 import { login, verifyOTP } from '../services/dataService';
 
 const Login = () => {
-  const [step, setStep] = useState('email');
+  const [authStep, setAuthStep] = useState('email');
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState(['', '', '', '', '', '']);
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleEmailChange = (e) => {
+  const onEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
     if (errors.email) {
@@ -19,21 +19,21 @@ const Login = () => {
     }
   };
 
-  const handleOtpChange = (index, value) => {
+  const onCodeChange = (index, value) => {
     if (value.length <= 1 && /^\d*$/.test(value)) {
-      const newOtp = [...otp];
-      newOtp[index] = value;
-      setOtp(newOtp);
+      const next = [...code];
+      next[index] = value;
+      setCode(next);
       if (value && index < 5) {
-        const nextInput = document.getElementById(`otp-${index + 1}`);
+        const nextInput = document.getElementById(`code-${index + 1}`);
         if (nextInput) nextInput.focus();
       }
     }
   };
 
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
+  const onCodeKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      const prevInput = document.getElementById(`code-${index - 1}`);
       if (prevInput) prevInput.focus();
     }
   };
@@ -50,56 +50,72 @@ const Login = () => {
     return true;
   };
 
-  const validateOtp = () => {
-    const otpString = otp.join('');
-    if (otpString.length !== 6) {
+  const validateCode = () => {
+    const codeString = code.join('');
+    if (codeString.length !== 6) {
       setErrors({ otp: 'Please enter the 6-digit code' });
       return false;
     }
     return true;
   };
 
-  const handleSendOtp = async (e) => {
+  const onSendCode = async (e) => {
     e.preventDefault();
     if (!validateEmail()) {
       return;
     }
-    setIsLoading(true);
+    setLoading(true);
     try {
       await login(email);
-      setStep('otp');
+      setAuthStep('otp');
       setErrors({});
     } catch (error) {
-      console.error('Error sending OTP:', error);
       setErrors({ email: 'Failed to send verification code. Please try again.' });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleVerifyOtp = async (e) => {
+  const onVerifyCode = async (e) => {
     e.preventDefault();
-    if (!validateOtp()) {
+    if (!validateCode()) {
       return;
     }
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const otpString = otp.join('');
-      await verifyOTP(email, otpString);
+      const codeString = code.join('');
+      await verifyOTP(email, codeString);
       navigate('/dashboard');
     } catch (error) {
-      console.error('Error verifying OTP:', error);
       setErrors({ otp: 'Invalid verification code. Please try again.' });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleBackToEmail = () => {
-    setStep('email');
-    setOtp(['', '', '', '', '', '']);
+  const onBackToEmail = () => {
+    setAuthStep('email');
+    setCode(['', '', '', '', '', '']);
     setErrors({});
   };
+
+  const renderOtpInputs = () => (
+    <div className="flex justify-center space-x-3 mb-4">
+      {code.map((digit, index) => (
+        <input
+          key={index}
+          id={`code-${index}`}
+          type="text"
+          maxLength="1"
+          value={digit}
+          onChange={(e) => onCodeChange(index, e.target.value)}
+          onKeyDown={(e) => onCodeKeyDown(index, e)}
+          className="w-14 h-14 text-center border-2 border-purple-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 text-2xl font-bold bg-white/80 shadow-md transition-all duration-200 mx-1"
+          placeholder=""
+        />
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 relative z-10 overflow-hidden flex flex-col justify-center md:pr-20">
@@ -127,16 +143,16 @@ const Login = () => {
                 <span role="img" aria-label="login">
                   🔐
                 </span>
-                {step === 'email' ? 'Sign In' : 'Enter Verification Code'}
+                {authStep === 'email' ? 'Sign In' : 'Enter Verification Code'}
               </h2>
               <p className="text-gray-700">
-                {step === 'email'
+                {authStep === 'email'
                   ? 'Sign in to continue your IELTS adventure!'
                   : `We've sent a 6-digit code to ${email}`}
               </p>
             </div>
-            {step === 'email' ? (
-              <form className="space-y-6 w-full" onSubmit={handleSendOtp}>
+            {authStep === 'email' ? (
+              <form className="space-y-6 w-full" onSubmit={onSendCode}>
                 <div>
                   <label
                     htmlFor="email"
@@ -151,7 +167,7 @@ const Login = () => {
                     autoComplete="email"
                     required
                     value={email}
-                    onChange={handleEmailChange}
+                    onChange={onEmailChange}
                     className={`w-full px-4 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-colors text-lg bg-white/80 ${
                       errors.email ? 'border-red-300' : 'border-gray-300'
                     }`}
@@ -164,12 +180,12 @@ const Login = () => {
                 <div>
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={loading}
                     className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-pink-400 hover:from-purple-700 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 transition-colors ${
-                      isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                      loading ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
-                    {isLoading ? (
+                    {loading ? (
                       <div className="flex items-center gap-2">
                         <Spin />
                         Sending code...
@@ -186,26 +202,12 @@ const Login = () => {
                 </div>
               </form>
             ) : (
-              <form className="space-y-6 w-full" onSubmit={handleVerifyOtp}>
+              <form className="space-y-6 w-full" onSubmit={onVerifyCode}>
                 <div>
                   <label className="block text-sm font-medium text-primary-700 mb-4 text-center">
                     Enter the 6-digit code
                   </label>
-                  <div className="flex justify-center space-x-3 mb-4">
-                    {otp.map((digit, index) => (
-                      <input
-                        key={index}
-                        id={`otp-${index}`}
-                        type="text"
-                        maxLength="1"
-                        value={digit}
-                        onChange={(e) => handleOtpChange(index, e.target.value)}
-                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                        className="w-14 h-14 text-center border-2 border-purple-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 text-2xl font-bold bg-white/80 shadow-md transition-all duration-200 mx-1"
-                        placeholder=""
-                      />
-                    ))}
-                  </div>
+                  {renderOtpInputs()}
                   {errors.otp && (
                     <p className="text-sm text-red-600 text-center">
                       {errors.otp}
@@ -215,12 +217,12 @@ const Login = () => {
                 <div>
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={loading}
                     className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-pink-400 hover:from-purple-700 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 transition-colors ${
-                      isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                      loading ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
-                    {isLoading ? (
+                    {loading ? (
                       <div className="flex items-center gap-2">
                         <Spin />
                         Verifying...
@@ -241,14 +243,14 @@ const Login = () => {
                     <button
                       type="button"
                       className="font-medium text-purple-600 hover:text-pink-500"
-                      onClick={handleSendOtp}
+                      onClick={onSendCode}
                     >
                       Resend
                     </button>
                   </p>
                   <button
                     type="button"
-                    onClick={handleBackToEmail}
+                    onClick={onBackToEmail}
                     className="text-sm text-gray-600 hover:text-purple-600 transition-colors"
                   >
                     ← Back to email

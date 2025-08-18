@@ -6,7 +6,7 @@ import {
   generateStudyPlan,
 } from '../services/dataService';
 
-const getSkillsData = (dashboardData) => [
+const getSkillsList = (dashboardData) => [
   {
     name: 'Speaking',
     path: '/speaking',
@@ -50,7 +50,7 @@ const getSkillsData = (dashboardData) => [
 ];
 
 
-const getRecentActivity = (dashboardData) => {
+const getActivityList = (dashboardData) => {
   if (!dashboardData?.recentActivities) return [];
 
   return dashboardData.recentActivities.map((activity) => ({
@@ -65,17 +65,31 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     const loadDashboardData = async () => {
-      const [data, userData] = await Promise.all([getDashboardData(), getUser()]);
+      const [data, userDataRaw] = await Promise.all([getDashboardData(), getUser()]);
+      let userData = userDataRaw;
+      try {
+        const storedPlan = localStorage.getItem('testmate_study_plan');
+        if (storedPlan) {
+          const parsedPlan = JSON.parse(storedPlan);
+          if (userData) {
+            if (!userData.studyPlan) {
+              userData = { ...userData, studyPlan: parsedPlan };
+            }
+          } else {
+            userData = { studyPlan: parsedPlan };
+          }
+        }
+      } catch {}
       if (!mounted) return;
       setDashboardData(data);
       setUser(userData);
-      setLoading(false);
+      setIsLoading(false);
     };
 
     loadDashboardData();
@@ -87,7 +101,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
@@ -97,17 +111,17 @@ const Dashboard = () => {
 
   const currentLevel = user?.level || 1;
   const currentXP = user?.xp || 0;
-  const totalXP = 100; // XP needed for next level
+  const TOTAL_XP = 100; // XP needed for next level
 
-  const xpPercent = (currentXP / totalXP) * 100;
+  const xpPercent = (currentXP / TOTAL_XP) * 100;
 
   const resetData = () => {
     localStorage.clear();
     window.location.reload();
   };
 
-  const handleGenerateStudyPlan = async () => {
-    setGeneratingPlan(true);
+  const onGeneratePlan = async () => {
+    setIsGeneratingPlan(true);
     try {
       const plan = await generateStudyPlan(user);
       if (plan) {
@@ -116,7 +130,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error generating study plan:', error);
     } finally {
-      setGeneratingPlan(false);
+      setIsGeneratingPlan(false);
     }
   };
 
@@ -141,7 +155,7 @@ const Dashboard = () => {
                     Level {currentLevel}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {currentXP} / {totalXP} XP
+                    {currentXP} / {TOTAL_XP} XP
                   </div>
                 </div>
               </div>
@@ -229,11 +243,11 @@ const Dashboard = () => {
                   target score
                 </p>
                 <button
-                  onClick={handleGenerateStudyPlan}
-                  disabled={generatingPlan}
+                  onClick={onGeneratePlan}
+                  disabled={isGeneratingPlan}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {generatingPlan ? (
+                  {isGeneratingPlan ? (
                     <div className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       Generating Plan...
@@ -249,7 +263,7 @@ const Dashboard = () => {
                 Recent Activity
               </h2>
               <div className="space-y-4">
-                {getRecentActivity(dashboardData).map((activity, index) => (
+                {getActivityList(dashboardData).map((activity, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-4 bg-white/50 rounded-xl"
@@ -289,7 +303,7 @@ const Dashboard = () => {
                 Continue Learning
               </h2>
               <div className="space-y-3">
-                {getSkillsData(dashboardData).map((skill, index) => (
+                {getSkillsList(dashboardData).map((skill, index) => (
                   <button
                     key={skill.name}
                     onClick={() => navigate(skill.path)}

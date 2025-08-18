@@ -1,13 +1,16 @@
-import { generateStudyPlan as generateStudyPlanFromUtils } from '../utils';
+import { generateStudyPlan as generateStudyPlanFromUtils } from "../utils";
 
-const API_BASE_URL = 'https://testmateai-be-670626115194.australia-southeast2.run.app/api';
+const API_BASE_URL = "https://testmateai-be-670626115194.australia-southeast2.run.app/api";
 
-// Helper function to make API calls
+const fireUserDataUpdated = () => {
+  try { window.dispatchEvent(new CustomEvent("userDataUpdated")); } catch {}
+};
+
 const apiCall = async (endpoint, options = {}) => {
   try {
-    const token = localStorage.getItem('testmate_token');
+    const token = localStorage.getItem("testmate_token");
     const headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers
     };
 
@@ -26,60 +29,58 @@ const apiCall = async (endpoint, options = {}) => {
 
     const data = await response.json();
     return data;
-  } catch (error) {
-    console.error('API call error:', error);
-    throw error;
-  }
+  } catch (error) { throw error; }
 };
 
 export const getUser = async () => {
   try {
-    const token = localStorage.getItem('testmate_token');
+    const token = localStorage.getItem("testmate_token");
     if (!token) {
-      localStorage.removeItem('testmate_user');
+      localStorage.removeItem("testmate_user");
       return null;
     }
 
-    const cachedUser = localStorage.getItem('testmate_user');
+    const cachedUser = localStorage.getItem("testmate_user");
     if (cachedUser) return JSON.parse(cachedUser);
 
-    const response = await apiCall('/auth/profile');
+    const response = await apiCall("/auth/profile");
     const user = response.data;
-    if (user) localStorage.setItem('testmate_user', JSON.stringify(user));
+    if (user) localStorage.setItem("testmate_user", JSON.stringify(user));
     return user;
   } catch (error) {
-    const user = localStorage.getItem('testmate_user');
+    const user = localStorage.getItem("testmate_user");
     return user ? JSON.parse(user) : null;
   }
 };
 
 export const updateUser = async (updates) => {
   try {
-    const response = await apiCall('/auth/profile', {
-      method: 'PUT',
+    const response = await apiCall("/auth/profile", {
+      method: "PUT",
       body: JSON.stringify(updates)
     });
 
     const updatedUser = response.data;
-    localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
+    localStorage.setItem("testmate_user", JSON.stringify(updatedUser));
 
-    console.log('Dispatching userDataUpdated event from updateUser');
-    window.dispatchEvent(new CustomEvent('userDataUpdated'));
+    fireUserDataUpdated();
 
     return updatedUser;
   } catch (error) {
-    const user = getUser();
-    const updatedUser = { ...user, ...updates };
-    localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
+    const user = await getUser();
+    const baseUser = user || {};
+    const updatedUser = { ...baseUser, ...updates };
+    localStorage.setItem("testmate_user", JSON.stringify(updatedUser));
+    fireUserDataUpdated();
     return updatedUser;
   }
 };
 
-export const addXP = async (amount, source = 'practice', activityId = null) => {
+export const addXP = async (amount, source = "practice", activityId = null) => {
   try {
     const safeAmount = Math.max(1, Math.floor(Number(amount) || 0));
-    const response = await apiCall('/users/xp/add', {
-      method: 'POST',
+    const response = await apiCall("/users/xp/add", {
+      method: "POST",
       body: JSON.stringify({ amount: safeAmount, source, activityId })
     });
 
@@ -87,10 +88,10 @@ export const addXP = async (amount, source = 'practice', activityId = null) => {
     const user = await getUser();
     if (user) {
       const updatedUser = { ...user, xp: result.newXp, level: result.newLevel };
-      localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
+      localStorage.setItem("testmate_user", JSON.stringify(updatedUser));
     }
 
-    window.dispatchEvent(new CustomEvent('userDataUpdated'));
+    fireUserDataUpdated();
 
     return result;
   } catch (error) {
@@ -101,7 +102,7 @@ export const addXP = async (amount, source = 'practice', activityId = null) => {
     const newLevel = Math.floor(newXP / 100) + 1;
 
     const updatedUser = { ...user, xp: newXP, level: newLevel };
-    localStorage.setItem('testmate_user', JSON.stringify(updatedUser));
+    localStorage.setItem("testmate_user", JSON.stringify(updatedUser));
 
     return updatedUser;
   }
@@ -109,7 +110,7 @@ export const addXP = async (amount, source = 'practice', activityId = null) => {
 
 export const getActivities = async () => {
   try {
-    const response = await apiCall('/users/activities?limit=50');
+    const response = await apiCall("/users/activities?limit=50");
     return response.data;
   } catch (error) {
     return [];
@@ -126,11 +127,11 @@ export const addActivity = async (activity) => {
 
 export const addPracticeActivity = async (type, score, band, details = {}) => {
   try {
-    const response = await apiCall('/users/activities', {
-      method: 'POST',
+    const response = await apiCall("/users/activities", {
+      method: "POST",
       body: JSON.stringify({
         type,
-        practiceType: 'practice',
+        practiceType: "practice",
         score,
         band,
         details,
@@ -141,7 +142,7 @@ export const addPracticeActivity = async (type, score, band, details = {}) => {
     const result = response.data;
 
     await addActivity({
-      type: 'practice',
+      type: "practice",
       practiceType: type,
       score: result.score,
       band: result.band,
@@ -149,28 +150,23 @@ export const addPracticeActivity = async (type, score, band, details = {}) => {
       xpEarned: result.xpEarned
     });
 
-    if (typeof result.xpEarned === 'number' && result.xpEarned > 0) {
+    if (typeof result.xpEarned === "number" && result.xpEarned > 0) {
       try {
-        await addXP(result.xpEarned, 'practice', result.activityId);
-      } catch (xpError) {
-        console.error('Error adding XP after activity submission:', xpError);
-      }
+        await addXP(result.xpEarned, "practice", result.activityId);
+      } catch (xpError) {}
     }
     // Fallback: if backend didn't compute xpEarned, derive from band/score
-    if (!(typeof result.xpEarned === 'number' && result.xpEarned > 0)) {
+    if (!(typeof result.xpEarned === "number" && result.xpEarned > 0)) {
       const derived = Math.max(5, Math.min(20, Math.round((Number(band) || Number(score) || 6) * 2)));
       try {
-        await addXP(derived, 'practice', result.activityId);
-      } catch (xpError) {
-        console.error('Error adding derived XP after activity submission:', xpError);
-      }
+        await addXP(derived, "practice", result.activityId);
+      } catch (xpError) {}
     }
 
     return result;
   } catch (error) {
-    console.error('Error adding practice activity:', error);
     const activity = {
-      type: 'practice',
+      type: "practice",
       practiceType: type,
       score: score,
       band: band,
@@ -189,10 +185,9 @@ export const addPracticeActivity = async (type, score, band, details = {}) => {
 
 export const getVocabulary = async () => {
   try {
-    const response = await apiCall('/vocabulary?limit=100');
+    const response = await apiCall("/vocabulary?limit=100");
     return response.data;
   } catch (error) {
-    console.error('Error getting vocabulary:', error);
     return [];
   }
 };
@@ -213,7 +208,6 @@ export const addVocabulary = async (words) => {
     const result = response.data;
     return result.words;
   } catch (error) {
-    console.error('Error adding vocabulary:', error);
     return [];
   }
 };
@@ -221,24 +215,23 @@ export const addVocabulary = async (words) => {
 export const updateVocabularyItem = async (id, updates) => {
   try {
     const response = await apiCall(`/vocabulary/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(updates)
     });
 
     const updatedItem = response.data;
     return updatedItem;
   } catch (error) {
-    console.error('Error updating vocabulary item:', error);
     return null;
   }
 };
 
 export const getMockData = async () => {
   try {
-    const practiceSummary = await apiCall('/practice/summary');
+    const practiceSummary = await apiCall("/practice/summary");
 
-    const mockTests = await apiCall('/mock-tests');
-    const studyPlans = await apiCall('/study-plans');
+    const mockTests = await apiCall("/mock-tests");
+    const studyPlans = await apiCall("/study-plans");
 
     return {
       practiceQuestions: practiceSummary.data,
@@ -246,31 +239,30 @@ export const getMockData = async () => {
       studyPlans: studyPlans.data
     };
   } catch (error) {
-    console.error('Error getting mock data:', error);
     return null;
   }
 };
 
 export const resetMockData = () => {
-  localStorage.removeItem('testmate_mockdata');
+  localStorage.removeItem("testmate_mockdata");
 };
 
 export const getPracticeQuestions = async (type) => {
   try {
     const endpoint =
-      type === 'listening'
+      type === "listening"
         ? `/practice/listening?limit=50`
-        : type === 'reading'
+        : type === "reading"
           ? `/practice/reading?limit=50`
-          : type === 'speaking'
+          : type === "speaking"
             ? `/practice/speaking?limit=50`
-            : type === 'writing'
+            : type === "writing"
               ? `/practice/writing?limit=50`
               : `/practice/${type}?limit=50`;
     const response = await apiCall(endpoint);
     const data = response.data;
 
-    if (type === 'listening' && data && Array.isArray(data.passages)) {
+    if (type === "listening" && data && Array.isArray(data.passages)) {
       const mappedPassages = data.passages.map((passage) => {
         const mappedQuestions = (passage.questions || []).map((q) => {
           const isMultipleChoice = Array.isArray(q.options) && q.options.length > 0;
@@ -284,12 +276,12 @@ export const getPracticeQuestions = async (type) => {
             options: isMultipleChoice ? q.options : null,
             correct: isMultipleChoice ? correctIndex : undefined,
             answer: isMultipleChoice ? undefined : q.correctAnswer,
-            type: isMultipleChoice ? 'multipleChoice' : 'fill_blank',
+            type: isMultipleChoice ? "multipleChoice" : "fill_blank",
           };
         });
 
-        const hasMultipleChoice = mappedQuestions.some((q) => q.type === 'multipleChoice');
-        const passageQuestionType = hasMultipleChoice ? 'multipleChoice' : 'shortanswer';
+        const hasMultipleChoice = mappedQuestions.some((q) => q.type === "multipleChoice");
+        const passageQuestionType = hasMultipleChoice ? "multipleChoice" : "shortanswer";
 
         return {
           ...passage,
@@ -302,11 +294,11 @@ export const getPracticeQuestions = async (type) => {
         new Set(mappedPassages.map((p) => p.questionType))
       );
       const questionTypes = [];
-      if (availableTypes.includes('multipleChoice')) {
-        questionTypes.push({ type: 'multipleChoice', name: 'Multiple Choice' });
+      if (availableTypes.includes("multipleChoice")) {
+        questionTypes.push({ type: "multipleChoice", name: "Multiple Choice" });
       }
-      if (availableTypes.includes('shortanswer')) {
-        questionTypes.push({ type: 'shortanswer', name: 'Short Answer' });
+      if (availableTypes.includes("shortanswer")) {
+        questionTypes.push({ type: "shortanswer", name: "Short Answer" });
       }
 
       return {
@@ -315,13 +307,13 @@ export const getPracticeQuestions = async (type) => {
       };
     }
 
-    if (type === 'reading' && data && Array.isArray(data.passages)) {
+    if (type === "reading" && data && Array.isArray(data.passages)) {
       const typeLabels = {
-        multipleChoice: 'Multiple Choice',
-        shortanswer: 'Short Answer',
-        sentencecompletion: 'Sentence Completion',
-        truefalse: 'True/False',
-        yesno: 'Yes/No',
+        multipleChoice: "Multiple Choice",
+        shortanswer: "Short Answer",
+        sentencecompletion: "Sentence Completion",
+        truefalse: "True/False",
+        yesno: "Yes/No",
       };
 
       const groups = Object.keys(typeLabels).reduce((acc, key) => {
@@ -337,8 +329,8 @@ export const getPracticeQuestions = async (type) => {
             : -1;
 
           const uiType = isMultipleChoice
-            ? 'multipleChoice'
-            : (q.type || 'shortanswer');
+            ? "multipleChoice"
+            : (q.type || "shortanswer");
 
           return {
             id: q.id,
@@ -365,11 +357,11 @@ export const getPracticeQuestions = async (type) => {
       return groups;
     }
 
-    if (type === 'speaking' && data && Array.isArray(data.questions)) {
+    if (type === "speaking" && data && Array.isArray(data.questions)) {
       const partNameMap = {
-        part1: 'Part 1: General Questions',
-        part2: 'Part 2: Cue Card',
-        part3: 'Part 3: Discussion',
+        part1: "Part 1: General Questions",
+        part2: "Part 2: Cue Card",
+        part3: "Part 3: Discussion",
       };
 
       const groups = {
@@ -379,26 +371,26 @@ export const getPracticeQuestions = async (type) => {
       };
 
       data.questions.forEach((q) => {
-        const rawPart = (q.part || '').toString().toLowerCase();
-        let key = 'part1';
-        if (rawPart.includes('part 2')) key = 'part2';
-        else if (rawPart.includes('part 3')) key = 'part3';
+        const rawPart = (q.part || "").toString().toLowerCase();
+        let key = "part1";
+        if (rawPart.includes("part 2")) key = "part2";
+        else if (rawPart.includes("part 3")) key = "part3";
         groups[key].questions.push(q.question);
       });
 
       return groups;
     }
 
-    if (type === 'writing' && data && Array.isArray(data.prompts)) {
+    if (type === "writing" && data && Array.isArray(data.prompts)) {
       const groups = {
-        task1: { name: 'Task 1: Letter Writing', prompts: [] },
-        task2: { name: 'Task 2: Essay Writing', prompts: [] },
+        task1: { name: "Task 1: Letter Writing", prompts: [] },
+        task2: { name: "Task 2: Essay Writing", prompts: [] },
       };
 
       data.prompts.forEach((p) => {
-        const promptText = p.question || p.title || '';
+        const promptText = p.question || p.title || "";
         const lower = promptText.toLowerCase();
-        const key = lower.includes('write a letter') || lower.includes('letter to') ? 'task1' : 'task2';
+        const key = lower.includes("write a letter") || lower.includes("letter to") ? "task1" : "task2";
         groups[key].prompts.push(promptText);
       });
 
@@ -411,9 +403,10 @@ export const getPracticeQuestions = async (type) => {
   }
 };
 
-export const getMockTests = async () => {
+export const getMockTests = async (limit) => {
   try {
-    const response = await apiCall('/mock-tests');
+    const endpoint = typeof limit === "number" && limit > 0 ? `/mock-tests?limit=${Math.min(100, Math.max(1, limit))}` : "/mock-tests";
+    const response = await apiCall(endpoint);
     return response.data;
   } catch (error) {
     return [];
@@ -425,7 +418,6 @@ export const fetchMockTest = async (testId) => {
     const response = await apiCall(`/mock-tests/${testId}`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching mock test:', error);
     return null;
   }
 };
@@ -509,33 +501,104 @@ const createFallbackQuestions = (sectionId) => {
   return fallbackQuestions[sectionId] || [];
 };
 
-export const fetchMockTestQuestions = async (testId, sectionId) => {
+export const fetchMockTestQuestions = async (testId, sectionId, desiredCount) => {
   try {
-    console.log(`Fetching questions for test ${testId}, section ${sectionId}`);
+    
 
-    const response = await apiCall(`/practice/${sectionId}`);
+    // For speaking/writing, backend likely supports limit per item; for reading/listening, limit often applies to passages not sub-questions
+    const useItemLimit = sectionId === "speaking" || sectionId === "writing";
+    const endpoint = useItemLimit && typeof desiredCount === 'number' && desiredCount > 0
+      ? `/practice/${sectionId}?limit=${Math.min(100, Math.max(1, desiredCount))}`
+      : `/practice/${sectionId}`;
+
+    const response = await apiCall(endpoint);
     const sectionData = response.data;
 
-    console.log(`Section data for ${sectionId}:`, sectionData);
-
-    if (!sectionData) {
-      console.log(`No section data found for ${sectionId}`);
-      return [];
-    }
+    if (!sectionData) { return []; }
 
     let allQuestions = [];
 
-    if (sectionId === 'listening' || sectionId === 'reading') {
-      allQuestions = sectionData.passages || [];
-    } else if (sectionId === 'speaking') {
-      allQuestions = sectionData.questions || [];
-    } else if (sectionId === 'writing') {
-      allQuestions = sectionData.prompts || [];
+    if (sectionId === "listening" || sectionId === "reading") {
+      const passages = Array.isArray(sectionData.passages) ? sectionData.passages : [];
+      const normalizedPassages = passages.map((passage, index) => {
+        const rawQuestions = Array.isArray(passage.questions) ? passage.questions : [];
+
+        const mappedQuestions = rawQuestions.map((q) => {
+          const isMultipleChoice = Array.isArray(q.options) && q.options.length > 0;
+
+          // Normalize true/false and short answer types for the UI
+          const normalizedType = (() => {
+            const t = (q.type || "").toString().toLowerCase();
+            if (t.includes("true") && t.includes("false")) return "true-false";
+            if (t.includes("completion") || t.includes("blank") || t.includes("short")) return "shortAnswer";
+            return isMultipleChoice ? "multiple-choice" : "shortAnswer";
+          })();
+
+          // Compute correct index for MC if we have a correct answer value
+          let correctIndex = -1;
+          if (isMultipleChoice) {
+            if (typeof q.correct === "number") {
+              correctIndex = q.correct;
+            } else if (typeof q.correctIndex === "number") {
+              correctIndex = q.correctIndex;
+            } else if (q.correctAnswer && Array.isArray(q.options)) {
+              correctIndex = q.options.findIndex((opt) => opt === q.correctAnswer);
+            }
+          }
+
+          return {
+            id: q.id ?? `${index}-${(q.question || q.text || "").slice(0, 8)}`,
+            question: q.question || q.text || "",
+            text: q.text || q.question || "",
+            options: isMultipleChoice ? q.options : undefined,
+            correct: isMultipleChoice && correctIndex >= 0 ? correctIndex : undefined,
+            answer: !isMultipleChoice ? (q.correctAnswer || q.answer) : undefined,
+            type: normalizedType,
+          };
+        });
+
+        return {
+          id: passage.id ?? index + 1,
+          type: "passage",
+          passageTitle: passage.title || passage.name || "",
+          passage: passage.passage || passage.text || passage.content || "",
+          questions: mappedQuestions,
+        };
+      });
+      // Limit by number of passages (not sub-questions) based on mock test's question count
+      const numPassages = typeof desiredCount === "number" && desiredCount > 0
+        ? desiredCount
+        : normalizedPassages.length;
+      allQuestions = normalizedPassages.slice(0, numPassages);
+    } else if (sectionId === "speaking") {
+      allQuestions = (sectionData.questions || []).map((q, index) => ({
+        id: q.id ?? index + 1,
+        question: q.question || q.text || "",
+        title: q.title || undefined,
+        part: q.part || undefined,
+        type: "speaking",
+        preparationTime: q.preparationTime || q.preparation_time || undefined,
+      }));
+    } else if (sectionId === "writing") {
+      allQuestions = (sectionData.prompts || []).map((p, index) => ({
+        id: p.id ?? index + 1,
+        question: p.question || p.title || "",
+        title: p.title || undefined,
+        type: (p.type && p.type.toString().toLowerCase().includes('1')) ? "task1" : (p.type && p.type.toString().toLowerCase().includes('2')) ? "task2" : (index === 0 ? "task1" : "task2"),
+        timeLimit: p.timeLimit || p.time_limit || undefined,
+        wordLimit: p.wordLimit || p.word_limit || undefined,
+      }));
     }
 
-    const maxQuestions = sectionId === 'speaking' ? 15 :
-      sectionId === 'writing' ? 2 : 10;
-    let result = allQuestions.slice(0, maxQuestions);
+    // Final per-section limiting
+    let result;
+    if (sectionId === "speaking" || sectionId === "writing") {
+      const target = typeof desiredCount === "number" && desiredCount > 0 ? desiredCount : (sectionId === "speaking" ? 3 : 2);
+      result = allQuestions.slice(0, target);
+    } else {
+      // Already limited by sub-question count for reading/listening
+      result = allQuestions;
+    }
 
     if (result.length === 0) {
       result = createFallbackQuestions(sectionId);
@@ -549,7 +612,7 @@ export const fetchMockTestQuestions = async (testId, sectionId) => {
 
 export const getDashboardData = async () => {
   try {
-    const response = await apiCall('/dashboard');
+    const response = await apiCall("/dashboard");
     const apiData = response.data || {};
 
     const recentActivitiesRaw = Array.isArray(apiData.recentActivity)
@@ -573,13 +636,13 @@ export const getDashboardData = async () => {
       };
     });
 
-    const practiceTypes = ['listening', 'reading', 'writing', 'speaking'];
+    const practiceTypes = ["listening", "reading", "writing", "speaking"];
     const practiceStats = {
       total: recentActivities.length || 0,
-      listening: recentActivities.filter(a => a.practiceType === 'listening').length,
-      reading: recentActivities.filter(a => a.practiceType === 'reading').length,
-      writing: recentActivities.filter(a => a.practiceType === 'writing').length,
-      speaking: recentActivities.filter(a => a.practiceType === 'speaking').length
+      listening: recentActivities.filter(a => a.practiceType === "listening").length,
+      reading: recentActivities.filter(a => a.practiceType === "reading").length,
+      writing: recentActivities.filter(a => a.practiceType === "writing").length,
+      speaking: recentActivities.filter(a => a.practiceType === "speaking").length
     };
 
     const averageScores = practiceTypes.reduce((acc, type) => {
@@ -599,7 +662,7 @@ export const getDashboardData = async () => {
         averageScore: 0,
         bestScore: 0,
         studyStreak: 0,
-        totalStudyTime: '0 hours',
+        totalStudyTime: "0 hours",
         completedLessons: 0,
         currentStreak: 0
       },
@@ -618,17 +681,17 @@ export const getDashboardData = async () => {
       new Date(activity.timestamp).toDateString() === today
     );
 
-    const practiceActivities = activities.filter(activity => activity.type === 'practice');
+    const practiceActivities = activities.filter(activity => activity.type === "practice");
     const practiceStats = {
       total: practiceActivities.length,
-      listening: practiceActivities.filter(a => a.practiceType === 'listening').length,
-      reading: practiceActivities.filter(a => a.practiceType === 'reading').length,
-      writing: practiceActivities.filter(a => a.practiceType === 'writing').length,
-      speaking: practiceActivities.filter(a => a.practiceType === 'speaking').length
+      listening: practiceActivities.filter(a => a.practiceType === "listening").length,
+      reading: practiceActivities.filter(a => a.practiceType === "reading").length,
+      writing: practiceActivities.filter(a => a.practiceType === "writing").length,
+      speaking: practiceActivities.filter(a => a.practiceType === "speaking").length
     };
 
     const averageScores = {};
-    ['listening', 'reading', 'writing', 'speaking'].forEach(type => {
+    ["listening", "reading", "writing", "speaking"].forEach(type => {
       const typeActivities = practiceActivities.filter(a => a.practiceType === type);
       if (typeActivities.length > 0) {
         const totalScore = typeActivities.reduce((sum, a) => sum + (a.score || 0), 0);
@@ -652,59 +715,42 @@ export const getDashboardData = async () => {
 
 export const generateStudyPlan = async (userData) => {
   try {
-    const currentScore = userData.currentScore || userData.lastTestScore || 0;
-    const targetScore = userData.targetScore || 7.0;
-    const testDate = userData.testDate || '2024-12-31';
+    const currentScore = userData?.currentScore || userData?.lastTestScore || 0;
+    const targetScore = userData?.targetScore || 7.0;
+    const testDate = userData?.testDate || "2024-12-31";
 
-    const response = await apiCall('/study-plans/generate', {
-      method: 'POST',
-      body: JSON.stringify({
-        currentScore,
-        targetScore,
-        testDate,
-        availableHours: 10,
-        weakAreas: []
-      })
+    const studyPlan = await generateStudyPlanFromUtils({
+      currentScore,
+      targetScore,
+      testDate
     });
 
-    const studyPlan = response.data;
+    if (!studyPlan) return null;
 
-    if (studyPlan) {
-      await updateUser({ studyPlan });
-      return studyPlan;
-    } else {
-      throw new Error('Failed to generate study plan from API');
-    }
+    localStorage.setItem("testmate_study_plan", JSON.stringify(studyPlan));
+    fireUserDataUpdated();
+
+    try { await updateUser({ studyPlan }); } catch {}
+
+    return studyPlan;
   } catch (error) {
-    try {
-      const studyPlan = await generateStudyPlanFromUtils({
-        currentScore: userData.currentScore || userData.lastTestScore || 0,
-        targetScore: userData.targetScore || 7.0,
-        testDate: userData.testDate || '2024-12-31'
-      });
-
-      if (studyPlan) {
-        await updateUser({ studyPlan });
-        return studyPlan;
-      }
-    } catch (fallbackError) {
-    }
     return null;
   }
 };
 
 export const resetAllData = () => {
-  localStorage.removeItem('testmate_user');
-  localStorage.removeItem('testmate_activities');
-  localStorage.removeItem('testmate_vocabulary');
-  localStorage.removeItem('testmate_mockdata');
-  localStorage.removeItem('testmate_token');
+  localStorage.removeItem("testmate_user");
+  localStorage.removeItem("testmate_activities");
+  localStorage.removeItem("testmate_vocabulary");
+  localStorage.removeItem("testmate_mockdata");
+  localStorage.removeItem("testmate_token");
+  localStorage.removeItem("testmate_study_plan");
 };
 
 export const register = async (userData) => {
   try {
-    const response = await apiCall('/auth/register', {
-      method: 'POST',
+    const response = await apiCall("/auth/register", {
+      method: "POST",
       body: JSON.stringify(userData)
     });
     return response.data;
@@ -715,8 +761,8 @@ export const register = async (userData) => {
 
 export const login = async (email) => {
   try {
-    const response = await apiCall('/auth/login', {
-      method: 'POST',
+    const response = await apiCall("/auth/login", {
+      method: "POST",
       body: JSON.stringify({ email })
     });
     return response.data;
@@ -727,12 +773,12 @@ export const login = async (email) => {
 
 export const verifyOTP = async (email, otp) => {
   try {
-    const response = await apiCall('/auth/verify-otp', {
-      method: 'POST',
+    const response = await apiCall("/auth/verify-otp", {
+      method: "POST",
       body: JSON.stringify({ email, otp })
     });
-    localStorage.setItem('testmate_token', response.data.token);
-    localStorage.setItem('testmate_user', JSON.stringify(response.data.user));
+    localStorage.setItem("testmate_token", response.data.token);
+    localStorage.setItem("testmate_user", JSON.stringify(response.data.user));
 
     return response.data;
   } catch (error) {
@@ -742,34 +788,33 @@ export const verifyOTP = async (email, otp) => {
 
 export const logout = async () => {
   try {
-    await apiCall('/auth/logout', { method: 'POST' });
+    await apiCall("/auth/logout", { method: "POST" });
   } catch (error) {
   } finally {
-    localStorage.removeItem('testmate_token');
-    localStorage.removeItem('testmate_user');
-    localStorage.removeItem('testmate_activities');
-    localStorage.removeItem('testmate_vocabulary');
-    localStorage.removeItem('testmate_mockdata');
-    try { window.dispatchEvent(new CustomEvent('userDataUpdated')); } catch { }
+    localStorage.removeItem("testmate_token");
+    localStorage.removeItem("testmate_user");
+    localStorage.removeItem("testmate_activities");
+    localStorage.removeItem("testmate_vocabulary");
+    localStorage.removeItem("testmate_mockdata");
+    localStorage.removeItem("testmate_study_plan");
+    fireUserDataUpdated();
   }
 };
 
 export const getAnalytics = async () => {
   try {
-    const response = await apiCall('/users/analytics?time_range=all&practice_type=both');
+    const response = await apiCall("/users/analytics?time_range=all&practice_type=both");
     return response.data;
   } catch (error) {
-    console.error('Error getting analytics:', error);
     return null;
   }
 };
 
 export const getProgress = async () => {
   try {
-    const response = await apiCall('/users/progress');
+    const response = await apiCall("/users/progress");
     return response.data;
   } catch (error) {
-    console.error('Error getting progress:', error);
     return null;
   }
 };
