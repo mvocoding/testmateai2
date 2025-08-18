@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { generateSpeakingFeedback, recordPracticeActivity, saveVocabularyWords } from '../utils';
+import {
+  generateSpeakingFeedback,
+  recordPracticeActivity,
+  saveVocabularyWords,
+} from '../utils';
 import dataService from '../services/dataService';
 
 const SpeakingTest = () => {
@@ -47,7 +51,6 @@ const SpeakingTest = () => {
     { key: 'general', label: 'General' },
     { key: 'grammar', label: 'Grammar' },
     { key: 'vocabulary', label: 'Vocabulary' },
-    { key: 'coherence', label: 'Coherence' },
     { key: 'suggestions', label: 'Suggestions' },
   ];
 
@@ -81,9 +84,8 @@ const SpeakingTest = () => {
       setLoading(false);
       updateXp(aiFeedback.band);
 
-      // Record practice activity
       const score = aiFeedback.band || 6.0;
-      const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+      const band = Math.round(score * 2) / 2;
       await recordPracticeActivity('speaking', score, band, {
         question: currentQuestions[currentIndex],
         transcript: result,
@@ -262,25 +264,15 @@ const SpeakingTest = () => {
                       <div className="mt-2 text-sm text-purple-800">
                         <strong>Suggestions:</strong>
                         <ul className="list-disc ml-6">
-                          {feedbacks[`${part}-${currentIndex}`].suggestions.map((s, i) => (
-                            <li key={i}>{s}</li>
-                          ))}
+                          {feedbacks[`${part}-${currentIndex}`].suggestions.map(
+                            (s, i) => (
+                              <li key={i}>{s}</li>
+                            )
+                          )}
                         </ul>
                       </div>
                     )}
-                  {activeTab === 'pronunciation' &&
-                    feedbacks[`${part}-${currentIndex}`].pronunciation_tips &&
-                    feedbacks[`${part}-${currentIndex}`].pronunciation_tips
-                      .length > 0 && (
-                      <div className="mt-2 text-sm text-pink-800">
-                        <strong>Pronunciation Tips:</strong>
-                        <ul className="list-disc ml-6">
-                          {feedbacks[`${part}-${currentIndex}`].pronunciation_tips.map((s, i) => (
-                            <li key={i}>{s}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+
                   {activeTab === 'grammar' &&
                     feedbacks[`${part}-${currentIndex}`].grammar_feedback && (
                       <div className="mt-2 text-sm text-orange-800">
@@ -289,17 +281,14 @@ const SpeakingTest = () => {
                       </div>
                     )}
                   {activeTab === 'vocabulary' &&
-                    feedbacks[`${part}-${currentIndex}`].vocabulary_feedback && (
+                    feedbacks[`${part}-${currentIndex}`]
+                      .vocabulary_feedback && (
                       <div className="mt-2 text-sm text-teal-800">
                         <strong>Vocabulary:</strong>{' '}
-                        {feedbacks[`${part}-${currentIndex}`].vocabulary_feedback}
-                      </div>
-                    )}
-                  {activeTab === 'coherence' &&
-                    feedbacks[`${part}-${currentIndex}`].coherence_feedback && (
-                      <div className="mt-2 text-sm text-gray-800">
-                        <strong>Coherence:</strong>{' '}
-                        {feedbacks[`${part}-${currentIndex}`].coherence_feedback}
+                        {
+                          feedbacks[`${part}-${currentIndex}`]
+                            .vocabulary_feedback
+                        }
                       </div>
                     )}
                 </div>
@@ -321,7 +310,9 @@ const SpeakingTest = () => {
                   Next Question
                 </button>
               )}
-            {currentQuestions.every((_, idx) => feedbacks[`${part}-${idx}`]) && (
+            {currentQuestions.every(
+              (_, idx) => feedbacks[`${part}-${idx}`]
+            ) && (
               <div className="mt-4 text-center text-xl font-bold text-pink-700">
                 🎉 Test completed!
                 <br />

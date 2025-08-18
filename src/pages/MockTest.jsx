@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import dataService from '../services/dataService';
-import { generateSpeakingFeedback, generateWritingFeedback, generateListeningFeedback, generateReadingFeedback } from '../utils';
+ 
 import ListeningQuestionBlock from './mocktest/ListeningQuestionBlock';
 import ReadingQuestionBlock from './mocktest/ReadingQuestionBlock';
 import WritingQuestionBlock from './mocktest/WritingQuestionBlock';
@@ -10,6 +9,12 @@ import StartScreen from './mocktest/StartScreen';
 import SectionIntro from './mocktest/SectionIntro';
 import TestHeader from './mocktest/TestHeader';
 import ResultsView from './mocktest/ResultsView';
+import skillIntroductions from './mocktest/skillIntroductions';
+import submitMockTest from './mocktest/submitTest';
+import { cancelSpeech, getPreferredVoice } from './mocktest/audioHelpers';
+import { formatTime } from './mocktest/format';
+
+ 
 
 const MockTest = () => {
   const [currentSection, setCurrentSection] = useState('listening');
@@ -53,15 +58,9 @@ const MockTest = () => {
     listening: [],
     reading: [],
     speaking: [],
-    writing: []
+    writing: [],
   });
   const [activeAnalysisTab, setActiveAnalysisTab] = useState('listening');
-  
-  const cancelSpeech = () => {
-    if (speechRef.current) {
-      window.speechSynthesis.cancel();
-    }
-  };
 
   const resetListening = () => {
     setPlayCount(0);
@@ -70,268 +69,46 @@ const MockTest = () => {
     cancelSpeech();
   };
 
-  const getPreferredVoice = (voices) =>
-    voices.find(
-      (voice) =>
-        voice.lang.includes('en') &&
-        (voice.name.includes('Google') ||
-          voice.name.includes('Natural') ||
-          voice.name.includes('Premium'))
-    );
-
   const submitTest = async () => {
     setIsSubmitting(true);
     setSubmitProgress(0);
-    let listeningBand = 0;
-    let readingBand = 0;
-    let listeningPercentage = 0;
-    let readingPercentage = 0;
-    let speakingBand = 0;
-    let writingBand = 0;
+
+    const listeningPassages = Array.isArray(questions.listening) ? questions.listening : [];
+    const readingPassages = Array.isArray(questions.reading) ? questions.reading : [];
+    const speakingItems = Array.isArray(questions.speaking) ? questions.speaking : [];
+    const writingItems = Array.isArray(questions.writing) ? questions.writing : [];
+
+    const total =
+      listeningPassages.filter((p) => p && Array.isArray(p.questions) && p.questions.length > 0).length +
+      readingPassages.filter((p) => p && Array.isArray(p.questions) && p.questions.length > 0).length +
+      speakingItems.length +
+      writingItems.length;
+    setTotalSubmitTasks(total);
 
     try {
-      const listeningPassages = Array.isArray(questions.listening) ? questions.listening : [];
-      const readingPassages = Array.isArray(questions.reading) ? questions.reading : [];
-      const speakingItems = Array.isArray(questions.speaking) ? questions.speaking : [];
-      const writingItems = Array.isArray(questions.writing) ? questions.writing : [];
-
-      const listeningTasks = listeningPassages
-        .filter((p) => p && Array.isArray(p.questions) && p.questions.length > 0)
-        .map((p) => {
-          const userAnswersById = {};
-          p.questions.forEach((q, idx) => {
-            const key = `${p.id}-${idx}`;
-            const val = answers.listening?.[key];
-            if (val !== undefined) {
-              if (Array.isArray(q.options) && q.options.length > 0 && typeof val === 'number') {
-                userAnswersById[q.id] = q.options[val];
-              } else {
-                userAnswersById[q.id] = val;
-              }
-            }
-          });
-          const passageMeta = { text: p.passage || p.passageText || '', title: p.passageTitle || p.title || '' };
-          const normalizedQs = p.questions.map((q) => ({
-            ...q,
-            question: q.question || q.text || '',
-          }));
-          return generateListeningFeedback(passageMeta, normalizedQs, userAnswersById);
-        });
-
-      const readingTasks = readingPassages
-        .filter((p) => p && Array.isArray(p.questions) && p.questions.length > 0)
-        .map((p) => {
-          const userAnswersByIndex = p.questions.map((q, idx) => {
-            const key = `${p.id}-${idx}`;
-            return answers.reading?.[key];
-          });
-          const passageMeta = { text: p.passage || p.passageText || '', title: p.passageTitle || p.title || '' };
-          const normalizedQs = p.questions.map((q) => ({
-            ...q,
-            text: q.text || q.question || '',
-            question: q.question || q.text || '',
-          }));
-          return generateReadingFeedback(passageMeta, normalizedQs, userAnswersByIndex);
-        });
-
-      const speakingTasks = speakingItems.map((q) => {
-        const transcript = (answers.speaking?.[q.id] || '').toString();
-        return generateSpeakingFeedback(q.question || '', transcript);
+      const { aiFeedback: fb, results } = await submitMockTest({
+        questions,
+        answers,
+        onProgress: () => setSubmitProgress((prev) => prev + 1),
       });
 
-      const writingTasks = writingItems.map((q) => {
-        const essay = (answers.writing?.[q.id] || '').toString();
-        const wordCount = essay.trim().split(/\s+/).filter(Boolean).length;
-        return generateWritingFeedback(q.question || q.title || '', essay, wordCount);
-      });
-
-      const total = listeningTasks.length + readingTasks.length + speakingTasks.length + writingTasks.length;
-      setTotalSubmitTasks(total);
-
-      const increment = () => setSubmitProgress((prev) => prev + 1);
-      const track = (p) => p.then((res) => { increment(); return res; }).catch(() => { increment(); return null; });
-
-      const [listeningFbs, readingFbs, speakingFbs, writingFbs] = await Promise.all([
-        Promise.all(listeningTasks.map(track)),
-        Promise.all(readingTasks.map(track)),
-        Promise.all(speakingTasks.map(track)),
-        Promise.all(writingTasks.map(track))
-      ]);
-
-      setAiFeedback({
-        listening: (listeningFbs || []).filter(Boolean),
-        reading: (readingFbs || []).filter(Boolean),
-        speaking: (speakingFbs || []).filter(Boolean),
-        writing: (writingFbs || []).filter(Boolean)
-      });
-
-      const listeningBands = [];
-      const listeningPercents = [];
-      (listeningFbs || []).forEach((fb) => {
-        if (!fb) return;
-        const bandVal = typeof fb?.overall_score === 'number' ? fb.overall_score : Number(fb?.overall_score) || 0;
-        if (!isNaN(bandVal) && bandVal > 0) listeningBands.push(bandVal);
-        if (Array.isArray(fb?.question_analysis)) {
-          const totalQ = fb.question_analysis.length;
-          const correct = fb.question_analysis.filter((qa) => qa.is_correct).length;
-          listeningPercents.push(totalQ > 0 ? (correct / totalQ) * 100 : 0);
-        }
-      });
-      listeningBand = listeningBands.length > 0 ? listeningBands.reduce((a, b) => a + b, 0) / listeningBands.length : 0;
-      listeningPercentage = listeningPercents.length > 0 ? listeningPercents.reduce((a, b) => a + b, 0) / listeningPercents.length : 0;
-
-      const readingBands = [];
-      const readingPercents = [];
-      (readingFbs || []).forEach((fb) => {
-        if (!fb) return;
-        const bandVal = typeof fb?.overall_score === 'number' ? fb.overall_score : Number(fb?.overall_score) || 0;
-        if (!isNaN(bandVal) && bandVal > 0) readingBands.push(bandVal);
-        if (Array.isArray(fb?.question_analysis)) {
-          const totalQ = fb.question_analysis.length;
-          const correct = fb.question_analysis.filter((qa) => qa.is_correct).length;
-          readingPercents.push(totalQ > 0 ? (correct / totalQ) * 100 : 0);
-        }
-      });
-      readingBand = readingBands.length > 0 ? readingBands.reduce((a, b) => a + b, 0) / readingBands.length : 0;
-      readingPercentage = readingPercents.length > 0 ? readingPercents.reduce((a, b) => a + b, 0) / readingPercents.length : 0;
-
-      const speakingBands = [];
-      (speakingFbs || []).forEach((fb) => {
-        if (!fb) return;
-        const bandVal = typeof fb?.band === 'number' ? fb.band : Number(fb?.band) || 0;
-        if (!isNaN(bandVal) && bandVal > 0) speakingBands.push(bandVal);
-      });
-      const writingBands = [];
-      (writingFbs || []).forEach((fb) => {
-        if (!fb) return;
-        const bandVal = typeof fb?.overall_score === 'number' ? fb.overall_score : (typeof fb?.band === 'number' ? fb.band : Number(fb?.band) || 0);
-        if (!isNaN(bandVal) && bandVal > 0) writingBands.push(bandVal);
-      });
-
-      speakingBand = speakingBands.length > 0 ? speakingBands.reduce((a, b) => a + b, 0) / speakingBands.length : 0;
-      writingBand = writingBands.length > 0 ? writingBands.reduce((a, b) => a + b, 0) / writingBands.length : 0;
-    } catch (e) {}
-
-    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-    const derivedPercentageFromBand = (band) => clamp(band * 10, 0, 100);
-
-    const results = {
-      listening: { percentage: listeningPercentage || derivedPercentageFromBand(listeningBand), band: listeningBand || 1.0 },
-      reading: { percentage: readingPercentage || derivedPercentageFromBand(readingBand), band: readingBand || 1.0 },
-      writing: {
-        percentage: derivedPercentageFromBand(writingBand),
-        band: writingBand || 1.0,
-      },
-      speaking: {
-        percentage: derivedPercentageFromBand(speakingBand),
-        band: speakingBand || 1.0,
-      },
-      overall: {
-        band: Math.round(((listeningBand + readingBand + (writingBand || 1.0) + (speakingBand || 1.0)) / 4) * 2) / 2,
-      },
-    };
-
-    try {
-    setTestResults(results);
-    setIsTestCompleted(true);
-    setShowResults(true);
+      setAiFeedback(fb);
+      setTestResults(results);
+      setIsTestCompleted(true);
+      setShowResults(true);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const generateFeedback = (skill, score) => {
-    const band = score.band;
-
-    if (band >= 8.0) {
-      return `Excellent performance in ${skill}! Your score of ${band.toFixed(
-        1
-      )} shows mastery of this skill.`;
-    } else if (band >= 7.0) {
-      return `Good performance in ${skill}. Your score of ${band.toFixed(
-        1
-      )} indicates strong proficiency.`;
-    } else if (band >= 6.0) {
-      return `Satisfactory performance in ${skill}. Your score of ${band.toFixed(
-        1
-      )} shows adequate proficiency.`;
-    } else if (band >= 5.0) {
-      return `Limited performance in ${skill}. Your score of ${band.toFixed(
-        1
-      )} suggests you need more practice.`;
-    } else {
-      return `Poor performance in ${skill}. Your score of ${band.toFixed(
-        1
-      )} indicates significant improvement needed.`;
-    }
-  };
-
-  const skillIntroductions = {
-    listening: {
-      title: 'Listening Section',
-      description:
-        'The Listening section tests your ability to understand spoken English in various contexts. You will hear recordings of native English speakers and answer questions based on what you hear.',
-      duration: '30 minutes',
-      tips: [
-        'Listen carefully to the audio - you can only hear it once',
-        'Read the questions before the audio starts',
-        'Pay attention to key words and phrases',
-        'Use the time given to review your answers',
-        "Don't leave any questions blank - make an educated guess if needed",
-      ],
-      icon: '🎧',
-    },
-    speaking: {
-      title: 'Speaking Section',
-      description:
-        'The Speaking section assesses your ability to communicate effectively in English. You will have a conversation with an examiner and discuss various topics.',
-      duration: '15 minutes',
-      tips: [
-        'Speak clearly and at a natural pace',
-        "Listen carefully to the examiner's questions",
-        'Give detailed answers with examples',
-        "Don't worry about making some mistakes - focus on communication",
-        'Use a variety of vocabulary and grammar structures',
-      ],
-      icon: '🗣️',
-    },
-    reading: {
-      title: 'Reading Section',
-      description:
-        'The Reading section evaluates your ability to understand written English. You will read passages and answer questions to test your comprehension skills.',
-      duration: '60 minutes',
-      tips: [
-        'Read the questions first to know what to look for',
-        'Skim the passage to get the main idea',
-        'Look for key words in both questions and passages',
-        "Manage your time - don't spend too long on one question",
-        'Check your answers before moving to the next section',
-      ],
-      icon: '📖',
-    },
-    writing: {
-      title: 'Writing Section',
-      description:
-        'The Writing section tests your ability to write clearly and coherently in English. You will complete two writing tasks with different requirements.',
-      duration: '60 minutes',
-      tips: [
-        'Plan your essay before you start writing',
-        'Use clear topic sentences and supporting details',
-        'Vary your vocabulary and sentence structures',
-        'Check your grammar and spelling',
-        'Stay within the word limits for each task',
-      ],
-      icon: '✍️',
-    },
   };
 
   useEffect(() => {
     const loadTestData = async () => {
       try {
         const availableTests = await dataService.getMockTests(1);
-        const selectedTest = Array.isArray(availableTests) && availableTests.length > 0
-          ? availableTests[0]
-          : null;
+        const selectedTest =
+          Array.isArray(availableTests) && availableTests.length > 0
+            ? availableTests[0]
+            : null;
 
         if (selectedTest && Array.isArray(selectedTest.sections)) {
           setSections(selectedTest.sections);
@@ -546,8 +323,6 @@ const MockTest = () => {
   };
 
   const startListening = () => {
-    
-
     setIsLoading(true);
     const question = questions.listening[currentQuestion];
     const passageText =
@@ -613,11 +388,7 @@ const MockTest = () => {
     }
   };
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  
 
   const renderQuestion = () => {
     if (!questions || !questions[currentSection]) {
@@ -653,7 +424,6 @@ const MockTest = () => {
             isPlaying={isPlaying}
             isLoading={isLoading}
             playCount={playCount}
-            
           />
         );
 
@@ -694,13 +464,20 @@ const MockTest = () => {
 
   if (!isTestStarted) {
     return (
-      <StartScreen sections={sections} questions={questions} onStart={startTest} />
+      <StartScreen
+        sections={sections}
+        questions={questions}
+        onStart={startTest}
+      />
     );
   }
 
   if (showingIntroduction) {
     return (
-      <SectionIntro intro={skillIntroductions[currentSection]} onStart={startSection} />
+      <SectionIntro
+        intro={skillIntroductions[currentSection]}
+        onStart={startSection}
+      />
     );
   }
 
@@ -725,7 +502,12 @@ const MockTest = () => {
                 setShowResults(false);
                 setIsTestCompleted(false);
                 setTestResults(null);
-                setAnswers({ listening: {}, speaking: {}, reading: {}, writing: {} });
+                setAnswers({
+                  listening: {},
+                  speaking: {},
+                  reading: {},
+                  writing: {},
+                });
                 setCurrentSection('listening');
                 setCurrentQuestion(0);
                 setIsTestStarted(false);
@@ -737,7 +519,9 @@ const MockTest = () => {
               {isSubmitting ? (
                 <div className="flex flex-col items-center justify-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
-                  <p className="text-gray-700 font-medium mb-2">Analyzing your answers...</p>
+                  <p className="text-gray-700 font-medium mb-2">
+                    Analyzing your answers...
+                  </p>
                   <p className="text-sm text-gray-500">
                     {submitProgress}/{totalSubmitTasks} tasks completed
                   </p>
@@ -759,7 +543,8 @@ const MockTest = () => {
                   Previous
                 </button>
 
-                {!isSubmitting && currentQuestion === questions[currentSection]?.length - 1 &&
+                {!isSubmitting &&
+                currentQuestion === questions[currentSection]?.length - 1 &&
                 sections.findIndex((s) => s.id === currentSection) ===
                   sections.length - 1 ? (
                   <button
