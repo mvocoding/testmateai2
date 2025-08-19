@@ -145,4 +145,3 @@ const ReadingQuestionBlock = ({ question, answersSection, onAnswer }) => {
 
 export default ReadingQuestionBlock;
 
-

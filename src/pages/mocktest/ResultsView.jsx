@@ -21,7 +21,7 @@ const ResultsView = ({
   };
 
   const genText = (label, score) => {
-    const band = score.band;
+    const band = score?.band || 0;
     if (band >= 7) return 'Excellent!';
     if (band >= 6) return 'Good!';
     if (band >= 5) return 'Satisfactory';
@@ -41,7 +41,7 @@ const ResultsView = ({
 
       <div className="bg-gradient-to-r from-teal-500 to-blue-600 rounded-xl p-6 mb-8 text-white text-center">
         <h3 className="text-2xl font-bold mb-2">Overall Band Score</h3>
-        <div className="text-5xl font-bold mb-2">{testResults?.overall.band.toFixed(1)}</div>
+        <div className="text-5xl font-bold mb-2">{(testResults?.overall?.band || 0).toFixed(1)}</div>
         <p className="text-teal-100">{genText('overall', testResults?.overall)}</p>
       </div>
 
@@ -56,8 +56,8 @@ const ResultsView = ({
                 {k === 'speaking' && '🗣️ Speaking'}
               </h4>
               <div className="text-right">
-                <div className="text-2xl font-bold text-teal-600">{testResults?.[k].band.toFixed(1)}</div>
-                <div className="text-sm text-gray-500">{testResults?.[k].percentage.toFixed(1)}%</div>
+                <div className="text-2xl font-bold text-teal-600">{(testResults?.[k]?.band || 0).toFixed(1)}</div>
+                <div className="text-sm text-gray-500">{(testResults?.[k]?.percentage || 0).toFixed(1)}%</div>
               </div>
             </div>
             <div className="text-gray-600 text-sm">{genText(k, testResults?.[k])}</div>

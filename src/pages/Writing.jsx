@@ -25,7 +25,6 @@ const Writing = () => {
         console.error('Error loading writing data:', error);
       }
     };
-
     loadWritingData();
   }, []);
 
@@ -78,19 +77,6 @@ const Writing = () => {
         });
       } else {
         console.error('Invalid feedback structure:', feedback);
-        setAiFeedback({
-          overall_score: 6.0,
-          overall_feedback: 'Demo feedback - Your essay shows good structure.',
-          sample_answer:
-            'This is a sample answer for the writing task. It demonstrates proper structure, vocabulary, and grammar.',
-          vocabulary_words: ['sample', 'vocabulary', 'words'],
-          grammatical_range_accuracy: 'Grammar usage is generally correct.',
-          detailed_analysis: {
-            strengths: ['Good structure'],
-            weaknesses: ['Could improve vocabulary'],
-            suggestions: ['Practice more'],
-          },
-        });
       }
     } catch (error) {
       console.error('Error generating AI feedback:', error);

@@ -5,6 +5,14 @@ import {
   saveVocabularyWords,
   recordPracticeActivity,
 } from '../utils';
+import QuestionsForm from './listening/QuestionsForm';
+import ResultsPanel from './listening/ResultsPanel';
+import PassageSidebar from './listening/PassageSidebar';
+import AudioPlayer from './listening/AudioPlayer';
+import PassageHeader from './listening/PassageHeader';
+
+const TIME_LIMIT = 300; 
+const DEFAULT_TAB = 'transcription';
 
 const Listening = () => {
   const [selectedQuestionType, setSelectedQuestionType] = useState('multipleChoice');
@@ -25,16 +33,6 @@ const Listening = () => {
 
   const speechRef = useRef(null);
   const timerRef = useRef(null);
-
-  
-  const TIME_LIMIT = 300; 
-
-  const FEEDBACK_TABS = [
-    { key: 'transcription', label: 'Transcription' },
-    { key: 'analysis', label: 'Question Analysis' },
-    { key: 'vocabulary', label: 'Vocabulary' },
-  ];
-  const DEFAULT_TAB = 'transcription';
 
   useEffect(() => {
     const loadListeningData = async () => {
@@ -82,9 +80,7 @@ const Listening = () => {
     );
   }
 
-  // Handle the API data structure
   const LISTENING_LEVELS = listeningData?.passages || [];
-  // Filter passages based on selected question type
   const currentPassages = LISTENING_LEVELS.filter(passage => 
     passage.questionType === selectedQuestionType
   );
@@ -130,9 +126,6 @@ const Listening = () => {
       }
 
       const utterance = new SpeechSynthesisUtterance(passage.text);
-      utterance.rate = 0.85;
-      utterance.pitch = 1.1;
-      utterance.volume = 1;
 
       const voices = window.speechSynthesis.getVoices();
       const preferredVoice = voices.find(
@@ -202,7 +195,6 @@ const Listening = () => {
       const userAnswer = answers[question.id];
 
       if (question.options) {
-        // Multiple choice question
         if (userAnswer === question.correct) correct++;
       } else if (question.type === 'fill_blank') {
         if (
@@ -303,7 +295,6 @@ const Listening = () => {
 
       setAiFeedback(correctedFeedback);
 
-      // Save vocabulary words from the feedback
       if (
         feedback.vocabulary_notes &&
         Array.isArray(feedback.vocabulary_notes)
@@ -317,7 +308,6 @@ const Listening = () => {
         }
       }
 
-      // Record practice activity
       const score = feedback.overall_score || 6.0;
       const band = Math.round(score * 2) / 2; // Round to nearest 0.5
       await recordPracticeActivity('listening', score, band, {
@@ -349,7 +339,6 @@ const Listening = () => {
   const passage = currentPassages[currentPassageIndex];
   const questions = passage?.questions || [];
   
-  // Safety check for passage
   if (!passage) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -362,9 +351,7 @@ const Listening = () => {
       </div>
     );
   }
-  // Removed single question selection
 
-  // If no passages found for selected type, show message
   if (currentPassages.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -413,332 +400,48 @@ const Listening = () => {
 
       <div className="relative w-full mx-auto flex flex-col md:flex-row gap-8">
         <div className="flex-1 bg-white rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12">
-          <div className="mb-4 text-center">
-            <div className="text-center mb-4">
-              <h2 className="text-2xl font-bold text-teal-700 mb-2">
-                {listeningData?.questionTypes?.find(type => type.type === selectedQuestionType)?.name || 'Listening Practice'}
-              </h2>
-            </div>
-            <div className="text-xl font-semibold text-gray-800 text-center bg-teal-50 border border-teal-200 rounded-xl p-2">
-              {passage.title}
-            </div>
-          </div>
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-full max-w-md bg-teal-50 rounded-xl p-6 border-2 border-teal-200">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-bold text-teal-800 mb-2">
-                  🎧 Audio Player
-                </h3>
-                <p className="text-sm text-teal-600">
-                  Listen to the passage and answer the questions below
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={isPlaying ? stopListening : startListening}
-                    disabled={isLoading}
-                    className={`px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg transition-all duration-200 flex items-center gap-2 ${
-                      isPlaying
-                        ? 'bg-red-500 hover:bg-red-600'
-                        : 'bg-teal-500 hover:bg-teal-600'
-                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <span role="img" aria-label="audio">
-                      {isPlaying ? '⏸️' : '▶️'}
-                    </span>
-                    {isLoading
-                      ? 'Loading...'
-                      : isPlaying
-                      ? 'Pause'
-                      : 'Play Audio'}
-                  </button>
-                </div>
-
-                
-
-                {isPlaying && (
-                  <div className="flex items-center gap-2 text-teal-600">
-                    <div className="animate-pulse">🔊</div>
-                    <span className="text-sm font-medium">
-                      Playing audio...
-                    </span>
-                  </div>
-                )}
-
-                {!isPlaying && playCount > 0 && (
-                  <div className="text-sm text-gray-600">
-                    Audio ready to play again
-                  </div>
-                )}
-              </div>
-            </div>
-            {isTimerActive && (
-              <div className="text-lg font-bold text-red-600">
-                Time remaining: {formatTime(timeRemaining)}
-              </div>
-            )}
-          </div>
+          <PassageHeader
+            title={passage.title}
+            heading={
+              listeningData?.questionTypes?.find((t) => t.type === selectedQuestionType)?.name ||
+              'Listening Practice'
+            }
+          />
+          <AudioPlayer
+            isPlaying={isPlaying}
+            isLoading={isLoading}
+            playCount={playCount}
+            isTimerActive={isTimerActive}
+            timeRemaining={timeRemaining}
+            onStart={startListening}
+            onStop={stopListening}
+            formatTime={formatTime}
+          />
           {!showResults ? (
-            <form
-              className="flex flex-col gap-6 mt-8"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit();
-              }}
-            >
-              <h3 className="text-xl font-bold text-teal-700">Questions</h3>
-              {questions.map((question, idx) => (
-                <div
-                  key={question.id}
-                  className="bg-white rounded-lg p-4 border border-gray-200"
-                >
-                  <div className="font-semibold text-gray-800 mb-3">
-                    {`Q${idx + 1}. ${question.question}`}
-                  </div>
-                  {question.options ? (
-                    <div className="space-y-2">
-                      {question.options.map((option, optionIndex) => (
-                        <label
-                          key={optionIndex}
-                          className="flex items-center gap-3 cursor-pointer group"
-                        >
-                          <span className="relative flex items-center">
-                            <input
-                              type="radio"
-                              name={`question-${question.id}`}
-                              value={optionIndex}
-                              checked={answers[question.id] === optionIndex}
-                              onChange={(e) =>
-                                handleAnswerChange(
-                                  question.id,
-                                  parseInt(e.target.value)
-                                )
-                              }
-                              className="peer appearance-none w-6 h-6 rounded-full border-2 border-teal-400 bg-white checked:bg-gradient-to-br checked:from-teal-400 checked:to-emerald-400 checked:border-teal-600 transition-all duration-200 focus:ring-2 focus:ring-teal-300 shadow-sm"
-                            />
-                            <span className="absolute left-0 top-0 w-6 h-6 rounded-full pointer-events-none border-2 border-transparent peer-checked:border-teal-600 peer-checked:bg-gradient-to-br peer-checked:from-teal-400 peer-checked:to-emerald-400 peer-focus:ring-2 peer-focus:ring-teal-300 transition-all duration-200"></span>
-                          </span>
-                          <span className="text-gray-700 text-lg group-hover:text-teal-700 transition-colors">
-                            {option}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  ) : (
-                    <input
-                      type="text"
-                      value={answers[question.id] || ''}
-                      onChange={(e) =>
-                        handleAnswerChange(question.id, e.target.value)
-                      }
-                      placeholder="Type your answer..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  )}
-                </div>
-              ))}
-              <button
-                type="submit"
-                className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
-              >
-                Submit Answers
-              </button>
-            </form>
+            <QuestionsForm
+              questions={questions}
+              answers={answers}
+              onAnswerChange={handleAnswerChange}
+              onSubmit={handleSubmit}
+            />
           ) : (
-            <div className="space-y-6 mt-8">
-              <div className="text-center space-y-4">
-                <div className="text-2xl font-bold text-green-700">
-                  Your Score: Band {score}
-                </div>
-                <div className="text-lg text-gray-600">
-                  Passage {currentPassageIndex + 1} of {currentPassages.length}
-                </div>
-                {isAnalyzing && (
-                  <div className="text-purple-600 text-center font-semibold animate-pulse">
-                    Analyzing your answers...
-                  </div>
-                )}
-              </div>
-
-              {aiFeedback && typeof aiFeedback === 'object' ? (
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
-                  <div className="flex mb-4 w-full overflow-x-auto border-b border-blue-200">
-                    {FEEDBACK_TABS.map((tab) => (
-                      <button
-                        key={tab.key}
-                        className={`flex-1 min-w-0 px-3 py-2 rounded-t-lg font-semibold border-b-2 transition-colors whitespace-nowrap text-sm ${
-                          activeTab === tab.key
-                            ? 'border-blue-600 bg-white text-blue-800'
-                            : 'border-transparent bg-blue-100 text-blue-600 hover:bg-blue-200'
-                        }`}
-                        onClick={() => setActiveTab(tab.key)}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {activeTab === 'transcription' && (
-                    <div className="space-y-4">
-                      <div className="text-lg font-semibold text-blue-800 mb-3">
-                        Full Passage Transcription
-                      </div>
-                      <div className="bg-white rounded-lg p-4 border border-blue-200 text-gray-700 leading-relaxed">
-                        {typeof aiFeedback.transcription === 'string'
-                          ? aiFeedback.transcription
-                          : JSON.stringify(aiFeedback.transcription)}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        <strong>Tip:</strong> Read through the transcription to
-                        see what you might have missed while listening.
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === 'analysis' && (
-                    <div className="space-y-4">
-                      <div className="text-lg font-semibold text-blue-800 mb-3">
-                        Detailed Question Analysis
-                      </div>
-                      {aiFeedback.question_analysis?.map((analysis, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white rounded-lg p-4 border border-blue-200"
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <span
-                              className={`px-2 py-1 rounded text-xs font-semibold ${
-                                analysis.is_correct
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {analysis.is_correct
-                                ? '✓ Correct'
-                                : '✗ Incorrect'}
-                            </span>
-                            <span className="font-semibold text-blue-800">
-                              Question {analysis.question_number}
-                            </span>
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Question:</strong> {analysis.question_text}
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Your Answer:</strong>{' '}
-                            {analysis.student_answer}
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Correct Answer:</strong>{' '}
-                            {analysis.correct_answer}
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Explanation:</strong> {analysis.explanation}
-                          </div>
-                          <div className="text-sm text-gray-700 mb-2">
-                            <strong>Listening Tip:</strong>{' '}
-                            {analysis.listening_tips}
-                          </div>
-                          <div className="text-sm text-gray-700">
-                            <strong>Key Vocabulary:</strong>{' '}
-                            {analysis.key_vocabulary?.join(', ')}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {activeTab === 'vocabulary' && (
-                    <div className="space-y-4">
-                      <div className="text-lg font-semibold text-blue-800 mb-3">
-                        Important Vocabulary
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {aiFeedback.vocabulary_notes?.map((vocab, idx) => {
-                          let word, definition;
-                          if (typeof vocab === 'string') {
-                            word = vocab;
-                            definition = 'Definition not available';
-                          } else if (vocab && typeof vocab === 'object') {
-                            word =
-                              vocab.word || vocab.mistake || 'Unknown word';
-                            definition =
-                              vocab.definition ||
-                              vocab.solution ||
-                              'Definition not available';
-                          } else {
-                            word = 'Unknown word';
-                            definition = 'Definition not available';
-                          }
-
-                          return (
-                            <div
-                              key={idx}
-                              className="bg-white rounded-lg p-4 border border-blue-200"
-                            >
-                              <div className="font-semibold text-blue-800 mb-1">
-                                {word}
-                              </div>
-                              <div className="text-sm text-gray-700">
-                                {definition}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
-                  <div className="text-center text-gray-600">
-                    <p>AI feedback is not available at the moment.</p>
-                    <p className="text-sm mt-2">
-                      Your score has been calculated successfully.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="text-center">
-                {currentPassageIndex < currentPassages.length - 1 ? (
-                  <button
-                    onClick={handleNextPassage}
-                    className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors"
-                  >
-                    Next Passage
-                  </button>
-                ) : (
-                  <div className="text-xl font-bold text-green-700">
-                    🎉 All passages completed!
-                  </div>
-                )}
-              </div>
-            </div>
+            <ResultsPanel
+              score={score}
+              currentPassageIndex={currentPassageIndex}
+              totalPassages={currentPassages.length}
+              isAnalyzing={isAnalyzing}
+              aiFeedback={aiFeedback}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              onNextPassage={handleNextPassage}
+            />
           )}
         </div>
-        <div className="w-full md:w-64 flex-shrink-0 mt-8 md:mt-0">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 flex flex-col gap-2 sticky top-24">
-            <div className="font-bold text-gray-700 mb-2 text-center">
-              Questions
-            </div>
-            {currentPassages.map((p, idx) => (
-              <button
-                key={p.id}
-                onClick={() => handleSelectPassage(idx)}
-                className={`w-full text-left px-4 py-2 rounded-lg font-semibold transition-all duration-150 mb-1 ${
-                  currentPassageIndex === idx
-                    ? 'bg-teal-500 text-white shadow'
-                    : 'bg-gray-100 text-gray-700 hover:bg-teal-100'
-                }`}
-              >
-                Passage {idx + 1}
-              </button>
-            ))}
-          </div>
-        </div>
+        <PassageSidebar
+          passages={currentPassages}
+          currentIndex={currentPassageIndex}
+          onSelect={handleSelectPassage}
+        />
       </div>
     </div>
   );

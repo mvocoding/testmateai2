@@ -235,25 +235,6 @@ Return a JSON with:
     const feedback = parseJson(content);
     return feedback;
   } catch (error) {
-    return {
-      band: 6.0,
-      comment: 'Could not parse AI feedback. (Demo)',
-      words: transcript
-        .split(' ')
-        .map((word) => ({ word, native_like: true, score: 1.0, tip: '' })),
-      length_feedback:
-        'The answer is a bit short. Try to elaborate more and provide examples.',
-      suggestions: [
-        'Add more details to your answer.',
-        'Use linking words.',
-        'Give a personal example.',
-      ],
-      pronunciation_tips: ['Practice intonation.', 'Work on vowel clarity.'],
-      grammar_feedback: 'Check your verb tenses and subject-verb agreement.',
-      vocabulary_feedback: 'Try to use a wider range of vocabulary.',
-      coherence_feedback:
-        'Organize your answer with clear points and examples.',
-    };
   }
 };
 
@@ -298,38 +279,6 @@ Return a JSON with:
     const feedback = parseJson(content);
     return feedback;
   } catch (error) {
-    return {
-      overall_score: 6.0,
-      overall_feedback: 'Could not parse AI feedback. (Demo)',
-      transcription: passage.text,
-      question_analysis: questions.map((q, idx) => ({
-        question_number: idx + 1,
-        question_text: q.question,
-        correct_answer: q.correct || q.answer,
-        student_answer: userAnswers[q.id] || 'No answer provided',
-        is_correct: userAnswers[q.id] === (q.correct || q.answer),
-        explanation: 'This is a demo explanation.',
-        listening_tips: 'Listen carefully for key words.',
-        key_vocabulary: ['key', 'words'],
-        context_clues: 'Look for context clues in the passage.'
-      })),
-      listening_strategies: [
-        'Predict what you might hear',
-        'Listen for key words',
-        'Pay attention to numbers and dates'
-      ],
-      vocabulary_notes: [
-        { word: 'example', definition: 'a thing characteristic of its kind' }
-      ],
-      common_mistakes: [
-        'Not listening for specific details',
-        'Missing context clues'
-      ],
-      improvement_tips: [
-        'Practice with different accents',
-        'Focus on understanding main ideas first'
-      ]
-    };
   }
 };
 
@@ -375,43 +324,6 @@ export const generateReadingFeedback = async (passage, questions, userAnswers) =
     const feedback = parseJson(content);
     return feedback;
   } catch (error) {
-    return {
-      overall_score: 6.0,
-      overall_feedback: 'Could not parse AI feedback. (Demo)',
-      passage_summary: 'This is a demo passage summary.',
-             question_analysis: questions.map((q, idx) => ({
-         question_number: idx + 1,
-         question_text: q.text,
-         correct_answer: q.options ? q.options[q.correct] : q.correct,
-         student_answer: userAnswers[idx] || 'No answer provided',
-         is_correct: userAnswers[idx] === q.correct,
-         explanation: 'This is a demo explanation.',
-         reading_strategy: 'Read the question carefully and scan for key words.',
-         key_vocabulary: ['key', 'words'],
-         paragraph_reference: 'Look in the relevant paragraph.'
-       })),
-      reading_strategies: [
-        'Skim the passage first for main ideas',
-        'Scan for specific information',
-        'Read questions before reading the passage'
-      ],
-      vocabulary_notes: [
-        { word: 'example', definition: 'a thing characteristic of its kind' }
-      ],
-      common_mistakes: [
-        'Not reading the question carefully',
-        'Missing key words in the passage'
-      ],
-      improvement_tips: [
-        'Practice skimming and scanning',
-        'Focus on understanding main ideas first'
-      ],
-      skimming_scanning_tips: [
-        'Read the first and last sentences of paragraphs',
-        'Look for topic sentences',
-        'Scan for numbers, names, and dates'
-      ]
-    };
   }
 };
 
@@ -450,69 +362,6 @@ Return a JSON with:
     return feedback;
   } catch (error) {
     
-    // Return comprehensive fallback data based on the task type
-    const isTask1 = task.toLowerCase().includes('letter') || task.toLowerCase().includes('write a letter');
-    
-    const fallbackData = {
-      overall_score: 6.0,
-      overall_feedback: 'This is a demo feedback. Your essay shows good structure and clear ideas. To improve, focus on expanding your vocabulary and refining your grammar.',
-      sample_answer: isTask1 
-        ? `Dear [Recipient Name],
-
-I am writing to [purpose of the letter based on the task]. I hope this letter finds you well.
-
-[First paragraph with clear introduction and context]
-
-[Second paragraph with detailed explanation or request]
-
-[Third paragraph with additional information or clarification]
-
-I would appreciate your prompt attention to this matter and look forward to hearing from you soon.
-
-Yours sincerely,
-[Your Name]`
-        : `This essay will address the key aspects of [topic] and provide a comprehensive analysis of the issues involved.
-
-Introduction:
-The topic of [topic] has become increasingly significant in contemporary society. This essay will examine the various perspectives on this issue and present a balanced argument.
-
-Body Paragraph 1:
-One of the primary arguments in favor of [topic] is [first point]. Research has shown that [supporting evidence]. Furthermore, [additional reasoning].
-
-Body Paragraph 2:
-However, it is important to consider the opposing viewpoint. Critics argue that [counter-argument]. While this perspective has merit, it fails to account for [rebuttal].
-
-Conclusion:
-In conclusion, while there are valid arguments on both sides, the evidence suggests that [final position]. It is essential that [recommendation or call to action].`,
-      vocabulary_words: isTask1 
-        ? ['correspondence', 'inquiry', 'appreciation', 'regarding', 'consequently', 'furthermore', 'nevertheless', 'subsequently']
-        : ['comprehensive', 'methodology', 'implementation', 'analysis', 'perspective', 'contemporary', 'significant', 'evidence', 'consequently', 'nevertheless'],
-      grammatical_range_accuracy: 'Your grammar usage demonstrates a good command of basic structures. To achieve higher bands, incorporate more complex sentence structures, conditional clauses, and passive voice constructions.',
-      detailed_analysis: {
-        strengths: ['Clear main points', 'Good topic sentences', 'Logical organization'],
-        weaknesses: ['Limited vocabulary range', 'Some repetitive sentence structures', 'Could use more complex grammar'],
-        suggestions: ['Expand vocabulary with academic words', 'Practice using different sentence structures', 'Review conditional and passive voice usage']
-      },
-      vocabulary_improvements: [
-        {
-          original: 'good',
-          suggested: 'excellent',
-          reason: 'More precise and impactful'
-        },
-        {
-          original: 'important',
-          suggested: 'significant',
-          reason: 'More academic and formal'
-        },
-        {
-          original: 'big',
-          suggested: 'substantial',
-          reason: 'More sophisticated vocabulary'
-        }
-      ]
-    };
-    
-    return fallbackData;
   }
 };
 
@@ -540,77 +389,7 @@ Return a JSON with:
     }
     return quiz;
   } catch (error) {
-    const demoDefinitions = {
-      'sophisticated': {
-        correct: 'Complex and refined in character',
-        options: ['Complex and refined in character', 'Simple and basic', 'Old and outdated', 'New and modern']
-      },
-      'comprehensive': {
-        correct: 'Complete and thorough',
-        options: ['Complete and thorough', 'Brief and short', 'Difficult and complex', 'Easy and simple']
-      },
-      'methodology': {
-        correct: 'A system of methods used in research',
-        options: ['A system of methods used in research', 'A type of technology', 'A form of communication', 'A style of writing']
-      },
-      'implementation': {
-        correct: 'The process of putting a plan into action',
-        options: ['The process of putting a plan into action', 'The creation of a plan', 'The evaluation of results', 'The discussion of ideas']
-      },
-      'analysis': {
-        correct: 'Detailed examination of something',
-        options: ['Detailed examination of something', 'Quick overview of something', 'Simple description', 'Basic summary']
-      },
-      'perspective': {
-        correct: 'A particular way of viewing something',
-        options: ['A particular way of viewing something', 'A physical location', 'A time period', 'A type of object']
-      },
-      'significant': {
-        correct: 'Important or meaningful',
-        options: ['Important or meaningful', 'Small or minor', 'Temporary or brief', 'Common or ordinary']
-      },
-      'consequently': {
-        correct: 'As a result or therefore',
-        options: ['As a result or therefore', 'At the same time', 'In the beginning', 'For example']
-      },
-      'furthermore': {
-        correct: 'In addition or moreover',
-        options: ['In addition or moreover', 'However or but', 'Therefore or so', 'Meanwhile or while']
-      },
-      'nevertheless': {
-        correct: 'Despite that or however',
-        options: ['Despite that or however', 'Because of that', 'In addition to', 'As a result of']
-      }
-    };
-
-    const questions = vocabularyWords.slice(0, Math.min(10, vocabularyWords.length)).map((word, index) => {
-        const demo = demoDefinitions[word.toLowerCase()];
-        if (demo) {
-          return {
-            word: word,
-            question: `What is the meaning of "${word}"?`,
-            options: demo.options,
-            correct_answer: demo.correct,
-            explanation: `"${word}" means "${demo.correct}". This word is commonly used in academic and professional contexts.`
-          };
-        } else {
-          return {
-            word: word,
-            question: `What is the meaning of "${word}"?`,
-            options: [
-              'Advanced or complex',
-              'Simple or basic', 
-              'Old or traditional',
-              'New or modern'
-            ],
-            correct_answer: 'Advanced or complex',
-            explanation: `"${word}" is an advanced vocabulary word that you should review and practice.`
-          };
-        }
-      });
     
-    console.log('Generated demo questions:', questions);
-    return { questions };
   }
 };
 

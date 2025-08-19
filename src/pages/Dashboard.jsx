@@ -6,98 +6,152 @@ import {
   generateStudyPlan,
 } from '../services/dataService';
 
-const getSkillsList = (dashboardData) => [
-  {
-    name: 'Speaking',
-    path: '/speaking',
-    icon: '🏰',
-    desc: 'Castle of Conversation',
-    color: 'from-purple-400 to-pink-400',
-    bgColor: 'from-purple-50 to-pink-50',
-    progress: dashboardData?.practiceStats?.speaking || 0,
-    lastScore: parseFloat(dashboardData?.averageScores?.speaking) || 0,
-  },
-  {
-    name: 'Listening',
-    path: '/listening',
-    icon: '🌲',
-    desc: 'Whispering Forest',
-    color: 'from-green-400 to-emerald-400',
-    bgColor: 'from-green-50 to-emerald-50',
-    progress: dashboardData?.practiceStats?.listening || 0,
-    lastScore: parseFloat(dashboardData?.averageScores?.listening) || 0,
-  },
-  {
-    name: 'Writing',
-    path: '/writing',
-    icon: '⛰️',
-    desc: 'Mountain of Mastery',
-    color: 'from-blue-400 to-cyan-400',
-    bgColor: 'from-blue-50 to-cyan-50',
-    progress: dashboardData?.practiceStats?.writing || 0,
-    lastScore: parseFloat(dashboardData?.averageScores?.writing) || 0,
-  },
-  {
-    name: 'Reading',
-    path: '/reading',
-    icon: '📚',
-    desc: 'Library of Knowledge',
-    color: 'from-orange-400 to-red-400',
-    bgColor: 'from-orange-50 to-red-50',
-    progress: dashboardData?.practiceStats?.reading || 0,
-    lastScore: parseFloat(dashboardData?.averageScores?.reading) || 0,
-  },
-];
+function createSkillsList(dashboardData) {
+  const skills = [
+    {
+      name: 'Speaking',
+      path: '/speaking',
+      icon: '🏰',
+      description: 'Castle of Conversation',
+      gradientColor: 'from-purple-400 to-pink-400',
+      backgroundGradient: 'from-purple-50 to-pink-50',
+      progress: dashboardData?.practiceStats?.speaking || 0,
+      lastScore: parseFloat(dashboardData?.averageScores?.speaking) || 0,
+    },
+    {
+      name: 'Listening',
+      path: '/listening',
+      icon: '🌲',
+      description: 'Whispering Forest',
+      gradientColor: 'from-green-400 to-emerald-400',
+      backgroundGradient: 'from-green-50 to-emerald-50',
+      progress: dashboardData?.practiceStats?.listening || 0,
+      lastScore: parseFloat(dashboardData?.averageScores?.listening) || 0,
+    },
+    {
+      name: 'Writing',
+      path: '/writing',
+      icon: '⛰️',
+      description: 'Mountain of Mastery',
+      gradientColor: 'from-blue-400 to-cyan-400',
+      backgroundGradient: 'from-blue-50 to-cyan-50',
+      progress: dashboardData?.practiceStats?.writing || 0,
+      lastScore: parseFloat(dashboardData?.averageScores?.writing) || 0,
+    },
+    {
+      name: 'Reading',
+      path: '/reading',
+      icon: '📚',
+      description: 'Library of Knowledge',
+      gradientColor: 'from-orange-400 to-red-400',
+      backgroundGradient: 'from-orange-50 to-red-50',
+      progress: dashboardData?.practiceStats?.reading || 0,
+      lastScore: parseFloat(dashboardData?.averageScores?.reading) || 0,
+    },
+  ];
+  
+  return skills;
+}
 
+function createActivityList(dashboardData) {
+  if (!dashboardData?.recentActivities) {
+    return [];
+  }
 
-const getActivityList = (dashboardData) => {
-  if (!dashboardData?.recentActivities) return [];
+  const activities = dashboardData.recentActivities.map((activity) => {
+    const activityType = activity.practiceType || activity.type;
+    const actionText = activity.type === 'practice' ? 'Completed practice' : 'Activity';
+    const score = activity.score || 0;
+    const date = new Date(activity.timestamp).toLocaleDateString();
+    
+    return {
+      type: activityType,
+      action: actionText,
+      score: score,
+      time: date,
+    };
+  });
 
-  return dashboardData.recentActivities.map((activity) => ({
-    type: activity.practiceType || activity.type,
-    action: activity.type === 'practice' ? 'Completed practice' : 'Activity',
-    score: activity.score || 0,
-    time: new Date(activity.timestamp).toLocaleDateString(),
-  }));
-};
+  return activities;
+}
 
-const Dashboard = () => {
+function getActivityIcon(activityType) {
+  switch (activityType) {
+    case 'speaking':
+      return '🏰';
+    case 'listening':
+      return '🌲';
+    case 'writing':
+      return '⛰️';
+    case 'reading':
+      return '📚';
+    default:
+      return '📚';
+  }
+}
+
+function loadStudyPlanFromStorage(userData) {
+  try {
+    const storedPlan = localStorage.getItem('testmate_study_plan');
+    if (storedPlan) {
+      const parsedPlan = JSON.parse(storedPlan);
+      
+      if (userData && !userData.studyPlan) {
+        return { ...userData, studyPlan: parsedPlan };
+      }
+      if (!userData) {
+        return { studyPlan: parsedPlan };
+      }
+    }
+  } catch (error) {
+    console.log('Error loading study plan from storage:', error);
+  }
+  
+  return userData;
+}
+
+function Dashboard() {
   const navigate = useNavigate();
+  
+  // State variables
   const [dashboardData, setDashboardData] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
-    const loadDashboardData = async () => {
-      const [data, userDataRaw] = await Promise.all([getDashboardData(), getUser()]);
-      let userData = userDataRaw;
+    async function loadData() {
       try {
-        const storedPlan = localStorage.getItem('testmate_study_plan');
-        if (storedPlan) {
-          const parsedPlan = JSON.parse(storedPlan);
-          if (userData) {
-            if (!userData.studyPlan) {
-              userData = { ...userData, studyPlan: parsedPlan };
-            }
-          } else {
-            userData = { studyPlan: parsedPlan };
-          }
-        }
-      } catch {}
-      if (!mounted) return;
-      setDashboardData(data);
-      setUser(userData);
-      setIsLoading(false);
-    };
+        const [dashboardDataResult, userDataResult] = await Promise.all([
+          getDashboardData(),
+          getUser()
+        ]);
 
-    loadDashboardData();
-    const onUpdate = () => loadDashboardData();
-    window.addEventListener('userDataUpdated', onUpdate);
+        const userDataWithPlan = loadStudyPlanFromStorage(userDataResult);
+        if (isComponentMounted) {
+          setDashboardData(dashboardDataResult);
+          setUser(userDataWithPlan);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        if (isComponentMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    function handleUserDataUpdate() {
+      loadData();
+    }
+
+    loadData();
+    let isComponentMounted = true;
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+
     return () => {
-      mounted = false;
-      window.removeEventListener('userDataUpdated', onUpdate);
+      isComponentMounted = false;
+      window.removeEventListener('userDataUpdated', handleUserDataUpdate);
     };
   }, []);
 
@@ -111,28 +165,32 @@ const Dashboard = () => {
 
   const currentLevel = user?.level || 1;
   const currentXP = user?.xp || 0;
-  const TOTAL_XP = 100; // XP needed for next level
+  const totalXPNeeded = 100;
+  const xpPercentage = (currentXP / totalXPNeeded) * 100;
 
-  const xpPercent = (currentXP / TOTAL_XP) * 100;
-
-  const resetData = () => {
+  function resetAllData() {
     localStorage.clear();
     window.location.reload();
-  };
+  }
 
-  const onGeneratePlan = async () => {
+  async function generateNewStudyPlan() {
     setIsGeneratingPlan(true);
+    
     try {
-      const plan = await generateStudyPlan(user);
-      if (plan) {
-        setUser({ ...user, studyPlan: plan });
+      const newPlan = await generateStudyPlan(user);
+      if (newPlan) {
+        setUser({ ...user, studyPlan: newPlan });
       }
     } catch (error) {
       console.error('Error generating study plan:', error);
     } finally {
       setIsGeneratingPlan(false);
     }
-  };
+  }
+
+  const skillsList = createSkillsList(dashboardData);
+  const activityList = createActivityList(dashboardData);
+  const hasStudyPlan = user?.studyPlan;
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
@@ -145,6 +203,7 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
+            
             <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">
@@ -155,18 +214,19 @@ const Dashboard = () => {
                     Level {currentLevel}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {currentXP} / {TOTAL_XP} XP
+                    {currentXP} / {totalXPNeeded} XP
                   </div>
                 </div>
               </div>
               <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className="absolute left-0 top-0 h-4 bg-teal-500 transition-all duration-700"
-                  style={{ width: `${xpPercent}%` }}
+                  style={{ width: `${xpPercentage}%` }}
                 ></div>
               </div>
             </div>
-            {user?.studyPlan ? (
+
+            {hasStudyPlan ? (
               <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-gray-800">
@@ -243,7 +303,7 @@ const Dashboard = () => {
                   target score
                 </p>
                 <button
-                  onClick={onGeneratePlan}
+                  onClick={generateNewStudyPlan}
                   disabled={isGeneratingPlan}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -258,25 +318,20 @@ const Dashboard = () => {
                 </button>
               </div>
             )}
+
             <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Recent Activity
               </h2>
               <div className="space-y-4">
-                {getActivityList(dashboardData).map((activity, index) => (
+                {activityList.map((activity, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-4 bg-white/50 rounded-xl"
                   >
                     <div className="flex items-center gap-3">
                       <div className="text-2xl">
-                        {activity.type === 'speaking'
-                          ? '🏰'
-                          : activity.type === 'listening'
-                          ? '🌲'
-                          : activity.type === 'writing'
-                          ? '⛰️'
-                          : '📚'}
+                        {getActivityIcon(activity.type)}
                       </div>
                       <div>
                         <div className="font-semibold text-gray-800">
@@ -297,13 +352,15 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
           <div className="space-y-8">
+            
             <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 Continue Learning
               </h2>
               <div className="space-y-3">
-                {getSkillsList(dashboardData).map((skill, index) => (
+                {skillsList.map((skill, index) => (
                   <button
                     key={skill.name}
                     onClick={() => navigate(skill.path)}
@@ -312,7 +369,7 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-10 h-10 bg-gradient-to-br ${skill.color} rounded-lg flex items-center justify-center text-white text-lg`}
+                          className={`w-10 h-10 bg-gradient-to-br ${skill.gradientColor} rounded-lg flex items-center justify-center text-white text-lg`}
                         >
                           {skill.icon}
                         </div>
@@ -321,7 +378,7 @@ const Dashboard = () => {
                             {skill.name}
                           </div>
                           <div className="text-xs text-gray-600">
-                            {skill.desc}
+                            {skill.description}
                           </div>
                         </div>
                       </div>
@@ -330,7 +387,8 @@ const Dashboard = () => {
                 ))}
               </div>
             </div>
-            {user?.studyPlan && (
+
+            {hasStudyPlan && (
               <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-6">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">
                   📝 Study Recommendations
@@ -357,6 +415,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard;

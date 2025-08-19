@@ -1,7 +1,5 @@
 import { generateStudyPlan as generateStudyPlanFromUtils } from "../utils";
-
 const API_BASE_URL = "https://testmateai-be-670626115194.australia-southeast2.run.app/api";
-
 const fireUserDataUpdated = () => {
   try { window.dispatchEvent(new CustomEvent("userDataUpdated")); } catch {}
 };
@@ -9,25 +7,12 @@ const fireUserDataUpdated = () => {
 const apiCall = async (endpoint, options = {}) => {
   try {
     const token = localStorage.getItem("testmate_token");
-    const headers = {
-      "Content-Type": "application/json",
-      ...options.headers
-    };
+    const headers = { "Content-Type": "application/json", ...options.headers };
+    if (token) headers.Authorization = `Bearer ${token}`;
 
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers
-    });
-
-    if (!response.ok) {
-      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+    if (!res.ok) throw new Error(`API call failed: ${res.status} ${res.statusText}`);
+    const data = await res.json();
     return data;
   } catch (error) { throw error; }
 };
@@ -43,8 +28,8 @@ export const getUser = async () => {
     const cachedUser = localStorage.getItem("testmate_user");
     if (cachedUser) return JSON.parse(cachedUser);
 
-    const response = await apiCall("/auth/profile");
-    const user = response.data;
+    const res = await apiCall("/auth/profile");
+    const user = res.data;
     if (user) localStorage.setItem("testmate_user", JSON.stringify(user));
     return user;
   } catch (error) {
@@ -55,63 +40,48 @@ export const getUser = async () => {
 
 export const updateUser = async (updates) => {
   try {
-    const response = await apiCall("/auth/profile", {
+    const res = await apiCall("/auth/profile", {
       method: "PUT",
       body: JSON.stringify(updates)
     });
 
-    const updatedUser = response.data;
+    const updatedUser = res.data;
     localStorage.setItem("testmate_user", JSON.stringify(updatedUser));
 
     fireUserDataUpdated();
 
     return updatedUser;
   } catch (error) {
-    const user = await getUser();
-    const baseUser = user || {};
-    const updatedUser = { ...baseUser, ...updates };
-    localStorage.setItem("testmate_user", JSON.stringify(updatedUser));
-    fireUserDataUpdated();
-    return updatedUser;
+    
   }
 };
 
 export const addXP = async (amount, source = "practice", activityId = null) => {
   try {
     const safeAmount = Math.max(1, Math.floor(Number(amount) || 0));
-    const response = await apiCall("/users/xp/add", {
+    const res = await apiCall("/users/xp/add", {
       method: "POST",
       body: JSON.stringify({ amount: safeAmount, source, activityId })
     });
 
-    const result = response.data;
+    const r = res.data;
     const user = await getUser();
     if (user) {
-      const updatedUser = { ...user, xp: result.newXp, level: result.newLevel };
+      const updatedUser = { ...user, xp: r.newXp, level: r.newLevel };
       localStorage.setItem("testmate_user", JSON.stringify(updatedUser));
     }
 
     fireUserDataUpdated();
-
-    return result;
+    return r;
   } catch (error) {
-    const user = getUser();
-    if (!user) return null;
-
-    const newXP = user.xp + amount;
-    const newLevel = Math.floor(newXP / 100) + 1;
-
-    const updatedUser = { ...user, xp: newXP, level: newLevel };
-    localStorage.setItem("testmate_user", JSON.stringify(updatedUser));
-
-    return updatedUser;
+    
   }
 };
 
 export const getActivities = async () => {
   try {
-    const response = await apiCall("/users/activities?limit=50");
-    return response.data;
+    const res = await apiCall("/users/activities?limit=50");
+    return res.data;
   } catch (error) {
     return [];
   }
@@ -127,7 +97,7 @@ export const addActivity = async (activity) => {
 
 export const addPracticeActivity = async (type, score, band, details = {}) => {
   try {
-    const response = await apiCall("/users/activities", {
+    const res = await apiCall("/users/activities", {
       method: "POST",
       body: JSON.stringify({
         type,
@@ -139,31 +109,30 @@ export const addPracticeActivity = async (type, score, band, details = {}) => {
       })
     });
 
-    const result = response.data;
+    const r = res.data;
 
     await addActivity({
       type: "practice",
       practiceType: type,
-      score: result.score,
-      band: result.band,
+      score: r.score,
+      band: r.band,
       details: details,
-      xpEarned: result.xpEarned
+      xpEarned: r.xpEarned
     });
 
-    if (typeof result.xpEarned === "number" && result.xpEarned > 0) {
+    if (typeof r.xpEarned === "number" && r.xpEarned > 0) {
       try {
-        await addXP(result.xpEarned, "practice", result.activityId);
+        await addXP(r.xpEarned, "practice", r.activityId);
       } catch (xpError) {}
     }
-    // Fallback: if backend didn't compute xpEarned, derive from band/score
-    if (!(typeof result.xpEarned === "number" && result.xpEarned > 0)) {
-      const derived = Math.max(5, Math.min(20, Math.round((Number(band) || Number(score) || 6) * 2)));
+    if (!(typeof r.xpEarned === "number" && r.xpEarned > 0)) {
+      const d = Math.max(5, Math.min(20, Math.round((Number(band) || Number(score) || 6) * 2)));
       try {
-        await addXP(derived, "practice", result.activityId);
+        await addXP(d, "practice", r.activityId);
       } catch (xpError) {}
     }
 
-    return result;
+    return r;
   } catch (error) {
     const activity = {
       type: "practice",
@@ -185,8 +154,8 @@ export const addPracticeActivity = async (type, score, band, details = {}) => {
 
 export const getVocabulary = async () => {
   try {
-    const response = await apiCall("/vocabulary?limit=100");
-    return response.data;
+    const res = await apiCall("/vocabulary?limit=100");
+    return res.data;
   } catch (error) {
     return [];
   }
@@ -196,7 +165,7 @@ export const addVocabulary = async (words) => {
   try {
     const newWords = Array.isArray(words) ? words : [words];
 
-    const response = await apiCall('/vocabulary', {
+    const res = await apiCall('/vocabulary', {
       method: 'POST',
       body: JSON.stringify({
         words: newWords,
@@ -205,8 +174,8 @@ export const addVocabulary = async (words) => {
       })
     });
 
-    const result = response.data;
-    return result.words;
+    const r = res.data;
+    return r.words;
   } catch (error) {
     return [];
   }
@@ -214,12 +183,12 @@ export const addVocabulary = async (words) => {
 
 export const updateVocabularyItem = async (id, updates) => {
   try {
-    const response = await apiCall(`/vocabulary/${id}`, {
+    const res = await apiCall(`/vocabulary/${id}`, {
       method: "PUT",
       body: JSON.stringify(updates)
     });
 
-    const updatedItem = response.data;
+    const updatedItem = res.data;
     return updatedItem;
   } catch (error) {
     return null;
@@ -228,15 +197,14 @@ export const updateVocabularyItem = async (id, updates) => {
 
 export const getMockData = async () => {
   try {
-    const practiceSummary = await apiCall("/practice/summary");
-
-    const mockTests = await apiCall("/mock-tests");
-    const studyPlans = await apiCall("/study-plans");
+    const sum = await apiCall("/practice/summary");
+    const tests = await apiCall("/mock-tests");
+    const plans = await apiCall("/study-plans");
 
     return {
-      practiceQuestions: practiceSummary.data,
-      mockTests: mockTests.data,
-      studyPlans: studyPlans.data
+      practiceQuestions: sum.data,
+      mockTests: tests.data,
+      studyPlans: plans.data
     };
   } catch (error) {
     return null;
@@ -249,16 +217,13 @@ export const resetMockData = () => {
 
 export const getPracticeQuestions = async (type) => {
   try {
-    const endpoint =
-      type === "listening"
-        ? `/practice/listening?limit=50`
-        : type === "reading"
-          ? `/practice/reading?limit=50`
-          : type === "speaking"
-            ? `/practice/speaking?limit=50`
-            : type === "writing"
-              ? `/practice/writing?limit=50`
-              : `/practice/${type}?limit=50`;
+    const types = {
+      listening: "/practice/listening?limit=50",
+      reading: "/practice/reading?limit=50",
+      speaking: "/practice/speaking?limit=50",
+      writing: "/practice/writing?limit=50",
+    }
+    const endpoint = types[type] || `/practice/${type}?limit=50`;
     const response = await apiCall(endpoint);
     const data = response.data;
 
@@ -406,8 +371,8 @@ export const getPracticeQuestions = async (type) => {
 export const getMockTests = async (limit) => {
   try {
     const endpoint = typeof limit === "number" && limit > 0 ? `/mock-tests?limit=${Math.min(100, Math.max(1, limit))}` : "/mock-tests";
-    const response = await apiCall(endpoint);
-    return response.data;
+    const res = await apiCall(endpoint);
+    return res.data;
   } catch (error) {
     return [];
   }
@@ -415,118 +380,36 @@ export const getMockTests = async (limit) => {
 
 export const fetchMockTest = async (testId) => {
   try {
-    const response = await apiCall(`/mock-tests/${testId}`);
-    return response.data;
+    const res = await apiCall(`/mock-tests/${testId}`);
+    return res.data;
   } catch (error) {
     return null;
   }
 };
 
-const createFallbackQuestions = (sectionId) => {
-  const fallbackQuestions = {
-    listening: [
-      {
-        id: 1,
-        question: "What is the main topic of the conversation?",
-        options: ["Weather", "Travel", "Food", "Sports"],
-        correct: 1,
-        type: "multiple-choice",
-        audio: null
-      },
-      {
-        id: 2,
-        question: "Where does the conversation take place?",
-        options: ["Restaurant", "Airport", "Hotel", "School"],
-        correct: 2,
-        type: "multiple-choice",
-        audio: null
-      }
-    ],
-    speaking: [
-      {
-        id: 1,
-        question: "Describe your hometown. What is it like?",
-        title: "Hometown Description",
-        part: 1,
-        type: "speaking",
-        preparationTime: 60
-      },
-      {
-        id: 2,
-        question: "Talk about a book you have read recently. What was it about?",
-        title: "Book Discussion",
-        part: 2,
-        type: "speaking",
-        preparationTime: 120
-      }
-    ],
-    reading: [
-      {
-        id: 1,
-        question: "What is the main idea of the passage?",
-        options: ["Technology", "Education", "Environment", "Health"],
-        correct: 1,
-        type: "multiple-choice",
-        passage: "This is a sample reading passage about education and its importance in modern society."
-      },
-      {
-        id: 2,
-        question: "According to the passage, what is the author's opinion?",
-        options: ["Positive", "Negative", "Neutral", "Unclear"],
-        correct: 0,
-        type: "multiple-choice",
-        passage: "The author presents a positive view of the topic discussed in the passage."
-      }
-    ],
-    writing: [
-      {
-        id: 1,
-        question: "Write an essay about the advantages and disadvantages of technology in education.",
-        title: "Technology in Education",
-        type: "task2",
-        timeLimit: 40 * 60,
-        wordLimit: "250-300 words"
-      },
-      {
-        id: 2,
-        question: "You recently stayed at a hotel and had a problem with your room. Write a letter to the hotel manager explaining what happened and what you would like them to do about it.",
-        title: "Letter Writing",
-        type: "task1",
-        timeLimit: 20 * 60,
-        wordLimit: "150-200 words"
-      }
-    ]
-  };
-
-  return fallbackQuestions[sectionId] || [];
-};
 
 export const fetchMockTestQuestions = async (testId, sectionId, desiredCount) => {
   try {
-    
-
-    // For speaking/writing, backend likely supports limit per item; for reading/listening, limit often applies to passages not sub-questions
     const useItemLimit = sectionId === "speaking" || sectionId === "writing";
     const endpoint = useItemLimit && typeof desiredCount === 'number' && desiredCount > 0
       ? `/practice/${sectionId}?limit=${Math.min(100, Math.max(1, desiredCount))}`
       : `/practice/${sectionId}`;
 
-    const response = await apiCall(endpoint);
-    const sectionData = response.data;
+    const res = await apiCall(endpoint);
+    const d = res.data;
 
-    if (!sectionData) { return []; }
+    if (!d) return [];
 
-    let allQuestions = [];
+    let all = [];
 
     if (sectionId === "listening" || sectionId === "reading") {
-      const passages = Array.isArray(sectionData.passages) ? sectionData.passages : [];
+      const passages = Array.isArray(d.passages) ? d.passages : [];
       const normalizedPassages = passages.map((passage, index) => {
         const rawQuestions = Array.isArray(passage.questions) ? passage.questions : [];
 
         const mappedQuestions = rawQuestions.map((q) => {
           const isMultipleChoice = Array.isArray(q.options) && q.options.length > 0;
 
-          // Normalize true/false and short answer types for the UI
           const normalizedType = (() => {
             const t = (q.type || "").toString().toLowerCase();
             if (t.includes("true") && t.includes("false")) return "true-false";
@@ -534,7 +417,6 @@ export const fetchMockTestQuestions = async (testId, sectionId, desiredCount) =>
             return isMultipleChoice ? "multiple-choice" : "shortAnswer";
           })();
 
-          // Compute correct index for MC if we have a correct answer value
           let correctIndex = -1;
           if (isMultipleChoice) {
             if (typeof q.correct === "number") {
@@ -565,13 +447,12 @@ export const fetchMockTestQuestions = async (testId, sectionId, desiredCount) =>
           questions: mappedQuestions,
         };
       });
-      // Limit by number of passages (not sub-questions) based on mock test's question count
       const numPassages = typeof desiredCount === "number" && desiredCount > 0
         ? desiredCount
         : normalizedPassages.length;
-      allQuestions = normalizedPassages.slice(0, numPassages);
+      all = normalizedPassages.slice(0, numPassages);
     } else if (sectionId === "speaking") {
-      allQuestions = (sectionData.questions || []).map((q, index) => ({
+      all = (d.questions || []).map((q, index) => ({
         id: q.id ?? index + 1,
         question: q.question || q.text || "",
         title: q.title || undefined,
@@ -580,7 +461,7 @@ export const fetchMockTestQuestions = async (testId, sectionId, desiredCount) =>
         preparationTime: q.preparationTime || q.preparation_time || undefined,
       }));
     } else if (sectionId === "writing") {
-      allQuestions = (sectionData.prompts || []).map((p, index) => ({
+      all = (d.prompts || []).map((p, index) => ({
         id: p.id ?? index + 1,
         question: p.question || p.title || "",
         title: p.title || undefined,
@@ -590,21 +471,16 @@ export const fetchMockTestQuestions = async (testId, sectionId, desiredCount) =>
       }));
     }
 
-    // Final per-section limiting
-    let result;
+    let out;
     if (sectionId === "speaking" || sectionId === "writing") {
       const target = typeof desiredCount === "number" && desiredCount > 0 ? desiredCount : (sectionId === "speaking" ? 3 : 2);
-      result = allQuestions.slice(0, target);
+      out = all.slice(0, target);
     } else {
-      // Already limited by sub-question count for reading/listening
-      result = allQuestions;
+      out = all;
     }
 
-    if (result.length === 0) {
-      result = createFallbackQuestions(sectionId);
-    }
-
-    return result;
+    if (out.length === 0) out = [];
+    return out;
   } catch (error) {
     return [];
   }
@@ -612,8 +488,8 @@ export const fetchMockTestQuestions = async (testId, sectionId, desiredCount) =>
 
 export const getDashboardData = async () => {
   try {
-    const response = await apiCall("/dashboard");
-    const apiData = response.data || {};
+    const res = await apiCall("/dashboard");
+    const apiData = res.data || {};
 
     const recentActivitiesRaw = Array.isArray(apiData.recentActivity)
       ? apiData.recentActivity
@@ -671,45 +547,7 @@ export const getDashboardData = async () => {
       averageScores
     };
   } catch (error) {
-    const user = await getUser();
-    const activities = await getActivities();
-    const vocabulary = await getVocabulary();
-
-    const recentActivities = activities.slice(0, 10);
-    const today = new Date().toDateString();
-    const todayActivities = activities.filter(activity =>
-      new Date(activity.timestamp).toDateString() === today
-    );
-
-    const practiceActivities = activities.filter(activity => activity.type === "practice");
-    const practiceStats = {
-      total: practiceActivities.length,
-      listening: practiceActivities.filter(a => a.practiceType === "listening").length,
-      reading: practiceActivities.filter(a => a.practiceType === "reading").length,
-      writing: practiceActivities.filter(a => a.practiceType === "writing").length,
-      speaking: practiceActivities.filter(a => a.practiceType === "speaking").length
-    };
-
-    const averageScores = {};
-    ["listening", "reading", "writing", "speaking"].forEach(type => {
-      const typeActivities = practiceActivities.filter(a => a.practiceType === type);
-      if (typeActivities.length > 0) {
-        const totalScore = typeActivities.reduce((sum, a) => sum + (a.score || 0), 0);
-        averageScores[type] = (totalScore / typeActivities.length).toFixed(1);
-      } else {
-        averageScores[type] = 0;
-      }
-    });
-
-    return {
-      user,
-      recentActivities,
-      todayActivities: todayActivities.length,
-      practiceStats,
-      averageScores,
-      vocabularyCount: vocabulary.length,
-      vocabularyToReview: vocabulary.filter(v => !v.reviewed).length
-    };
+    
   }
 };
 
@@ -791,63 +629,33 @@ export const logout = async () => {
     await apiCall("/auth/logout", { method: "POST" });
   } catch (error) {
   } finally {
-    localStorage.removeItem("testmate_token");
-    localStorage.removeItem("testmate_user");
-    localStorage.removeItem("testmate_activities");
-    localStorage.removeItem("testmate_vocabulary");
-    localStorage.removeItem("testmate_mockdata");
-    localStorage.removeItem("testmate_study_plan");
+    resetAllData()
     fireUserDataUpdated();
   }
 };
 
-export const getAnalytics = async () => {
-  try {
-    const response = await apiCall("/users/analytics?time_range=all&practice_type=both");
-    return response.data;
-  } catch (error) {
-    return null;
-  }
-};
-
-export const getProgress = async () => {
-  try {
-    const response = await apiCall("/users/progress");
-    return response.data;
-  } catch (error) {
-    return null;
-  }
-};
 
 const dataService = {
   register,
   login,
   verifyOTP,
   logout,
-
   getUser,
   updateUser,
   addXP,
-  getProgress,
-
   getActivities,
   addActivity,
   addPracticeActivity,
-  getAnalytics,
-
   getVocabulary,
   addVocabulary,
   updateVocabularyItem,
-
   getMockData,
   getPracticeQuestions,
   getMockTests,
   fetchMockTest,
   fetchMockTestQuestions,
-
   getDashboardData,
   generateStudyPlan,
-
   resetAllData
 };
 

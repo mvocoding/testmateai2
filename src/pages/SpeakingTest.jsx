@@ -6,6 +6,16 @@ import {
 } from '../utils';
 import dataService from '../services/dataService';
 
+const XP_PER_BAND = 5;
+const XP_TO_LEVEL_UP = 100;
+
+const FEEDBACK_TABS = [
+  { key: 'general', label: 'General' },
+  { key: 'grammar', label: 'Grammar' },
+  { key: 'vocabulary', label: 'Vocabulary' },
+  { key: 'suggestions', label: 'Suggestions' },
+];
+
 const SpeakingTest = () => {
   const [part, setPart] = useState('part1');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -18,6 +28,8 @@ const SpeakingTest = () => {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [speakingData, setSpeakingData] = useState(null);
+
+  const speakingParts = speakingData || {};
 
   useEffect(() => {
     const loadSpeakingData = async () => {
@@ -40,18 +52,6 @@ const SpeakingTest = () => {
       </div>
     );
   }
-
-  const speakingParts = speakingData;
-
-  const XP_PER_BAND = 5;
-  const XP_TO_LEVEL_UP = 100;
-
-  const FEEDBACK_TABS = [
-    { key: 'general', label: 'General' },
-    { key: 'grammar', label: 'Grammar' },
-    { key: 'vocabulary', label: 'Vocabulary' },
-    { key: 'suggestions', label: 'Suggestions' },
-  ];
 
   const currentQuestions = speakingParts[part].questions;
 

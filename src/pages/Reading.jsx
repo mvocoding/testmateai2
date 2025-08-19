@@ -171,16 +171,8 @@ const Reading = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900">Reading Practice</h1>
-          <p className="text-gray-600 mt-1">
-            Practice different types of reading questions
-          </p>
-        </div>
-      </div>
-
-      <div className="mx-auto p-6">
-        <div className="mb-6">
+        <div className="mx-auto text-center space-y-4 ">
+        <h1 className="text-3xl font-bold text-teal-700 mb-2">Reading Practice</h1>
           <div className="flex gap-3 flex-wrap">
             {Object.keys(readingPassages).map((level) => (
               <button
@@ -199,8 +191,12 @@ const Reading = () => {
                 {readingPassages[level].name}
               </button>
             ))}
-          </div>
         </div>
+        </div>
+      </div>
+
+      <div className="mx-auto p-6">
+
 
         <div className="flex gap-6">
           <div className="flex-1">

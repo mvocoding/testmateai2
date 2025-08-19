@@ -2,34 +2,218 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Icon from "../components/Icon";
 import { generateStudyPlan as generateStudyPlanFromUtils } from "../utils";
+import ChatWindow from "./askmeanything/ChatWindow";
+import ChatInput from "./askmeanything/ChatInput";
+import VoiceModal from "./askmeanything/VoiceModal";
 
-// constants
 const TEXT_API_URL = "https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text";
 const AUDIO_API_URL = "http://localhost:3001/api/audio";
 const DEFAULT_VOICE_ID = "6889b660662160e2caad5e3f";
 
-const AskMeAnything = () => {
+function isSpeechRecognitionSupported() {
+  return "webkitSpeechRecognition" in window || "SpeechRecognition" in window;
+}
+
+function getSpeechRecognition() {
+  return window.SpeechRecognition || window.webkitSpeechRecognition;
+}
+
+function createMessage(text, sender, id = Date.now()) {
+  return {
+    id: id,
+    text: text,
+    sender: sender,
+    timestamp: new Date().toLocaleTimeString(),
+  };
+}
+
+function isStudyPlanConversation(messages) {
+  return messages.some((msg) =>
+    msg.text.includes("Have you taken an IELTS test before") ||
+    msg.text.includes("What was your last IELTS score") ||
+    msg.text.includes("What is your target band score") ||
+    msg.text.includes("When is your test date")
+  );
+}
+
+function getSystemPrompt(isStudyPlanConversation) {
+  if (isStudyPlanConversation) {
+    return `You are an IELTS TestMate AI assistant helping to create a personalized study plan. You are currently in a conversation flow to gather information. Ask one question at a time and be conversational. The flow should be:
+1. Ask if they've taken IELTS before (Yes/No)
+2. If Yes: Ask for their last score
+3. If No: Ask for their estimated current score
+4. Ask for their target band score
+5. Ask for their test date
+6. Generate the study plan using the generateStudyPlan function
+
+Be friendly and encouraging. Only ask one question at a time.
+
+IMPORTANT: You must ALWAYS respond with a JSON object in this exact format:
+{"response": "your message here"}
+
+Never respond with plain text or any other format.`;
+  } else {
+    return `You are an IELTS TestMate AI assistant. Help users with IELTS preparation, answer questions about the test format, provide study tips, and assist with practice questions. You can also help users create personalized study plans. If users ask about study plans, guide them to use the study plan form or provide general study advice. Be friendly, encouraging, and knowledgeable about IELTS.
+
+IMPORTANT: You must ALWAYS respond with a JSON object in this exact format:
+{"response": "your message here"}
+
+Never respond with plain text or any other format.`;
+  }
+}
+
+function extractStudyPlanData(messages) {
+  const data = {
+    hasPreviousTest: false,
+    currentScore: '',
+    targetScore: '',
+    testDate: '',
+  };
+
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
+    if (message.sender === "user") {
+      const text = message.text.toLowerCase();
+
+      if (
+        text.includes("yes") &&
+        i > 0 &&
+        messages[i - 1].text.includes("Have you taken an IELTS test before")
+      ) {
+        data.hasPreviousTest = true;
+      }
+
+      // Extract score from text
+      const scoreMatch = text.match(/(\d+\.?\d*)/);
+      if (scoreMatch) {
+        const score = parseFloat(scoreMatch[1]);
+        if (score >= 0 && score <= 9) {
+          if (data.hasPreviousTest && !data.currentScore) {
+            data.currentScore = score.toString();
+          } else if (!data.hasPreviousTest && !data.currentScore) {
+            data.currentScore = score.toString();
+          } else if (!data.targetScore) {
+            data.targetScore = score.toString();
+          }
+        }
+      }
+
+      const dateMatch = text.match(
+        /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})|(\d{4}-\d{2}-\d{2})/
+      );
+      if (dateMatch && !data.testDate) {
+        data.testDate = dateMatch[0];
+      }
+    }
+  }
+
+  return data;
+}
+
+// Helper function to check if study plan conversation is complete
+function isStudyPlanComplete(messages) {
+  const data = extractStudyPlanData(messages);
+  return data.currentScore && data.targetScore && data.testDate;
+}
+
+function createStudyPlanMessage(plan, data) {
+  const planText = `📚 **Your Personalized Study Plan**
+
+**Summary:** ${plan.summary || 'Personalized study plan to help you achieve your target score'}
+
+**Current Score:** ${data.currentScore} | **Target Score:** ${data.targetScore}
+**Study Duration:** ${plan.weeks || '8'} weeks
+
+**Key Recommendations:**
+${plan.recommendations?.map((rec) => `• ${rec}`).join('\n') || 
+  '• Practice regularly with focused exercises\n• Review your weak areas consistently\n• Take mock tests to track progress\n• Seek feedback on your performance'}
+
+**Focus Areas:**
+${plan.focus_areas?.map((area) => `• ${area.skill}: ${area.reason}`).join('\n') || 
+  '• Listening: Improve comprehension skills\n• Reading: Enhance speed and accuracy\n• Writing: Develop clear structure and vocabulary\n• Speaking: Build fluency and confidence'}
+
+**Weekly Schedule:**
+${plan.weekly_schedule?.map((week) => 
+  `Week ${week.week}: ${week.focus} - ${week.tasks?.join(', ')}`
+).join('\n') || 
+  'Week 1: Foundation - Review basics, assess current level\nWeek 2: Listening Focus - Practice with various accents\nWeek 3: Reading Focus - Improve skimming and scanning\nWeek 4: Writing Focus - Essay structure and vocabulary'}`;
+
+  return createMessage(planText, 'ai', Date.now() + 2);
+}
+
+function saveStudyPlanToStorage(plan) {
+  try {
+    localStorage.setItem('testmate_study_plan', JSON.stringify(plan));
+    try { 
+      window.dispatchEvent(new CustomEvent('userDataUpdated')); 
+    } catch (error) {
+      console.log('Error dispatching event:', error);
+    }
+  } catch (error) {
+    console.log('Error saving study plan to storage:', error);
+  }
+}
+
+// Helper function to fetch audio from API
+async function fetchAudioFromAPI(text, rate = "100%", voice_id = DEFAULT_VOICE_ID) {
+  try {
+    const response = await fetch(AUDIO_API_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        text,
+        rate,
+        voice_id,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success && result.audioUrl) {
+      return result.audioUrl;
+    } else {
+      throw new Error(`API error: ${result.error || "Unknown error"}`);
+    }
+  } catch (error) {
+    console.error("Error fetching audio from API:", error);
+    throw error;
+  }
+}
+
+function AskMeAnything() {
+  // State variables for managing the chat
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  
+  // State variables for voice chat
   const [isRecording, setIsRecording] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isContinuousRecording, setIsContinuousRecording] = useState(false);
   const [isProcessingResponse, setIsProcessingResponse] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+
+  // Refs for DOM elements and voice recognition
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const audioRef = useRef(null);
   const voiceRecognitionRef = useRef(null);
 
+  // Refs to track state in async functions
   const isContinuousRecordingRef = useRef(isContinuousRecording);
   const isProcessingResponseRef = useRef(isProcessingResponse);
   const isAudioPlayingRef = useRef(isAudioPlaying);
 
-  const scrollToBottom = () => {
+  function scrollToBottom() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }
 
   useEffect(() => {
     scrollToBottom();
@@ -51,11 +235,11 @@ const AskMeAnything = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleAudioStart = () => {
+    function handleAudioStart() {
       setIsAudioPlaying(true);
-    };
+    }
 
-    const handleAudioEnd = () => {
+    function handleAudioEnd() {
       setIsAudioPlaying(false);
       setIsProcessingResponse(false);
 
@@ -68,12 +252,11 @@ const AskMeAnything = () => {
               startContinuousVoiceChat();
             }
           }
-        } else {
         }
       }, 1500);
-    };
+    }
 
-    const handleAudioError = () => {
+    function handleAudioError() {
       console.log("Audio error - attempting to restart recognition");
       setIsAudioPlaying(false);
       setIsProcessingResponse(false);
@@ -82,11 +265,13 @@ const AskMeAnything = () => {
           if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
             try {
               voiceRecognitionRef.current.start();
-            } catch (error) {}
+            } catch (error) {
+              console.log('Error restarting after audio error:', error);
+            }
           }
         }, 1000);
       }
-    };
+    }
 
     audio.addEventListener('play', handleAudioStart);
     audio.addEventListener('ended', handleAudioEnd);
@@ -99,33 +284,31 @@ const AskMeAnything = () => {
     };
   }, [isContinuousRecording, isProcessingResponse]);
 
-  const startVoiceChat = () => {
+  function startVoiceChat() {
     setIsVoiceModalOpen(true);
-  };
+  }
 
-  const startContinuousVoiceChat = () => {
-    if (
-      !("webkitSpeechRecognition" in window || "SpeechRecognition" in window)
-    ) {
+  function startContinuousVoiceChat() {
+    if (!isSpeechRecognitionSupported()) {
       alert("Speech recognition not supported in this browser.");
       return;
     }
 
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recog = new SpeechRecognition();
-    recog.lang = "en-US";
-    recog.interimResults = false;
-    recog.maxAlternatives = 1;
-    recog.continuous = false;
+    const SpeechRecognition = getSpeechRecognition();
+    const recognition = new SpeechRecognition();
+    
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.continuous = false;
 
-    recog.onstart = () => {
+    recognition.onstart = () => {
       console.log("Speech recognition started");
       setIsContinuousRecording(true);
       setIsRecording(true);
     };
 
-    recog.onend = () => {
+    recognition.onend = () => {
       console.log("Speech recognition ended");
       setIsRecording(false);
 
@@ -150,7 +333,7 @@ const AskMeAnything = () => {
       }
     };
 
-    recog.onresult = async (event) => {
+    recognition.onresult = async (event) => {
       const transcript = event.results[event.results.length - 1][0].transcript;
 
       setIsProcessingResponse(true);
@@ -161,7 +344,7 @@ const AskMeAnything = () => {
       await handleSendMessage(transcript, true);
     };
 
-    recog.onerror = (event) => {
+    recognition.onerror = (event) => {
       setIsRecording(false);
       if (event.error === "no-speech") {
         if (
@@ -191,11 +374,11 @@ const AskMeAnything = () => {
       }
     };
 
-    voiceRecognitionRef.current = recog;
-    recog.start();
-  };
+    voiceRecognitionRef.current = recognition;
+    recognition.start();
+  }
 
-  const stopContinuousVoiceChat = () => {
+  function stopContinuousVoiceChat() {
     setIsContinuousRecording(false);
     setIsProcessingResponse(false);
     setIsAudioPlaying(false);
@@ -208,14 +391,14 @@ const AskMeAnything = () => {
       voiceRecognitionRef.current = null;
     }
     setIsRecording(false);
-  };
+  }
 
-  const closeVoiceModal = () => {
+  function closeVoiceModal() {
     stopContinuousVoiceChat();
     setIsProcessingResponse(false);
     setIsAudioPlaying(false);
     setIsVoiceModalOpen(false);
-  };
+  }
 
   useEffect(() => {
     return () => {
@@ -226,18 +409,11 @@ const AskMeAnything = () => {
     };
   }, []);
 
-  const handleSendMessage = async (overrideInput, isVoice = false) => {
-    const messageToSend =
-      overrideInput !== undefined ? overrideInput : inputMessage;
+  async function handleSendMessage(overrideInput, isVoice = false) {
+    const messageToSend = overrideInput !== undefined ? overrideInput : inputMessage;
     if (!messageToSend.trim() || isLoading) return;
 
-    const userMessage = {
-      id: Date.now(),
-      text: messageToSend,
-      sender: "user",
-      timestamp: new Date().toLocaleTimeString(),
-    };
-
+    const userMessage = createMessage(messageToSend, "user");
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
     setIsLoading(true);
@@ -247,63 +423,26 @@ const AskMeAnything = () => {
         "content-type": "application/json",
       };
 
-      const isStudyPlanConversation = messages.some(
-        (msg) =>
-          msg.text.includes("Have you taken an IELTS test before") ||
-          msg.text.includes("What was your last IELTS score") ||
-          msg.text.includes("What is your target band score") ||
-          msg.text.includes("When is your test date")
-      );
-
-      const systemPrompt = isStudyPlanConversation
-        ? `You are an IELTS TestMate AI assistant helping to create a personalized study plan. You are currently in a conversation flow to gather information. Ask one question at a time and be conversational. The flow should be:
-1. Ask if they've taken IELTS before (Yes/No)
-2. If Yes: Ask for their last score
-3. If No: Ask for their estimated current score
-4. Ask for their target band score
-5. Ask for their test date
-6. Generate the study plan using the generateStudyPlan function
-
-Be friendly and encouraging. Only ask one question at a time.
-
-IMPORTANT: You must ALWAYS respond with a JSON object in this exact format:
-{"response": "your message here"}
-
-Never respond with plain text or any other format.`
-        : `You are an IELTS TestMate AI assistant. Help users with IELTS preparation, answer questions about the test format, provide study tips, and assist with practice questions. You can also help users create personalized study plans. If users ask about study plans, guide them to use the study plan form or provide general study advice. Be friendly, encouraging, and knowledgeable about IELTS.
-
-IMPORTANT: You must ALWAYS respond with a JSON object in this exact format:
-{"response": "your message here"}
-
-Never respond with plain text or any other format.`;
-
+      const studyPlanConversation = isStudyPlanConversation(messages);
+      const systemPrompt = getSystemPrompt(studyPlanConversation);
       const payload = { prompt: `${systemPrompt}\n\nUser: ${messageToSend}` };
 
-      const response = await fetch(
-        TEXT_API_URL,
-        {
-          method: "POST",
-          headers: headers,
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(TEXT_API_URL, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         throw new Error("API request failed");
       }
 
       const data = await response.json();
-      const aiResponse =
-        data?.data?.response || "I'm sorry, I couldn't process that response.";
+      const aiResponse = data?.data?.response || "I'm sorry, I couldn't process that response.";
 
-      const aiMessage = {
-        id: Date.now() + 1,
-        text: aiResponse,
-        sender: "ai",
-        timestamp: new Date().toLocaleTimeString(),
-      };
-
+      const aiMessage = createMessage(aiResponse, "ai", Date.now() + 1);
       setMessages((prev) => [...prev, aiMessage]);
+
       if (isVoice) {
         try {
           const audioUrl = await fetchAudioFromAPI(aiResponse);
@@ -312,10 +451,10 @@ Never respond with plain text or any other format.`;
             setIsAudioPlaying(true);
             audioRef.current.play();
           }
-        } catch (err) {
-          console.error("Failed to fetch or play audio:", err);
+        } catch (error) {
+          console.error("Failed to fetch or play audio:", error);
           if (!isContinuousRecording) {
-            alert("Failed to fetch or play audio: " + err.message);
+            alert("Failed to fetch or play audio: " + error.message);
           }
           setIsProcessingResponse(false);
         }
@@ -324,53 +463,20 @@ Never respond with plain text or any other format.`;
       }
 
       const updatedMessages = [...messages, userMessage, aiMessage];
-      if (checkIfStudyPlanComplete(updatedMessages)) {
-        const data = extractStudyPlanData(updatedMessages);
+      if (isStudyPlanComplete(updatedMessages)) {
+        const studyPlanData = extractStudyPlanData(updatedMessages);
         setIsGeneratingPlan(true);
 
         try {
           const plan = await generateStudyPlanFromUtils({
-            currentScore: data.currentScore,
-            targetScore: data.targetScore,
-            testDate: data.testDate,
+            currentScore: studyPlanData.currentScore,
+            targetScore: studyPlanData.targetScore,
+            testDate: studyPlanData.testDate,
           });
 
           if (plan) {
-            try {
-              localStorage.setItem('testmate_study_plan', JSON.stringify(plan));
-              try { window.dispatchEvent(new CustomEvent('userDataUpdated')); } catch {}
-            } catch {}
-            const planMessage = {
-              id: Date.now() + 2,
-              text: `📚 **Your Personalized Study Plan**\n\n**Summary:** ${
-                plan.summary ||
-                'Personalized study plan to help you achieve your target score'
-              }\n\n**Current Score:** ${
-                data.currentScore
-              } | **Target Score:** ${data.targetScore}\n**Study Duration:** ${
-                plan.weeks || '8'
-              } weeks\n\n**Key Recommendations:**\n${
-                plan.recommendations?.map((rec) => `• ${rec}`).join('\n') ||
-                '• Practice regularly with focused exercises\n• Review your weak areas consistently\n• Take mock tests to track progress\n• Seek feedback on your performance'
-              }\n\n**Focus Areas:**\n${
-                plan.focus_areas
-                  ?.map((area) => `• ${area.skill}: ${area.reason}`)
-                  .join('\n') ||
-                '• Listening: Improve comprehension skills\n• Reading: Enhance speed and accuracy\n• Writing: Develop clear structure and vocabulary\n• Speaking: Build fluency and confidence'
-              }\n\n**Weekly Schedule:**\n${
-                plan.weekly_schedule
-                  ?.map(
-                    (week) =>
-                      `Week ${week.week}: ${week.focus} - ${week.tasks?.join(
-                        ', '
-                      )}`
-                  )
-                  .join('\n') ||
-                'Week 1: Foundation - Review basics, assess current level\nWeek 2: Listening Focus - Practice with various accents\nWeek 3: Reading Focus - Improve skimming and scanning\nWeek 4: Writing Focus - Essay structure and vocabulary'
-              }`,
-              sender: 'ai',
-              timestamp: new Date().toLocaleTimeString(),
-            };
+            saveStudyPlanToStorage(plan);
+            const planMessage = createStudyPlanMessage(plan, studyPlanData);
             setMessages((prev) => [...prev, planMessage]);
           }
         } catch (error) {
@@ -381,120 +487,39 @@ Never respond with plain text or any other format.`;
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      const errorMessage = {
-        id: Date.now() + 1,
-        text: "Sorry, I'm having trouble connecting right now. Please try again later.",
-        sender: "ai",
-        timestamp: new Date().toLocaleTimeString(),
-      };
+      const errorMessage = createMessage(
+        "Sorry, I'm having trouble connecting right now. Please try again later.",
+        "ai",
+        Date.now() + 1
+      );
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  const clearChat = () => {
+  function clearChat() {
     setMessages([]);
-  };
+  }
 
-  const startStudyPlanConversation = () => {
-    const initialMessage = {
-      id: Date.now(),
-      text: "I'd love to help you create a personalized study plan! Let me ask you a few questions to get started.\n\nHave you taken an IELTS test before? (Yes/No)",
-      sender: "ai",
-      timestamp: new Date().toLocaleTimeString(),
-    };
+  function startStudyPlanConversation() {
+    const initialMessage = createMessage(
+      "I'd love to help you create a personalized study plan! Let me ask you a few questions to get started.\n\nHave you taken an IELTS test before? (Yes/No)",
+      "ai"
+    );
     setMessages([initialMessage]);
-  };
+  }
 
-  const extractStudyPlanData = (messages) => {
-    const data = {
-      hasPreviousTest: false,
-      currentScore: '',
-      targetScore: '',
-      testDate: '',
-    };
-
-    for (let i = 0; i < messages.length; i++) {
-      const msg = messages[i];
-      if (msg.sender === "user") {
-        const text = msg.text.toLowerCase();
-
-        if (
-          text.includes("yes") &&
-          i > 0 &&
-          messages[i - 1].text.includes("Have you taken an IELTS test before")
-        ) {
-          data.hasPreviousTest = true;
-        }
-
-        const scoreMatch = text.match(/(\d+\.?\d*)/);
-        if (scoreMatch) {
-          const score = parseFloat(scoreMatch[1]);
-          if (score >= 0 && score <= 9) {
-            if (data.hasPreviousTest && !data.currentScore) {
-              data.currentScore = score.toString();
-            } else if (!data.hasPreviousTest && !data.currentScore) {
-              data.currentScore = score.toString();
-            } else if (!data.targetScore) {
-              data.targetScore = score.toString();
-            }
-          }
-        }
-
-        const dateMatch = text.match(
-          /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})|(\d{4}-\d{2}-\d{2})/
-        );
-        if (dateMatch && !data.testDate) {
-          data.testDate = dateMatch[0];
-        }
+  function handleManualRestart() {
+    if (voiceRecognitionRef.current && isContinuousRecordingRef.current) {
+      try {
+        console.log('Manual restart...');
+        voiceRecognitionRef.current.start();
+      } catch (error) {
+        console.error('Manual restart failed:', error);
       }
     }
-
-    return data;
-  };
-
-  const checkIfStudyPlanComplete = (messages) => {
-    const data = extractStudyPlanData(messages);
-    return data.currentScore && data.targetScore && data.testDate;
-  };
-
-  const fetchAudioFromAPI = async (
-    text,
-    rate = "100%",
-    voice_id = DEFAULT_VOICE_ID
-  ) => {
-    const api_url = AUDIO_API_URL;
-
-    try {
-      const response = await fetch(api_url, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          text,
-          rate,
-          voice_id,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success && result.audioUrl) {
-        return result.audioUrl;
-      } else {
-        throw new Error(`API error: ${result.error || "Unknown error"}`);
-      }
-    } catch (error) {
-      console.error("Error fetching audio from API:", error);
-      throw error;
-    }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col w-full">
@@ -517,257 +542,40 @@ Never respond with plain text or any other format.`;
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col w-full mx-auto ">
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-6">
-                <Icon name="chat" className="w-8 h-8 text-teal-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                How can I help you today?
-              </h2>
-              <p className="text-gray-600 max-w-md mb-6">
-                I'm your IELTS TestMate AI assistant. Ask me anything about
-                IELTS preparation, test format, study tips, or practice
-                questions.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={startStudyPlanConversation}
-                  className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Icon name="document" className="w-5 h-5" />
-                  Create Study Plan
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.sender === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  <div
-                    className={`max-w-3xl ${
-                      message.sender === 'user' ? 'order-2' : 'order-1'
-                    }`}
-                  >
-                    <div
-                      className={`px-4 py-3 rounded-2xl ${
-                        message.sender === 'user'
-                          ? 'bg-teal-600 text-white'
-                          : 'bg-white text-gray-900 border border-gray-200'
-                      }`}
-                    >
-                      <div className="prose prose-sm max-w-none">
-                        <p className="whitespace-pre-wrap">{message.text}</p>
-                      </div>
-                      <p
-                        className={`text-xs mt-2 ${
-                          message.sender === 'user'
-                            ? 'text-teal-100'
-                            : 'text-gray-500'
-                        }`}
-                      >
-                        {message.timestamp}
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center mx-3 ${
-                      message.sender === 'user'
-                        ? 'order-1 bg-teal-600'
-                        : 'order-2 bg-gray-200'
-                    }`}
-                  >
-                    {message.sender === 'user' ? (
-                      <span className="text-white text-sm font-semibold">
-                        U
-                      </span>
-                    ) : (
-                      <Icon name="bulb" className="w-4 h-4 text-gray-600" />
-                    )}
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="order-2">
-                    <div className="bg-white text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: '0.1s' }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: '0.2s' }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mx-3 order-1">
-                    <Icon name="bulb" className="w-4 h-4 text-gray-600" />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+      <div className="flex-1 flex flex-col w-full mx-auto">
+        <ChatWindow
+          messages={messages}
+          isLoading={isLoading}
+          onStartStudyPlanConversation={startStudyPlanConversation}
+          messagesEndRef={messagesEndRef}
+        />
 
-        <div className="border-t border-gray-200 bg-white px-6 py-4">
-          <div className="mx-auto">
-            <div className="flex gap-3">
-              <button
-                onClick={startVoiceChat}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
-                title="Start Voice Chat"
-              >
-                <Icon name="mic" className="w-4 h-4" />
-                Voice Chat
-              </button>
-              <button
-                onClick={startStudyPlanConversation}
-                className="bg-teal-100 text-teal-700 px-3 py-2 rounded-lg hover:bg-teal-200 transition-colors flex items-center gap-2 text-sm"
-                title="Create Study Plan"
-              >
-                <Icon name="document" className="w-4 h-4" />
-                Study Plan
-              </button>
-              <div className="flex-1 relative">
-                <textarea
-                  ref={inputRef}
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="Message TestMate AI..."
-                  className="w-full resize-none border border-gray-300 rounded-2xl px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  rows="4"
-                  disabled={isLoading}
-                  style={{ minHeight: '48px', maxHeight: '200px' }}
-                />
-                <button
-                  onClick={() => handleSendMessage()}
-                  disabled={!inputMessage.trim() || isLoading}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-teal-600 text-white p-2 rounded-xl hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Icon name="send" className="w-8 h-8" />
-                </button>
-              </div>
-            </div>
-          </div>
-          <audio ref={audioRef} controls style={{ display: 'none' }} />
-        </div>
+        <ChatInput
+          inputRef={inputRef}
+          inputMessage={inputMessage}
+          setInputMessage={setInputMessage}
+          isLoading={isLoading}
+          onSend={() => handleSendMessage()}
+          onStartVoiceChat={startVoiceChat}
+          onStartStudyPlanConversation={startStudyPlanConversation}
+        />
+
+        <audio ref={audioRef} controls style={{ display: 'none' }} />
       </div>
 
-      {isVoiceModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 relative">
-            <button
-              onClick={closeVoiceModal}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-            >
-              <Icon name="x" className="w-6 h-6" />
-            </button>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Icon name="mic" className="w-10 h-10 text-purple-600" />
-              </div>
-
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Voice Chat
-              </h2>
-
-              <p className="text-gray-600 mb-8">
-                {isContinuousRecording
-                  ? isProcessingResponse
-                    ? 'Processing your message and generating response...'
-                    : isAudioPlaying
-                    ? 'Playing AI response... Please wait.'
-                    : "I'm listening... Speak naturally and I'll respond by voice."
-                  : 'Click the button below to start a continuous voice conversation.'}
-              </p>
-
-              <div className="space-y-4">
-                {!isContinuousRecording ? (
-                  <button
-                    onClick={startContinuousVoiceChat}
-                    className="bg-purple-600 text-white px-8 py-4 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center gap-3 w-full"
-                  >
-                    <Icon name="mic" className="w-6 h-6" />
-                    Start Voice Chat
-                  </button>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-center">
-                      <div
-                        className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                          isRecording
-                            ? 'bg-red-500 animate-pulse'
-                            : 'bg-gray-300'
-                        }`}
-                      >
-                        <Icon name="mic" className="w-8 h-8 text-white" />
-                      </div>
-                    </div>
-
-                    <p className="text-sm text-gray-500">
-                      {isProcessingResponse
-                        ? 'Processing response...'
-                        : isAudioPlaying
-                        ? 'Playing AI response...'
-                        : isRecording
-                        ? 'Listening...'
-                        : 'Ready...'}
-                    </p>
-
-                    <div className="flex gap-2">
-                      <button
-                        onClick={stopContinuousVoiceChat}
-                        className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
-                      >
-                        Stop Recording
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (
-                            voiceRecognitionRef.current &&
-                            isContinuousRecordingRef.current
-                          ) {
-                            try {
-                              console.log('Manual restart...');
-                              voiceRecognitionRef.current.start();
-                            } catch (error) {
-                              console.error('Manual restart failed:', error);
-                            }
-                          }
-                        }}
-                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Restart
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-6 text-xs text-gray-500">
-                <p>• Speak clearly and naturally</p>
-                <p>• I'll respond with voice after each message</p>
-                <p>• Click "Stop Recording" to pause</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <VoiceModal
+        isOpen={isVoiceModalOpen}
+        onClose={closeVoiceModal}
+        isContinuousRecording={isContinuousRecording}
+        isProcessingResponse={isProcessingResponse}
+        isAudioPlaying={isAudioPlaying}
+        isRecording={isRecording}
+        onStartContinuous={startContinuousVoiceChat}
+        onStopContinuous={stopContinuousVoiceChat}
+        onManualRestart={handleManualRestart}
+      />
     </div>
   );
-};
+}
 
 export default AskMeAnything;
