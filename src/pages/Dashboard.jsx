@@ -13,8 +13,6 @@ function createSkillsList(dashboardData) {
       path: '/speaking',
       icon: '🏰',
       description: 'Castle of Conversation',
-      gradientColor: 'from-purple-400 to-pink-400',
-      backgroundGradient: 'from-purple-50 to-pink-50',
       progress: dashboardData?.practiceStats?.speaking || 0,
       lastScore: parseFloat(dashboardData?.averageScores?.speaking) || 0,
     },
@@ -23,8 +21,6 @@ function createSkillsList(dashboardData) {
       path: '/listening',
       icon: '🌲',
       description: 'Whispering Forest',
-      gradientColor: 'from-green-400 to-emerald-400',
-      backgroundGradient: 'from-green-50 to-emerald-50',
       progress: dashboardData?.practiceStats?.listening || 0,
       lastScore: parseFloat(dashboardData?.averageScores?.listening) || 0,
     },
@@ -33,8 +29,6 @@ function createSkillsList(dashboardData) {
       path: '/writing',
       icon: '⛰️',
       description: 'Mountain of Mastery',
-      gradientColor: 'from-blue-400 to-cyan-400',
-      backgroundGradient: 'from-blue-50 to-cyan-50',
       progress: dashboardData?.practiceStats?.writing || 0,
       lastScore: parseFloat(dashboardData?.averageScores?.writing) || 0,
     },
@@ -43,13 +37,11 @@ function createSkillsList(dashboardData) {
       path: '/reading',
       icon: '📚',
       description: 'Library of Knowledge',
-      gradientColor: 'from-orange-400 to-red-400',
-      backgroundGradient: 'from-orange-50 to-red-50',
       progress: dashboardData?.practiceStats?.reading || 0,
       lastScore: parseFloat(dashboardData?.averageScores?.reading) || 0,
     },
   ];
-  
+
   return skills;
 }
 
@@ -60,10 +52,11 @@ function createActivityList(dashboardData) {
 
   const activities = dashboardData.recentActivities.map((activity) => {
     const activityType = activity.practiceType || activity.type;
-    const actionText = activity.type === 'practice' ? 'Completed practice' : 'Activity';
+    const actionText =
+      activity.type === 'practice' ? 'Completed practice' : 'Activity';
     const score = activity.score || 0;
     const date = new Date(activity.timestamp).toLocaleDateString();
-    
+
     return {
       type: activityType,
       action: actionText,
@@ -95,7 +88,7 @@ function loadStudyPlanFromStorage(userData) {
     const storedPlan = localStorage.getItem('testmate_study_plan');
     if (storedPlan) {
       const parsedPlan = JSON.parse(storedPlan);
-      
+
       if (userData && !userData.studyPlan) {
         return { ...userData, studyPlan: parsedPlan };
       }
@@ -106,13 +99,13 @@ function loadStudyPlanFromStorage(userData) {
   } catch (error) {
     console.log('Error loading study plan from storage:', error);
   }
-  
+
   return userData;
 }
 
 function Dashboard() {
   const navigate = useNavigate();
-  
+
   // State variables
   const [dashboardData, setDashboardData] = useState(null);
   const [user, setUser] = useState(null);
@@ -124,7 +117,7 @@ function Dashboard() {
       try {
         const [dashboardDataResult, userDataResult] = await Promise.all([
           getDashboardData(),
-          getUser()
+          getUser(),
         ]);
 
         const userDataWithPlan = loadStudyPlanFromStorage(userDataResult);
@@ -175,7 +168,7 @@ function Dashboard() {
 
   async function generateNewStudyPlan() {
     setIsGeneratingPlan(true);
-    
+
     try {
       const newPlan = await generateStudyPlan(user);
       if (newPlan) {
@@ -203,7 +196,6 @@ function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            
             <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">
@@ -354,7 +346,6 @@ function Dashboard() {
           </div>
 
           <div className="space-y-8">
-            
             <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 Continue Learning
@@ -369,7 +360,7 @@ function Dashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-10 h-10 bg-gradient-to-br ${skill.gradientColor} rounded-lg flex items-center justify-center text-white text-lg`}
+                          className={`w-10 h-10 bg-gradient-to-br rounded-lg flex items-center justify-center text-white text-lg`}
                         >
                           {skill.icon}
                         </div>

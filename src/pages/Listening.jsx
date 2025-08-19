@@ -309,7 +309,7 @@ const Listening = () => {
       }
 
       const score = feedback.overall_score || 6.0;
-      const band = Math.round(score * 2) / 2; // Round to nearest 0.5
+      const band = Math.round(score * 2) / 2;
       await recordPracticeActivity('listening', score, band, {
         passage: passage.title,
         questionsAnswered: Object.keys(answers).length,
