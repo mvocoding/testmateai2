@@ -11,11 +11,12 @@ import PassageSidebar from './listening/PassageSidebar';
 import AudioPlayer from './listening/AudioPlayer';
 import PassageHeader from './listening/PassageHeader';
 
-const TIME_LIMIT = 300; 
+const TIME_LIMIT = 300;
 const DEFAULT_TAB = 'transcription';
 
 const Listening = () => {
-  const [selectedQuestionType, setSelectedQuestionType] = useState('multipleChoice');
+  const [selectedQuestionType, setSelectedQuestionType] =
+    useState('multipleChoice');
   const [currentPassageIndex, setCurrentPassageIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
@@ -81,8 +82,8 @@ const Listening = () => {
   }
 
   const LISTENING_LEVELS = listeningData?.passages || [];
-  const currentPassages = LISTENING_LEVELS.filter(passage => 
-    passage.questionType === selectedQuestionType
+  const currentPassages = LISTENING_LEVELS.filter(
+    (passage) => passage.questionType === selectedQuestionType
   );
 
   const resetPassageState = () => {
@@ -110,7 +111,6 @@ const Listening = () => {
   };
 
   const startListening = () => {
-
     setIsLoading(true);
     const passage = currentPassages[currentPassageIndex];
 
@@ -187,7 +187,7 @@ const Listening = () => {
   const calculateScore = () => {
     const passage = currentPassages[currentPassageIndex];
     if (!passage || !passage.questions) return 0;
-    
+
     let correct = 0;
     let total = passage.questions.length;
 
@@ -338,7 +338,7 @@ const Listening = () => {
 
   const passage = currentPassages[currentPassageIndex];
   const questions = passage?.questions || [];
-  
+
   if (!passage) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -346,7 +346,9 @@ const Listening = () => {
           <div className="text-2xl font-bold text-gray-700 mb-4">
             Passage not found
           </div>
-          <p className="text-gray-600">Please try selecting a different passage.</p>
+          <p className="text-gray-600">
+            Please try selecting a different passage.
+          </p>
         </div>
       </div>
     );
@@ -359,7 +361,9 @@ const Listening = () => {
           <div className="text-2xl font-bold text-gray-700 mb-4">
             No passages available for this question type
           </div>
-          <p className="text-gray-600">Please select a different question type.</p>
+          <p className="text-gray-600">
+            Please select a different question type.
+          </p>
         </div>
       </div>
     );
@@ -369,12 +373,12 @@ const Listening = () => {
     <div className="min-h-screen bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center px-8">
       <div className="w-full mx-auto mb-6">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
-          <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-teal-700 mb-2">
+          <div className="text-center mb-4 ">
+            <h1 className="text-3xl font-bold text-teal-700 mb-2 ">
               Listening Test
             </h1>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="flex items-center justify-center gap-3 flex-wrap ">
             {listeningData?.questionTypes?.map((type, index) => (
               <button
                 key={type.type}
@@ -403,8 +407,9 @@ const Listening = () => {
           <PassageHeader
             title={passage.title}
             heading={
-              listeningData?.questionTypes?.find((t) => t.type === selectedQuestionType)?.name ||
-              'Listening Practice'
+              listeningData?.questionTypes?.find(
+                (t) => t.type === selectedQuestionType
+              )?.name || 'Listening Practice'
             }
           />
           <AudioPlayer

@@ -132,7 +132,7 @@ const SpeakingTest = () => {
       <div className="w-full  mx-auto mb-6">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
           <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-teal-700 mb-2">
+            <h1 className="text-3xl font-bold text-teal-700 mb-2 items-center justify-center">
               Speaking Test
             </h1>
           </div>

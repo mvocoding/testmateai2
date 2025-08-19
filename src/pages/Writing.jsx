@@ -59,12 +59,20 @@ const Writing = () => {
         answer,
         wordCount
       );
-      let feedbackData = Array.isArray(feedback) && feedback.length > 0 ? feedback[0] : feedback;
+      let feedbackData =
+        Array.isArray(feedback) && feedback.length > 0 ? feedback[0] : feedback;
 
-      if (feedbackData && typeof feedbackData === 'object' && feedbackData.sample_answer) {
+      if (
+        feedbackData &&
+        typeof feedbackData === 'object' &&
+        feedbackData.sample_answer
+      ) {
         setAiFeedback(feedbackData);
 
-        if (feedbackData.vocabulary_words && Array.isArray(feedbackData.vocabulary_words)) {
+        if (
+          feedbackData.vocabulary_words &&
+          Array.isArray(feedbackData.vocabulary_words)
+        ) {
           saveVocabularyWords(feedbackData.vocabulary_words);
         }
 
@@ -91,7 +99,7 @@ const Writing = () => {
       <div className="w-full mx-auto mb-6">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
           <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-teal-700 mb-2">
+            <h1 className="text-3xl font-bold text-teal-700 mb-2 items-center justify-center">
               Writing Test
             </h1>
           </div>
