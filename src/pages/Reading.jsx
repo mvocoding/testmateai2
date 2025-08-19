@@ -22,9 +22,7 @@ const Reading = () => {
       try {
         const data = await dataService.getPracticeQuestions('reading');
         setReadingData(data);
-      } catch (error) {
-        console.error('Error loading reading data:', error);
-      }
+      } catch (error) {}
     };
 
     loadReadingData();
@@ -141,7 +139,6 @@ const Reading = () => {
         feedback: feedback.overall_feedback,
       });
     } catch (error) {
-      console.error('Error generating AI feedback:', error);
     } finally {
       setIsAnalyzing(false);
     }

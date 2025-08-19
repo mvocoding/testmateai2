@@ -181,9 +181,7 @@ const SpeakingTest = () => {
                   : 'bg-gradient-to-r from-primary-600 to-primary-400 hover:from-primary-700 hover:to-primary-500 text-white font-bold '
               } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <span role="img" aria-label="mic">
-                🎙️
-              </span>{' '}
+              <span role="img">🎙️</span>{' '}
               {listening ? 'Listening...' : 'Start Answering'}
             </button>
             <div className="w-full flex flex-col gap-2">
@@ -303,10 +301,7 @@ const SpeakingTest = () => {
                   }}
                   className="mt-2 px-6 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-400 hover:from-purple-600 hover:to-pink-500 text-white font-semibold shadow transition-all duration-200 flex items-center gap-2"
                 >
-                  <span role="img" aria-label="next">
-                    ➡️
-                  </span>{' '}
-                  Next Question
+                  <span role="img">➡️</span> Next Question
                 </button>
               )}
             {currentQuestions.every(

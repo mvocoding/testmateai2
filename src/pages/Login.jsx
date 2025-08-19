@@ -70,7 +70,9 @@ const Login = () => {
       setAuthStep('otp');
       setErrors({});
     } catch (error) {
-      setErrors({ email: 'Failed to send verification code. Please try again.' });
+      setErrors({
+        email: 'Failed to send verification code. Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -140,9 +142,7 @@ const Login = () => {
           <div className="w-full flex flex-col items-center gap-8">
             <div className="text-center mb-4">
               <h2 className="text-3xl font-extrabold text-teal-700 mb-2 flex items-center justify-center gap-2">
-                <span role="img" aria-label="login">
-                  🔐
-                </span>
+                <span role="img">🔐</span>
                 {authStep === 'email' ? 'Sign In' : 'Enter Verification Code'}
               </h2>
               <p className="text-gray-700">
@@ -192,9 +192,7 @@ const Login = () => {
                       </div>
                     ) : (
                       <span className="flex items-center gap-2">
-                        <span role="img" aria-label="mail">
-                          📧
-                        </span>
+                        <span role="img">📧</span>
                         Send verification code
                       </span>
                     )}
@@ -229,9 +227,7 @@ const Login = () => {
                       </div>
                     ) : (
                       <span className="flex items-center gap-2">
-                        <span role="img" aria-label="key">
-                          🔑
-                        </span>
+                        <span role="img">🔑</span>
                         Verify code
                       </span>
                     )}

@@ -127,7 +127,6 @@ function Dashboard() {
           setIsLoading(false);
         }
       } catch (error) {
-        console.error('Error loading dashboard data:', error);
         if (isComponentMounted) {
           setIsLoading(false);
         }
@@ -175,7 +174,6 @@ function Dashboard() {
         setUser({ ...user, studyPlan: newPlan });
       }
     } catch (error) {
-      console.error('Error generating study plan:', error);
     } finally {
       setIsGeneratingPlan(false);
     }

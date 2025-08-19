@@ -4,18 +4,9 @@ import { Link } from 'react-router-dom';
 const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal-50 via-white to-white relative overflow-hidden flex flex-col">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-24 -right-24 w-[42rem] h-[42rem] rounded-full bg-gradient-to-br from-teal-400/20 to-emerald-400/20 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-28 -left-28 w-[42rem] h-[42rem] rounded-full bg-gradient-to-tr from-sky-400/20 to-indigo-400/20 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70rem] h-[70rem] rounded-full bg-gradient-to-b from-white/0 via-teal-100/30 to-white/0 blur-2xl"
-      />
+      <div className="pointer-events-none absolute -top-24 -right-24 w-[42rem] h-[42rem] rounded-full bg-gradient-to-br from-teal-400/20 to-emerald-400/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 -left-28 w-[42rem] h-[42rem] rounded-full bg-gradient-to-tr from-sky-400/20 to-indigo-400/20 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70rem] h-[70rem] rounded-full bg-gradient-to-b from-white/0 via-teal-100/30 to-white/0 blur-2xl" />
       <div className="text-center mb-10 p-10">
         <h1 className="text-5xl md:text-7xl font-black text-teal-700 mb-4 drop-shadow-lg">
           Welcome to TestMate AI
@@ -33,9 +24,7 @@ const Home = () => {
           <div className="flex-1 flex flex-col gap-6 items-center">
             <div className="w-full bg-white rounded-2xl shadow-xl p-6 flex flex-col gap-2 border-2 border-gray-200">
               <h2 className="text-lg font-bold text-teal-700 flex items-center gap-2">
-                <span role="img" aria-label="game">
-                  🎮
-                </span>
+                <span role="img">🎮</span>
                 Gamified Features
               </h2>
               <ul className="list-disc list-inside text-gray-700 text-base pl-2">
@@ -52,18 +41,14 @@ const Home = () => {
               to="/login"
               className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-xl flex items-center gap-2 transition-transform duration-200 transform hover:scale-105"
             >
-              <span role="img" aria-label="rocket">
-                🚀
-              </span>
+              <span role="img">🚀</span>
               Start Free Trial
             </Link>
             <a
               href="#features"
               className="border-2 border-teal-600 text-teal-600 hover:bg-teal-50 px-8 py-4 rounded-xl text-lg font-bold flex items-center gap-2 transition-transform duration-200 transform hover:scale-105"
             >
-              <span role="img" aria-label="play">
-                ▶️
-              </span>
+              <span role="img">▶️</span>
               Watch Demo
             </a>
           </div>
@@ -72,9 +57,7 @@ const Home = () => {
       <section id="features" className="w-full max-w-5xl mx-auto mt-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-primary-700 mb-4 flex items-center justify-center gap-2">
-            <span role="img" aria-label="star">
-              ⭐
-            </span>
+            <span role="img">⭐</span>
             Why Choose TestMate AI?
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">

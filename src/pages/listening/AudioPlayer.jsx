@@ -27,7 +27,7 @@ const AudioPlayer = ({
                 isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-teal-500 hover:bg-teal-600'
               } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <span role="img" aria-label="audio">{isPlaying ? '⏸️' : '▶️'}</span>
+              <span role="img">{isPlaying ? '⏸️' : '▶️'}</span>
               {isLoading ? 'Loading...' : isPlaying ? 'Pause' : 'Play Audio'}
             </button>
           </div>

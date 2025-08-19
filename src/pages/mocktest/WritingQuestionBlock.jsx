@@ -1,29 +1,46 @@
 import React from 'react';
 
-const WritingQuestionBlock = ({ question, answersSection, onAnswer, formatTime }) => {
+const WritingQuestionBlock = ({
+  question,
+  answersSection,
+  onAnswer,
+  formatTime,
+}) => {
   if (!question) return null;
 
-  const wordCount = (answersSection[question.id]?.split(/\s+/).filter((w) => w.length > 0).length) || 0;
+  const wordCount =
+    answersSection[question.id]?.split(/\s+/).filter((w) => w.length > 0)
+      .length || 0;
 
   return (
     <div className="space-y-6">
       <div className="bg-green-50 p-6 rounded-lg">
         <h3 className="text-xl font-semibold mb-4">
-          Writing {question.type === 'task1' ? 'Task 1: Letter Writing' : 'Task 2: Essay Writing'}
+          Writing{' '}
+          {question.type === 'task1'
+            ? 'Task 1: Letter Writing'
+            : 'Task 2: Essay Writing'}
         </h3>
-        <h4 className="text-lg font-medium mb-4">{question.title || 'Writing Task'}</h4>
+        <h4 className="text-lg font-medium mb-4">
+          {question.title || 'Writing Task'}
+        </h4>
 
         <div className="space-y-4">
           <div className="bg-white p-4 rounded-lg">
             <h5 className="font-medium mb-2">Question:</h5>
-            <p className="text-gray-700">{question.question || 'Question not available'}</p>
+            <p className="text-gray-700">
+              {question.question || 'Question not available'}
+            </p>
 
             {question.type === 'task1' && (
               <div className="mt-4 p-3 bg-blue-50 rounded">
-                <h6 className="font-medium text-blue-800 mb-2">Task 1: Letter Writing</h6>
+                <h6 className="font-medium text-blue-800 mb-2">
+                  Task 1: Letter Writing
+                </h6>
                 <p className="text-sm text-blue-700">
-                  Write a formal or informal letter based on the situation described above. Remember to include appropriate
-                  greetings, body paragraphs, and closing.
+                  Write a formal or informal letter based on the situation
+                  described above. Remember to include appropriate greetings,
+                  body paragraphs, and closing.
                   <strong>Time: 20 minutes | Words: 150-200</strong>
                 </p>
               </div>
@@ -31,10 +48,13 @@ const WritingQuestionBlock = ({ question, answersSection, onAnswer, formatTime }
 
             {question.type === 'task2' && (
               <div className="mt-4 p-3 bg-green-50 rounded">
-                <h6 className="font-medium text-green-800 mb-2">Task 2: Essay Writing</h6>
+                <h6 className="font-medium text-green-800 mb-2">
+                  Task 2: Essay Writing
+                </h6>
                 <p className="text-sm text-green-700">
-                  Write an essay responding to the given topic. Include an introduction, body paragraphs with supporting arguments,
-                  and a conclusion.
+                  Write an essay responding to the given topic. Include an
+                  introduction, body paragraphs with supporting arguments, and a
+                  conclusion.
                   <strong>Time: 40 minutes | Words: 250-300</strong>
                 </p>
               </div>
@@ -63,5 +83,3 @@ const WritingQuestionBlock = ({ question, answersSection, onAnswer, formatTime }
 };
 
 export default WritingQuestionBlock;
-
-

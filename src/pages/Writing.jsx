@@ -21,9 +21,7 @@ const Writing = () => {
       try {
         const data = await dataService.getPracticeQuestions('writing');
         setWritingData(data);
-      } catch (error) {
-        console.error('Error loading writing data:', error);
-      }
+      } catch (error) {}
     };
     loadWritingData();
   }, []);
@@ -84,10 +82,8 @@ const Writing = () => {
           feedback: feedbackData.overall_feedback,
         });
       } else {
-        console.error('Invalid feedback structure:', feedback);
       }
     } catch (error) {
-      console.error('Error generating AI feedback:', error);
       setAiFeedback(null);
     } finally {
       setIsLoading(false);

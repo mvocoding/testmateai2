@@ -1,17 +1,18 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-import Icon from "../components/Icon";
-import { generateStudyPlan as generateStudyPlanFromUtils } from "../utils";
-import ChatWindow from "./askmeanything/ChatWindow";
-import ChatInput from "./askmeanything/ChatInput";
-import VoiceModal from "./askmeanything/VoiceModal";
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import Icon from '../components/Icon';
+import { generateStudyPlan as generateStudyPlanFromUtils } from '../utils';
+import ChatWindow from './askmeanything/ChatWindow';
+import ChatInput from './askmeanything/ChatInput';
+import VoiceModal from './askmeanything/VoiceModal';
 
-const TEXT_API_URL = "https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text";
-const AUDIO_API_URL = "http://localhost:3001/api/audio";
-const DEFAULT_VOICE_ID = "6889b660662160e2caad5e3f";
+const TEXT_API_URL =
+  'https://testmateai-be-670626115194.australia-southeast2.run.app/api/ai/generate_text';
+const AUDIO_API_URL = 'http://localhost:3001/api/audio';
+const DEFAULT_VOICE_ID = '6889b660662160e2caad5e3f';
 
 function isSpeechRecognitionSupported() {
-  return "webkitSpeechRecognition" in window || "SpeechRecognition" in window;
+  return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
 }
 
 function getSpeechRecognition() {
@@ -28,11 +29,12 @@ function createMessage(text, sender, id = Date.now()) {
 }
 
 function isStudyPlanConversation(messages) {
-  return messages.some((msg) =>
-    msg.text.includes("Have you taken an IELTS test before") ||
-    msg.text.includes("What was your last IELTS score") ||
-    msg.text.includes("What is your target band score") ||
-    msg.text.includes("When is your test date")
+  return messages.some(
+    (msg) =>
+      msg.text.includes('Have you taken an IELTS test before') ||
+      msg.text.includes('What was your last IELTS score') ||
+      msg.text.includes('What is your target band score') ||
+      msg.text.includes('When is your test date')
   );
 }
 
@@ -72,13 +74,13 @@ function extractStudyPlanData(messages) {
 
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
-    if (message.sender === "user") {
+    if (message.sender === 'user') {
       const text = message.text.toLowerCase();
 
       if (
-        text.includes("yes") &&
+        text.includes('yes') &&
         i > 0 &&
-        messages[i - 1].text.includes("Have you taken an IELTS test before")
+        messages[i - 1].text.includes('Have you taken an IELTS test before')
       ) {
         data.hasPreviousTest = true;
       }
@@ -116,27 +118,67 @@ function isStudyPlanComplete(messages) {
   return data.currentScore && data.targetScore && data.testDate;
 }
 
+function formatRecommendations(recommendations) {
+  if (!recommendations || recommendations.length === 0) {
+    return [
+      '• Practice regularly with focused exercises',
+      '• Review your weak areas consistently',
+      '• Take mock tests to track progress',
+      '• Seek feedback on your performance',
+    ].join('\n');
+  }
+  return recommendations.map((rec) => `• ${rec}`).join('\n');
+}
+
+function formatFocusAreas(focusAreas) {
+  if (!focusAreas || focusAreas.length === 0) {
+    return [
+      '• Listening: Improve comprehension skills',
+      '• Reading: Enhance speed and accuracy',
+      '• Writing: Develop clear structure and vocabulary',
+      '• Speaking: Build fluency and confidence',
+    ].join('\n');
+  }
+  return focusAreas.map((area) => `• ${area.skill}: ${area.reason}`).join('\n');
+}
+
+function formatWeeklySchedule(weeklySchedule) {
+  if (!weeklySchedule || weeklySchedule.length === 0) {
+    return [
+      'Week 1: Foundation - Review basics, assess current level',
+      'Week 2: Listening Focus - Practice with various accents',
+      'Week 3: Reading Focus - Improve skimming and scanning',
+      'Week 4: Writing Focus - Essay structure and vocabulary',
+    ].join('\n');
+  }
+  return weeklySchedule
+    .map(
+      (week) => `Week ${week.week}: ${week.focus} - ${week.tasks?.join(', ')}`
+    )
+    .join('\n');
+}
+
 function createStudyPlanMessage(plan, data) {
-  const planText = `📚 **Your Personalized Study Plan**
+  const planText = `📚 ** Your Personalized Study Plan **
 
-**Summary:** ${plan.summary || 'Personalized study plan to help you achieve your target score'}
+** Summary: ** ${
+    plan.summary ||
+    'Personalized study plan to help you achieve your target score'
+  }
 
-**Current Score:** ${data.currentScore} | **Target Score:** ${data.targetScore}
-**Study Duration:** ${plan.weeks || '8'} weeks
+** Current Score: ** ${data.currentScore} | ** Target Score: ** ${
+    data.targetScore
+  }
+** Study Duration: ** ${plan.weeks || '8'} weeks
 
-**Key Recommendations:**
-${plan.recommendations?.map((rec) => `• ${rec}`).join('\n') || 
-  '• Practice regularly with focused exercises\n• Review your weak areas consistently\n• Take mock tests to track progress\n• Seek feedback on your performance'}
+** Key Recommendations: **
+${formatRecommendations(plan.recommendations)}
 
-**Focus Areas:**
-${plan.focus_areas?.map((area) => `• ${area.skill}: ${area.reason}`).join('\n') || 
-  '• Listening: Improve comprehension skills\n• Reading: Enhance speed and accuracy\n• Writing: Develop clear structure and vocabulary\n• Speaking: Build fluency and confidence'}
+** Focus Areas: **
+${formatFocusAreas(plan.focus_areas)}
 
-**Weekly Schedule:**
-${plan.weekly_schedule?.map((week) => 
-  `Week ${week.week}: ${week.focus} - ${week.tasks?.join(', ')}`
-).join('\n') || 
-  'Week 1: Foundation - Review basics, assess current level\nWeek 2: Listening Focus - Practice with various accents\nWeek 3: Reading Focus - Improve skimming and scanning\nWeek 4: Writing Focus - Essay structure and vocabulary'}`;
+** Weekly Schedule: **
+${formatWeeklySchedule(plan.weekly_schedule)}`;
 
   return createMessage(planText, 'ai', Date.now() + 2);
 }
@@ -144,8 +186,8 @@ ${plan.weekly_schedule?.map((week) =>
 function saveStudyPlanToStorage(plan) {
   try {
     localStorage.setItem('testmate_study_plan', JSON.stringify(plan));
-    try { 
-      window.dispatchEvent(new CustomEvent('userDataUpdated')); 
+    try {
+      window.dispatchEvent(new CustomEvent('userDataUpdated'));
     } catch (error) {
       console.log('Error dispatching event:', error);
     }
@@ -155,12 +197,16 @@ function saveStudyPlanToStorage(plan) {
 }
 
 // Helper function to fetch audio from API
-async function fetchAudioFromAPI(text, rate = "100%", voice_id = DEFAULT_VOICE_ID) {
+async function fetchAudioFromAPI(
+  text,
+  rate = '100%',
+  voice_id = DEFAULT_VOICE_ID
+) {
   try {
     const response = await fetch(AUDIO_API_URL, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "content-type": "application/json",
+        'content-type': 'application/json',
       },
       body: JSON.stringify({
         text,
@@ -178,10 +224,9 @@ async function fetchAudioFromAPI(text, rate = "100%", voice_id = DEFAULT_VOICE_I
     if (result.success && result.audioUrl) {
       return result.audioUrl;
     } else {
-      throw new Error(`API error: ${result.error || "Unknown error"}`);
+      throw new Error(`API error: ${result.error || 'Unknown error'}`);
     }
   } catch (error) {
-    console.error("Error fetching audio from API:", error);
     throw error;
   }
 }
@@ -189,10 +234,10 @@ async function fetchAudioFromAPI(text, rate = "100%", voice_id = DEFAULT_VOICE_I
 function AskMeAnything() {
   // State variables for managing the chat
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
-  
+
   // State variables for voice chat
   const [isRecording, setIsRecording] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -257,7 +302,7 @@ function AskMeAnything() {
     }
 
     function handleAudioError() {
-      console.log("Audio error - attempting to restart recognition");
+      console.log('Audio error - attempting to restart recognition');
       setIsAudioPlaying(false);
       setIsProcessingResponse(false);
       if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
@@ -290,30 +335,30 @@ function AskMeAnything() {
 
   function startContinuousVoiceChat() {
     if (!isSpeechRecognitionSupported()) {
-      alert("Speech recognition not supported in this browser.");
+      alert('Speech recognition not supported in this browser.');
       return;
     }
 
     const SpeechRecognition = getSpeechRecognition();
     const recognition = new SpeechRecognition();
-    
-    recognition.lang = "en-US";
+
+    recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.continuous = false;
 
     recognition.onstart = () => {
-      console.log("Speech recognition started");
+      console.log('Speech recognition started');
       setIsContinuousRecording(true);
       setIsRecording(true);
     };
 
     recognition.onend = () => {
-      console.log("Speech recognition ended");
+      console.log('Speech recognition ended');
       setIsRecording(false);
 
       if (isContinuousRecordingRef.current) {
-        console.log("Attempting to restart speech recognition...");
+        console.log('Attempting to restart speech recognition...');
         setTimeout(() => {
           if (isContinuousRecordingRef.current && voiceRecognitionRef.current) {
             try {
@@ -324,7 +369,7 @@ function AskMeAnything() {
               }
             }
           } else {
-            console.log("Cannot restart - conditions not met:", {
+            console.log('Cannot restart - conditions not met:', {
               isContinuousRecording: isContinuousRecordingRef.current,
               hasVoiceRecognition: !!voiceRecognitionRef.current,
             });
@@ -346,7 +391,7 @@ function AskMeAnything() {
 
     recognition.onerror = (event) => {
       setIsRecording(false);
-      if (event.error === "no-speech") {
+      if (event.error === 'no-speech') {
         if (
           isContinuousRecordingRef.current &&
           !isProcessingResponseRef.current &&
@@ -360,17 +405,15 @@ function AskMeAnything() {
               voiceRecognitionRef.current
             ) {
               try {
-                console.log("Restarting after no-speech error...");
+                console.log('Restarting after no-speech error...');
                 voiceRecognitionRef.current.start();
-              } catch (error) {
-                console.error("Error restarting after no-speech:", error);
-              }
+              } catch (error) {}
             }
           }, 1000);
         }
       } else {
         setIsContinuousRecording(false);
-        alert("Voice recognition error: " + event.error);
+        alert('Voice recognition error: ' + event.error);
       }
     };
 
@@ -385,9 +428,7 @@ function AskMeAnything() {
     if (voiceRecognitionRef.current) {
       try {
         voiceRecognitionRef.current.stop();
-      } catch (error) {
-        console.error('Error stopping speech recognition:', error);
-      }
+      } catch (error) {}
       voiceRecognitionRef.current = null;
     }
     setIsRecording(false);
@@ -410,17 +451,18 @@ function AskMeAnything() {
   }, []);
 
   async function handleSendMessage(overrideInput, isVoice = false) {
-    const messageToSend = overrideInput !== undefined ? overrideInput : inputMessage;
+    const messageToSend =
+      overrideInput !== undefined ? overrideInput : inputMessage;
     if (!messageToSend.trim() || isLoading) return;
 
-    const userMessage = createMessage(messageToSend, "user");
+    const userMessage = createMessage(messageToSend, 'user');
     setMessages((prev) => [...prev, userMessage]);
-    setInputMessage("");
+    setInputMessage('');
     setIsLoading(true);
 
     try {
       const headers = {
-        "content-type": "application/json",
+        'content-type': 'application/json',
       };
 
       const studyPlanConversation = isStudyPlanConversation(messages);
@@ -428,19 +470,20 @@ function AskMeAnything() {
       const payload = { prompt: `${systemPrompt}\n\nUser: ${messageToSend}` };
 
       const response = await fetch(TEXT_API_URL, {
-        method: "POST",
+        method: 'POST',
         headers: headers,
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        throw new Error("API request failed");
+        throw new Error('API request failed');
       }
 
       const data = await response.json();
-      const aiResponse = data?.data?.response || "I'm sorry, I couldn't process that response.";
+      const aiResponse =
+        data?.data?.response || "I'm sorry, I couldn't process that response.";
 
-      const aiMessage = createMessage(aiResponse, "ai", Date.now() + 1);
+      const aiMessage = createMessage(aiResponse, 'ai', Date.now() + 1);
       setMessages((prev) => [...prev, aiMessage]);
 
       if (isVoice) {
@@ -452,9 +495,8 @@ function AskMeAnything() {
             audioRef.current.play();
           }
         } catch (error) {
-          console.error("Failed to fetch or play audio:", error);
           if (!isContinuousRecording) {
-            alert("Failed to fetch or play audio: " + error.message);
+            alert('Failed to fetch or play audio: ' + error.message);
           }
           setIsProcessingResponse(false);
         }
@@ -480,16 +522,14 @@ function AskMeAnything() {
             setMessages((prev) => [...prev, planMessage]);
           }
         } catch (error) {
-          console.error("Error generating study plan:", error);
         } finally {
           setIsGeneratingPlan(false);
         }
       }
     } catch (error) {
-      console.error("Error sending message:", error);
       const errorMessage = createMessage(
         "Sorry, I'm having trouble connecting right now. Please try again later.",
-        "ai",
+        'ai',
         Date.now() + 1
       );
       setMessages((prev) => [...prev, errorMessage]);
@@ -505,7 +545,7 @@ function AskMeAnything() {
   function startStudyPlanConversation() {
     const initialMessage = createMessage(
       "I'd love to help you create a personalized study plan! Let me ask you a few questions to get started.\n\nHave you taken an IELTS test before? (Yes/No)",
-      "ai"
+      'ai'
     );
     setMessages([initialMessage]);
   }
@@ -515,9 +555,7 @@ function AskMeAnything() {
       try {
         console.log('Manual restart...');
         voiceRecognitionRef.current.start();
-      } catch (error) {
-        console.error('Manual restart failed:', error);
-      }
+      } catch (error) {}
     }
   }
 
